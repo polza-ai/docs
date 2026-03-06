@@ -1,0 +1,124 @@
+﻿---
+title: POST Media
+description: Универсальный API генерации медиа (изображения, видео, аудио)
+icon: photo-film
+openapi: POST /v1/media
+---
+
+## О Media API
+
+Универсальный эндпоинт для генерации медиа контента. Поддерживает различные модели и провайдеров через единый интерфейс.
+
+### Общие параметры
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `model` | string | Да | ID модели для генерации |
+| `input` | object | Да | Параметры генерации (зависят от модели) |
+| `async` | boolean | Нет | Принудительный асинхронный режим |
+| `user` | string | Нет | Идентификатор конечного пользователя |
+| `provider` | object | Нет | Конфигурация роутинга по провайдерам |
+
+### Передача файлов (URL и base64)
+
+Для моделей, поддерживающих image-to-image или video-to-video, медиа файлы передаются в массиве `images` или `videos`. Каждый элемент — объект с полями:
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `type` | `"url"` \| `"base64"` | Формат данных |
+| `data` | string | URL файла или base64-строка (с data URI или без) |
+
+#### Пример с base64
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedream-3",
+    "input": {
+      "prompt": "Сделай изображение ярче и добавь закат на фоне",
+      "images": [
+        {
+          "type": "base64",
+          "data": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUg..."
+        }
+      ]
+    }
+  }'
+```
+
+Можно комбинировать URL и base64 в одном запросе:
+
+```json
+{
+  "model": "gpt-image-1",
+  "input": {
+    "prompt": "Объедини эти изображения в коллаж",
+    "images": [
+      { "type": "url", "data": "https://example.com/photo1.png" },
+      { "type": "base64", "data": "data:image/jpeg;base64,/9j/4AAQSkZJRg..." }
+    ]
+  }
+}
+```
+
+<Note>
+Base64 поддерживается как с data URI (`data:image/png;base64,...`), так и без — просто строка base64.
+Если провайдер не поддерживает base64 напрямую, файл автоматически загружается в хранилище и передаётся как URL.
+</Note>
+
+### Типы контента
+
+- Изображения (Nano Banana, Seedream, GPT Image и др.)
+- Видео (Veo, Wan, Kling, Seedance, Sora и др.)
+- Аудио — синтез речи (TTS) и распознавание речи (STT)
+
+### Хранение результатов
+
+При генерации медиа контента Polza.ai автоматически:
+
+1. **Скачивает результат** у AI провайдера на собственное хранилище
+2. **Хранит файлы 7 дней** для повторного доступа
+3. **Раздаёт через CDN** для быстрого доступа внутри России
+
+<Note>
+После истечения 7 дней файлы автоматически удаляются.
+Для постоянного хранения используйте [Storage API](/api-reference/storage/upload) с политикой `PERMANENT`.
+</Note>
+
+---
+
+## Руководства по моделям
+
+Подробные примеры, параметры и особенности каждой модели — в руководствах:
+
+<CardGroup cols={3}>
+  <Card title="Видео" icon="video" href="/gaidy/veo-3-1">
+    Veo 3.1, Wan 2.5/2.6, Kling, Seedance, Sora и другие модели видеогенерации
+  </Card>
+  <Card title="Изображения" icon="image" href="/gaidy/seedream-4-5">
+    Seedream, Nano Banana, GPT Image, Flux, Grok Imagine и другие модели генерации изображений
+  </Card>
+  <Card title="Аудио" icon="volume-high" href="/gaidy/elevenlabs-tts-turbo">
+    ElevenLabs TTS и другие модели синтеза и распознавания речи
+  </Card>
+</CardGroup>
+
+---
+
+## Ответ
+
+Возвращает объект [Media Status](/api-reference/media/status) со статусом `pending`:
+
+```json
+{
+  "id": "aig_abc123",
+  "object": "media.generation",
+  "status": "pending",
+  "created": 1703001244,
+  "model": "google/veo3"
+}
+```
+
+Используйте [GET /v1/media/{id}](/api-reference/media/status) для проверки статуса и получения результата.

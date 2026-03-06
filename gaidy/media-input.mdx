@@ -1,0 +1,498 @@
+﻿---
+title: Передача медиа на вход
+description: Как передавать изображения, документы, аудио и видео в запросах к AI моделям
+icon: upload
+---
+
+В этом гайде вы узнаете как передавать различные типы медиафайлов в запросах к AI моделям.
+
+<Note>
+Поддержка медиа зависит от выбранной модели. Проверяйте поле `input_modalities` модели в [каталоге моделей](/gaidy/models).
+</Note>
+
+## Поддерживаемые типы файлов
+
+<CardGroup cols={2}>
+  <Card title="Изображения" icon="image">
+    PNG, JPEG, GIF, WebP
+  </Card>
+  <Card title="Документы" icon="file">
+    PDF, DOCX, TXT
+  </Card>
+  <Card title="Аудио" icon="microphone">
+    MP3, WAV, FLAC, M4A
+  </Card>
+  <Card title="Видео" icon="video">
+    MP4, MOV, WebM
+  </Card>
+</CardGroup>
+
+## Способы передачи
+
+### 1. URL файла
+
+Самый простой способ — передать публичный URL файла:
+
+<CodeGroup>
+```typescript TypeScript
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: 'Что изображено на этой картинке?' },
+        { type: 'image_url', image_url: { url: 'https://example.com/image.jpg' } }
+      ]
+    }
+  ]
+});
+```
+
+```python Python
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Что изображено на этой картинке?"},
+                {"type": "image_url", "image_url": {"url": "https://example.com/image.jpg"}}
+            ]
+        }
+    ]
+)
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {"type": "text", "text": "Что изображено на этой картинке?"},
+          {"type": "image_url", "image_url": {"url": "https://example.com/image.jpg"}}
+        ]
+      }
+    ]
+  }'
+```
+</CodeGroup>
+
+### 2. Base64
+
+Для локальных файлов используйте кодировку Base64:
+
+<CodeGroup>
+```typescript TypeScript
+import * as fs from 'fs';
+
+const imageBuffer = fs.readFileSync('local-image.jpg');
+const base64Image = imageBuffer.toString('base64');
+
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: 'Опиши это изображение' },
+        {
+          type: 'image_url',
+          image_url: { url: `data:image/jpeg;base64,${base64Image}` }
+        }
+      ]
+    }
+  ]
+});
+```
+
+```python Python
+import base64
+
+with open("local-image.jpg", "rb") as image_file:
+    base64_image = base64.standard_b64encode(image_file.read()).decode("utf-8")
+
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Опиши это изображение"},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}
+                }
+            ]
+        }
+    ]
+)
+```
+</CodeGroup>
+
+### 3. Загрузка в хранилище
+
+Для больших файлов рекомендуется сначала загрузить в хранилище Polza.ai, а затем использовать полученный URL:
+
+<Warning>
+Хранилище поддерживает только изображения, видео и аудио. Для документов (PDF, DOCX, TXT) используйте base64 напрямую.
+</Warning>
+
+<CodeGroup>
+```typescript TypeScript
+// 1. Загрузка изображения в хранилище
+const formData = new FormData();
+formData.append('file', fileBlob, 'photo.jpg');
+formData.append('purpose', 'assistants');
+
+const uploadResponse = await fetch('https://polza.ai/api/v1/storage/upload', {
+  method: 'POST',
+  headers: { 'Authorization': 'Bearer <POLZA_AI_API_KEY>' },
+  body: formData
+});
+
+const { url } = await uploadResponse.json();
+
+// 2. Использование URL файла в запросе
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: 'Что изображено на этой фотографии?' },
+        {
+          type: 'image_url',
+          image_url: { url }  // URL из хранилища
+        }
+      ]
+    }
+  ]
+});
+```
+
+```python Python
+# 1. Загрузка изображения в хранилище
+with open("photo.jpg", "rb") as f:
+    upload_response = requests.post(
+        "https://polza.ai/api/v1/storage/upload",
+        headers={"Authorization": "Bearer <POLZA_AI_API_KEY>"},
+        files={"file": ("photo.jpg", f, "image/jpeg")},
+        data={"purpose": "assistants"}
+    )
+
+file_url = upload_response.json()["url"]
+
+# 2. Использование URL файла в запросе
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Что изображено на этой фотографии?"},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": file_url}
+                }
+            ]
+        }
+    ]
+)
+```
+</CodeGroup>
+
+## Изображения
+
+### Поддерживаемые форматы
+
+| Формат | MIME-тип | Примечание |
+|--------|----------|------------|
+| PNG | image/png | Рекомендуется для скриншотов |
+| JPEG | image/jpeg | Рекомендуется для фотографий |
+| GIF | image/gif | Только первый кадр |
+| WebP | image/webp | Современный формат |
+
+### Уровень детализации
+
+Параметр `detail` управляет качеством обработки изображения и влияет на стоимость:
+
+| Значение | Описание |
+|----------|----------|
+| `auto` | Автоматический выбор (по умолчанию) |
+| `low` | Низкое качество — быстрее и дешевле |
+| `high` | Высокое качество — точнее, но дороже |
+
+```json
+{
+  "type": "image_url",
+  "image_url": {
+    "url": "https://example.com/image.jpg",
+    "detail": "high"
+  }
+}
+```
+
+### Несколько изображений
+
+<CodeGroup>
+```typescript TypeScript
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: 'Сравни эти два изображения' },
+        { type: 'image_url', image_url: { url: 'https://example.com/image1.jpg' } },
+        { type: 'image_url', image_url: { url: 'https://example.com/image2.jpg' } }
+      ]
+    }
+  ]
+});
+```
+
+```python Python
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Сравни эти два изображения"},
+                {"type": "image_url", "image_url": {"url": "https://example.com/image1.jpg"}},
+                {"type": "image_url", "image_url": {"url": "https://example.com/image2.jpg"}}
+            ]
+        }
+    ]
+)
+```
+</CodeGroup>
+
+## Документы
+
+<Warning>
+Документы на вход поддерживают немногие модели. Проверяйте поле `input_modalities` модели в [каталоге моделей](/gaidy/models). Для обработки PDF также можно использовать плагин [file-parser](/gaidy/plugins#парсинг-файлов-file-parser).
+</Warning>
+
+Для передачи документов (PDF, DOCX, TXT) используйте тип `file`:
+
+<CodeGroup>
+```typescript TypeScript
+import * as fs from 'fs';
+
+const pdfBuffer = fs.readFileSync('report.pdf');
+const base64Pdf = pdfBuffer.toString('base64');
+
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: 'Кратко перескажи содержание документа' },
+        {
+          type: 'file',
+          file: {
+            filename: 'report.pdf',
+            file_data: `data:application/pdf;base64,${base64Pdf}`
+          }
+        }
+      ]
+    }
+  ]
+});
+```
+
+```python Python
+import base64
+
+with open("report.pdf", "rb") as f:
+    base64_pdf = base64.standard_b64encode(f.read()).decode("utf-8")
+
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Кратко перескажи содержание документа"},
+                {
+                    "type": "file",
+                    "file": {
+                        "filename": "report.pdf",
+                        "file_data": f"data:application/pdf;base64,{base64_pdf}"
+                    }
+                }
+            ]
+        }
+    ]
+)
+```
+</CodeGroup>
+
+### Поддерживаемые форматы
+
+| Формат | MIME-тип |
+|--------|----------|
+| PDF | application/pdf |
+| DOCX | application/vnd.openxmlformats-officedocument.wordprocessingml.document |
+| TXT | text/plain |
+
+## Аудио
+
+Для передачи аудио на вход используйте тип `input_audio`. Аудио передаётся в формате base64:
+
+<CodeGroup>
+```typescript TypeScript
+import * as fs from 'fs';
+
+const audioBuffer = fs.readFileSync('recording.wav');
+const base64Audio = audioBuffer.toString('base64');
+
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o-audio-preview',
+  messages: [
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: 'Что говорит человек на этой записи?' },
+        {
+          type: 'input_audio',
+          input_audio: {
+            data: base64Audio,
+            format: 'wav'
+          }
+        }
+      ]
+    }
+  ]
+});
+```
+
+```python Python
+import base64
+
+with open("recording.wav", "rb") as f:
+    base64_audio = base64.standard_b64encode(f.read()).decode("utf-8")
+
+completion = client.chat.completions.create(
+    model="openai/gpt-4o-audio-preview",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Что говорит человек на этой записи?"},
+                {
+                    "type": "input_audio",
+                    "input_audio": {
+                        "data": base64_audio,
+                        "format": "wav"
+                    }
+                }
+            ]
+        }
+    ]
+)
+```
+</CodeGroup>
+
+### Поддерживаемые форматы аудио
+
+| Формат | Значение `format` |
+|--------|-------------------|
+| WAV | `wav` |
+| MP3 | `mp3` |
+| FLAC | `flac` |
+| M4A | `m4a` |
+
+## Видео
+
+<Warning>
+Видео через `video_url` поддерживается только моделями Gemini. В качестве ссылок принимаются только URL YouTube.
+</Warning>
+
+Для передачи видео используйте тип `video_url`:
+
+<CodeGroup>
+```typescript TypeScript
+const completion = await openai.chat.completions.create({
+  model: 'google/gemini-2.5-pro-preview',
+  messages: [
+    {
+      role: 'user',
+      content: [
+        { type: 'text', text: 'Опиши что происходит в этом видео' },
+        {
+          type: 'video_url',
+          video_url: { url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+        }
+      ]
+    }
+  ]
+});
+```
+
+```python Python
+completion = client.chat.completions.create(
+    model="google/gemini-2.5-pro-preview",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Опиши что происходит в этом видео"},
+                {
+                    "type": "video_url",
+                    "video_url": {"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}
+                }
+            ]
+        }
+    ]
+)
+```
+</CodeGroup>
+
+## Советы и лучшие практики
+
+<AccordionGroup>
+  <Accordion title="Оптимизируйте размер изображений" icon="compress">
+    Сжимайте изображения перед отправкой. Большие файлы увеличивают время обработки и стоимость. Используйте `detail: "low"` для задач, не требующих высокой точности.
+  </Accordion>
+
+  <Accordion title="Используйте правильный формат" icon="file-image">
+    - Скриншоты и графика — PNG
+    - Фотографии — JPEG
+    - Документы — PDF
+  </Accordion>
+
+  <Accordion title="Проверяйте поддержку модели" icon="check">
+    Не все модели поддерживают все типы медиа. Проверяйте поле `input_modalities` в ответе `/v1/models`:
+    ```bash
+    curl https://polza.ai/api/v1/models | jq '.data[] | select(.architecture.input_modalities | contains(["image"]))'
+    ```
+  </Accordion>
+
+  <Accordion title="Добавляйте контекст в промпте" icon="comment">
+    Описывайте, что именно нужно анализировать в файле — это повышает качество ответа.
+  </Accordion>
+
+  <Accordion title="Большие файлы — через хранилище" icon="cloud-arrow-up">
+    Для файлов больше нескольких МБ загружайте их в хранилище через `/v1/storage/upload` и используйте полученный URL.
+  </Accordion>
+</AccordionGroup>
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Хранилище файлов" icon="database" href="/api-reference/storage/upload">
+    Загрузка и управление файлами
+  </Card>
+  <Card title="Каталог моделей" icon="microchip" href="/gaidy/models">
+    Модели с поддержкой медиа
+  </Card>
+</CardGroup>

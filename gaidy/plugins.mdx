@@ -1,0 +1,296 @@
+﻿---
+title: Плагины
+description: Расширение возможностей моделей с помощью плагинов
+icon: plug
+---
+
+Плагины расширяют возможности любой модели, добавляя функции поиска в интернете, обработки PDF и автоматического исправления JSON. Плагины подключаются через параметр `plugins` в запросе.
+
+## Доступные плагины
+
+| Плагин | ID | Описание |
+|--------|----|----------|
+| Поиск в интернете | `web` | Дополнение ответов актуальными данными из интернета |
+| Парсинг файлов | `file-parser` | Извлечение текста из PDF документов |
+| Исправление ответов | `response-healing` | Автоматическое исправление невалидного JSON в ответах |
+
+## Подключение плагинов
+
+Добавьте массив `plugins` в запрос к `/v1/chat/completions`:
+
+<CodeGroup>
+```typescript TypeScript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  baseURL: 'https://polza.ai/api/v1',
+  apiKey: '<POLZA_AI_API_KEY>'
+});
+
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    { role: 'user', content: 'Какие последние новости в сфере AI?' }
+  ],
+  // @ts-ignore — plugins не входит в типы OpenAI SDK
+  plugins: [
+    { id: 'web' }
+  ]
+});
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://polza.ai/api/v1",
+    api_key="<POLZA_AI_API_KEY>"
+)
+
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {"role": "user", "content": "Какие последние новости в сфере AI?"}
+    ],
+    extra_body={
+        "plugins": [
+            {"id": "web"}
+        ]
+    }
+)
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [
+      {"role": "user", "content": "Какие последние новости в сфере AI?"}
+    ],
+    "plugins": [
+      {"id": "web"}
+    ]
+  }'
+```
+</CodeGroup>
+
+### Несколько плагинов
+
+Можно подключить несколько плагинов одновременно:
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "messages": [...],
+  "plugins": [
+    { "id": "web", "max_results": 3 },
+    { "id": "response-healing" }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": { ... }
+  }
+}
+```
+
+### Отключение плагина
+
+Чтобы отключить плагин для конкретного запроса, передайте `enabled: false`:
+
+```json
+{
+  "plugins": [
+    { "id": "web", "enabled": false }
+  ]
+}
+```
+
+## Поиск в интернете (web)
+
+Плагин `web` дополняет ответ модели актуальными результатами поиска в интернете.
+
+### Шорткат :online
+
+Вместо указания плагина можно добавить `:online` к имени модели:
+
+```json
+{
+  "model": "openai/gpt-4o:online"
+}
+```
+
+Это эквивалентно:
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "plugins": [{ "id": "web" }]
+}
+```
+
+### Параметры
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `enabled` | boolean | Включить/выключить плагин |
+| `max_results` | number | Максимум результатов поиска (по умолчанию 5) |
+| `search_prompt` | string | Пользовательский промпт для поиска |
+| `engine` | string | Поисковый движок: `native` или `exa` |
+
+### Выбор поискового движка
+
+| Значение | Описание |
+|----------|----------|
+| `native` | Встроенный поиск провайдера (OpenAI, Anthropic, Perplexity, xAI) |
+| `exa` | Поиск через [Exa](https://exa.ai/) — комбинация ключевых слов и эмбеддингов |
+| Не указан | Автоматически: `native` если доступен, иначе `exa` |
+
+### Пример с настройками
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "plugins": [
+    {
+      "id": "web",
+      "engine": "exa",
+      "max_results": 3,
+      "search_prompt": "Найти актуальную информацию:"
+    }
+  ]
+}
+```
+
+### Альтернативный синтаксис: web_search_options
+
+Для нативного поиска OpenAI также поддерживается параметр `web_search_options`:
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "web_search_options": {
+    "search_context_size": "medium"
+  }
+}
+```
+
+Значения `search_context_size`: `low`, `medium`, `high`.
+
+### Парсинг результатов поиска
+
+Результаты поиска возвращаются в поле `annotations` ответа:
+
+```json
+{
+  "message": {
+    "role": "assistant",
+    "content": "Последние новости: ...",
+    "annotations": [
+      {
+        "type": "url_citation",
+        "url_citation": {
+          "url": "https://example.com/article",
+          "title": "Заголовок статьи",
+          "content": "Содержание результата",
+          "start_index": 100,
+          "end_index": 200
+        }
+      }
+    ]
+  }
+}
+```
+
+## Парсинг файлов (file-parser)
+
+Плагин `file-parser` извлекает текст из PDF документов для обработки моделью.
+
+### Параметры
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `enabled` | boolean | Включить/выключить плагин |
+| `pdf.engine` | string | Движок обработки PDF |
+
+### Движки обработки PDF
+
+| Значение | Описание |
+|----------|----------|
+| `pdf-text` | Извлечение текста из PDF |
+| `mistral-ocr` | OCR через Mistral (для сканов и изображений) |
+| `native` | Встроенная обработка провайдера |
+
+### Пример
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        { "type": "text", "text": "Проанализируй этот документ" },
+        {
+          "type": "file",
+          "file": {
+            "filename": "report.pdf",
+            "file_data": "data:application/pdf;base64,..."
+          }
+        }
+      ]
+    }
+  ],
+  "plugins": [
+    { "id": "file-parser", "pdf": { "engine": "mistral-ocr" } }
+  ]
+}
+```
+
+## Исправление ответов (response-healing)
+
+Плагин `response-healing` автоматически исправляет невалидный JSON в ответах моделей. Полезен при использовании `response_format` с `json_schema`.
+
+### Параметры
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `enabled` | boolean | Включить/выключить плагин |
+
+### Пример
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "plugins": [
+    { "id": "response-healing" }
+  ],
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "result",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": { "type": "string" }
+        },
+        "required": ["answer"],
+        "additionalProperties": false
+      }
+    }
+  }
+}
+```
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Tool Calling" icon="wrench" href="/gaidy/tool-calling">
+    Вызов функций для получения данных
+  </Card>
+  <Card title="Структурный вывод" icon="brackets-curly" href="/gaidy/structured-output">
+    Получение структурированных данных
+  </Card>
+</CardGroup>

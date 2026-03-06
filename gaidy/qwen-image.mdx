@@ -1,0 +1,53 @@
+---
+title: Qwen Image
+description: Генерация и редактирование изображений с Qwen Image
+icon: image
+---
+
+Модель генерации изображений Qwen Image. Поддержка text-to-image и image-to-image: на вход можно передать до 1 референс-изображения (фото) для редактирования.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `qwen/image` |
+| aspect_ratio | 1:1 и др. |
+| output_format | png и др. |
+| images | до 1 изображения на вход |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `qwen/image` |
+| `prompt` | Да | Текстовое описание |
+| `aspect_ratio` | Нет | Соотношение сторон, например 1:1 |
+| `output_format` | Нет | Формат вывода, например png |
+| `strength` | Нет | Сила влияния референса (например 0.8) |
+| `guidance_scale` | Нет | Масштаб следованию промпту (например 2.5) |
+| `images` | Нет | Референс-изображение для редактирования, до 1 |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "qwen/image",
+    "input": {
+      "prompt": "человек",
+      "aspect_ratio": "1:1",
+      "output_format": "png",
+      "strength": "0.8",
+      "guidance_scale": "2.5"
+    },
+    "async": true
+  }'
+```
+
+С референс-изображением передайте в `input` массив `images` с URL или данными одного изображения (до 1 шт.).

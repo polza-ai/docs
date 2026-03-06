@@ -1,0 +1,160 @@
+﻿---
+title: Nano Banana
+description: Генерация изображений с моделью Nano Banana
+icon: wand-magic-sparkles
+---
+
+Nano Banana — модель генерации изображений от Google с естественной обработкой языка и поддержкой длинных промптов до 20 000 символов.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| Тип | Генерация изображений |
+| ID модели | `google/gemini-2.5-flash-image` |
+| Max prompt | 20 000 символов |
+| Соотношения сторон | 1:1, 9:16, 16:9, 3:4, 4:3, 3:2, 2:3, 5:4, 4:5, 21:9 |
+| Форматы вывода | png, jpeg |
+| Референс-изображения | до 8 |
+
+## Сценарии использования
+
+<CardGroup cols={2}>
+  <Card title="Товарные фото" icon="shop">
+    Создание профессиональных изображений товаров для маркетплейсов
+  </Card>
+  <Card title="Рекламные креативы" icon="bullhorn">
+    Генерация баннеров и рекламных материалов
+  </Card>
+  <Card title="Иллюстрации" icon="palette">
+    Создание уникальных иллюстраций для статей и презентаций
+  </Card>
+  <Card title="Социальные сети" icon="share-nodes">
+    Визуальный контент для постов и сторис
+  </Card>
+</CardGroup>
+
+## Пример запроса
+
+Для генерации и редактирования изображений используйте Media API с параметром `images`:
+
+<CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'google/gemini-2.5-flash-image',
+    input: {
+      prompt: 'Измени фон на закат над морем',
+      aspect_ratio: '16:9',
+      images: [
+        { type: 'url', data: 'https://example.com/photo.jpg' }
+      ]
+    }
+  })
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/media',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'model': 'google/gemini-2.5-flash-image',
+        'input': {
+            'prompt': 'Измени фон на закат над морем',
+            'aspect_ratio': '16:9',
+            'images': [
+                {'type': 'url', 'data': 'https://example.com/photo.jpg'}
+            ]
+        }
+    }
+)
+
+print(response.json())
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "google/gemini-2.5-flash-image",
+    "input": {
+      "prompt": "Измени фон на закат над морем",
+      "aspect_ratio": "16:9",
+      "images": [
+        { "type": "url", "data": "https://example.com/photo.jpg" }
+      ]
+    }
+  }'
+```
+</CodeGroup>
+
+## Параметры
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `model` | string | Да | ID модели: `google/gemini-2.5-flash-image` |
+| `prompt` | string | Да | Текстовое описание желаемого изображения (до 20 000 символов) |
+| `n` | number | Нет | Количество изображений (по умолчанию 1, максимум 8) |
+| `aspect_ratio` | string | Нет | Соотношение сторон: `1:1`, `9:16`, `16:9`, `3:4`, `4:3`, `3:2`, `2:3`, `5:4`, `4:5`, `21:9` |
+| `output_format` | string | Нет | Формат вывода: `png`, `jpeg` |
+| `images` | array | Нет | Массив референс-изображений для редактирования (до 8 шт.) |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "google/gemini-2.5-flash-image",
+    "input": {
+      "prompt": "Описание изображения",
+      "aspect_ratio": "16:9",
+      "images": []
+    },
+    "async": true
+  }'
+```
+
+## Советы и лучшие практики
+
+<AccordionGroup>
+  <Accordion title="Пишите детальные промпты" icon="pen">
+    Чем подробнее описание, тем точнее результат. Указывайте стиль, освещение, композицию, цветовую гамму.
+  </Accordion>
+
+  <Accordion title="Используйте длинные промпты" icon="scroll">
+    Nano Banana отлично работает с промптами до 20 000 символов — описывайте сцену максимально подробно.
+  </Accordion>
+
+  <Accordion title="Экспериментируйте с соотношениями сторон" icon="crop">
+    Выбирайте aspect_ratio в зависимости от цели: 1:1 для аватаров, 16:9 для баннеров, 9:16 для сторис.
+  </Accordion>
+</AccordionGroup>
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Nano Banana Pro" icon="star" href="/gaidy/nanobanano-pro">
+    Продвинутая версия с поддержкой разрешений до 4K
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/media/create">
+    Полная документация API
+  </Card>
+</CardGroup>

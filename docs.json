@@ -1,0 +1,251 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "api": {
+    "openapi": "openapi.json"
+  },
+  "name": "Polza.ai",
+  "colors": {
+    "primary": "#4D7C0F",
+    "light": "#A3E635",
+    "dark": "#65A30D"
+  },
+  "favicon": "/favicon.ico",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Документация",
+        "groups": [
+          {
+            "group": "Главное",
+            "pages": [
+              "index",
+              "glavnoe/quickstart",
+              "glavnoe/principles",
+              "glavnoe/faq",
+              "glavnoe/enterprise",
+              "glavnoe/support",
+              "glavnoe/providers",
+              "osobennosti/privacy"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Руководства",
+        "groups": [
+          {
+            "group": "Начало работы",
+            "pages": [
+              "gaidy/getting-started",
+              "gaidy/models",
+              "gaidy/chat-completions",
+              "gaidy/media-input"
+            ]
+          },
+          {
+            "group": "Продвинутое",
+            "pages": [
+              "gaidy/provider-selection",
+              "gaidy/tool-calling",
+              "gaidy/structured-output",
+              "gaidy/plugins",
+              "osobennosti/reasoning-tokens",
+              "osobennosti/caching",
+              "osobennosti/usage"
+            ]
+          },
+          {
+            "group": "Генерация медиа",
+            "pages": [
+              {
+                "group": "Видео",
+                "icon": "video",
+                "pages": [
+                  "gaidy/seedance-1-5-pro",
+                  "gaidy/kling-3",
+                  "gaidy/wan-2-6",
+                  "gaidy/wan-2-5",
+                  "gaidy/sora-2-pro",
+                  "gaidy/sora-2",
+                  "gaidy/kling-2-5-turbo",
+                  "gaidy/veo-3-1"
+                ]
+              },
+              {
+                "group": "Изображения",
+                "icon": "image",
+                "pages": [
+                  "gaidy/topaz-upscale",
+                  "gaidy/seedream-5-lite",
+                  "gaidy/seedream-4-5",
+                  "gaidy/seedream-4",
+                  "gaidy/seedream-3",
+                  "gaidy/flux-2-pro",
+                  "gaidy/flux-2-flex",
+                  "gaidy/gpt-image-1-5",
+                  "gaidy/grok-imagine",
+                  "gaidy/qwen-image",
+                  "gaidy/gpt-5-image-mini",
+                  "gaidy/gpt-5-image",
+                  "gaidy/nanobanano-pro",
+                  "gaidy/nanobanano-2",
+                  "gaidy/nanobanano"
+                ]
+              },
+              {
+                "group": "Аудио",
+                "icon": "volume-high",
+                "pages": [
+                  "gaidy/elevenlabs-tts-turbo",
+                  "gaidy/elevenlabs-tts-multilingual"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Интеграции",
+            "pages": [
+              "integracii/cline",
+              "integracii/pycharm",
+              "integracii/roo-code",
+              "integracii/n8n",
+              "integracii/opencode"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Обзор",
+            "pages": [
+              "api-reference/introduction"
+            ]
+          },
+          {
+            "group": "Текстовая генерация",
+            "pages": [
+              "api-reference/chat/completions",
+              "api-reference/responses/create"
+            ]
+          },
+          {
+            "group": "Изображения",
+            "pages": [
+              "api-reference/images/generations"
+            ]
+          },
+          {
+            "group": "Медиа",
+            "pages": [
+              "api-reference/media/create",
+              "api-reference/media/status",
+              "api-reference/media/operations"
+            ]
+          },
+          {
+            "group": "Аудио",
+            "pages": [
+              "api-reference/audio/transcriptions",
+              "api-reference/audio/speech"
+            ]
+          },
+          {
+            "group": "Эмбеддинги",
+            "pages": [
+              "api-reference/embeddings/create"
+            ]
+          },
+          {
+            "group": "Модели",
+            "pages": [
+              "api-reference/models/list",
+              "api-reference/models/catalog"
+            ]
+          },
+          {
+            "group": "Хранилище",
+            "pages": [
+              "api-reference/storage/upload",
+              "api-reference/storage/list-files",
+              "api-reference/storage/get-file",
+              "api-reference/storage/delete-file",
+              "api-reference/storage/keep",
+              "api-reference/storage/stats"
+            ]
+          },
+          {
+            "group": "История",
+            "pages": [
+              "api-reference/history/generations"
+            ]
+          },
+          {
+            "group": "Другое",
+            "pages": [
+              "api-reference/other/balance"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Модели",
+          "href": "https://polza.ai/models",
+          "icon": "microchip"
+        },
+        {
+          "anchor": "Консоль",
+          "href": "https://polza.ai/dashboard",
+          "icon": "gauge"
+        },
+        {
+          "anchor": "Обновления",
+          "href": "/changelog",
+          "icon": "clock-rotate-left"
+        }
+      ],
+      "languages": [
+        {
+          "language": "ru",
+          "default": true,
+          "href": "/"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Поддержка",
+        "href": "/glavnoe/support"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Консоль",
+      "href": "https://polza.ai/dashboard"
+    }
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ]
+  },
+  "footer": {
+    "socials": {
+      "telegram": "https://t.me/polzaai"
+    }
+  }
+}

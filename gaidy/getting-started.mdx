@@ -1,0 +1,138 @@
+﻿---
+title: Начало работы
+description: Регистрация, получение API ключа и первые шаги с Polza.ai
+icon: rocket
+---
+
+В этом гайде вы узнаете как зарегистрироваться в Polza.ai, создать организацию, получить API ключ и пополнить баланс.
+
+## Регистрация и создание организации
+
+<Steps>
+  <Step title="Зарегистрируйтесь">
+    Перейдите на [polza.ai/dashboard](https://polza.ai/dashboard) и создайте аккаунт.
+  </Step>
+
+  <Step title="Создайте организацию">
+    После регистрации создайте организацию. Укажите название.
+  </Step>
+</Steps>
+
+## Получение API ключа
+
+<Steps>
+  <Step title="Перейдите в раздел API Keys">
+    Откройте [polza.ai/dashboard/api-keys](https://polza.ai/dashboard/api-keys) в личном кабинете.
+  </Step>
+
+  <Step title="Создайте новый ключ">
+    Нажмите кнопку «Создать ключ». Укажите название для ключа (например, «Production» или «Development»).
+  </Step>
+
+  <Step title="Скопируйте ключ">
+    Скопируйте сгенерированный API ключ. Он отображается только один раз, поэтому сохраните его в надёжном месте.
+  </Step>
+</Steps>
+
+<Note>
+Храните API ключ в безопасном месте. Не добавляйте его в публичные репозитории и не передавайте третьим лицам. Если ключ скомпрометирован — удалите его и создайте новый.
+</Note>
+
+## Пополнение баланса
+
+Polza.ai работает по модели оплаты за использование (pay-as-you-go). Пополните баланс одним из способов:
+
+<AccordionGroup>
+  <Accordion title="Банковская карта" icon="credit-card">
+    Мгновенное пополнение картами Visa, Mastercard, МИР. Минимальная сумма — 100 рублей.
+
+    1. Перейдите в раздел [Баланс](https://polza.ai/dashboard/billing)
+    2. Нажмите «Пополнить баланс»
+    3. Введите сумму и оплатите картой
+  </Accordion>
+
+  <Accordion title="СБП (Система быстрых платежей)" icon="mobile">
+    Оплата через мобильное приложение банка по QR-коду. Средства зачисляются мгновенно.
+
+    1. Выберите способ оплаты «СБП»
+    2. Отсканируйте QR-код в мобильном приложении банка
+    3. Подтвердите платёж
+  </Accordion>
+
+  <Accordion title="Расчётный счёт организации" icon="building">
+    Оплата по счёту для юридических лиц. Средства зачисляются в течение 1-2 рабочих дней после поступления платежа.
+
+    1. Выберите способ оплаты «Счёт для юрлиц»
+    2. Укажите реквизиты организации
+    3. Скачайте счёт и оплатите с расчётного счёта
+  </Accordion>
+</AccordionGroup>
+
+## Настройка уведомлений о низком балансе
+
+Чтобы не пропустить момент, когда баланс заканчивается, настройте уведомления:
+
+1. Перейдите в [Настройки](https://polza.ai/dashboard/billing)
+2. В разделе «Уведомления» включите опцию «Уведомлять о низком балансе»
+3. Укажите порог баланса (например, 500 рублей)
+
+При достижении указанного порога вы получите уведомление на email.
+
+## Проверка баланса через API
+
+Вы можете проверить текущий баланс программно через API:
+
+<CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/balance', {
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>'
+  }
+});
+
+const data = await response.json();
+console.log(`Баланс: ${data.amount} руб.`);
+console.log(`Потрачено: ${data.spentAmount} руб.`);
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://polza.ai/api/v1/balance',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'}
+)
+
+data = response.json()
+print(f"Баланс: {data['amount']} руб.")
+print(f"Потрачено: {data['spentAmount']} руб.")
+```
+
+```bash cURL
+curl "https://polza.ai/api/v1/balance" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>"
+```
+</CodeGroup>
+
+### Пример ответа
+
+```json
+{
+  "amount": "1250.50"
+}
+```
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `amount` | string | Текущий баланс в рублях |
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Получение моделей" icon="microchip" href="/gaidy/models">
+    Узнайте какие AI модели доступны через API
+  </Card>
+  <Card title="Текстовые запросы" icon="comments" href="/gaidy/chat-completions">
+    Отправьте первый запрос к текстовой модели
+  </Card>
+</CardGroup>

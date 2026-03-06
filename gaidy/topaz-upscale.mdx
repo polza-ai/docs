@@ -1,0 +1,46 @@
+﻿---
+title: Topaz Upscale
+description: Апскейл изображений с моделью Topaz Upscale
+icon: expand
+---
+
+Модель увеличения разрешения изображений. Один входной файл, коэффициент масштабирования 1, 2, 4 или 8.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `topaz/image-upscale` |
+| Вход | 1 изображение |
+| upscale_factor | 1, 2, 4, 8 (по умолчанию 2) |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `topaz/image-upscale` |
+| `images` | Да | Массив из 1 изображения |
+| `upscale_factor` | Да | Коэффициент увеличения: `1`, `2`, `4`, `8`. По умолчанию `2` |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "topaz/image-upscale",
+    "input": {
+      "prompt": "",
+      "upscale_factor": "8",
+      "images": [
+        { "type": "url", "data": "https://example.com/image.jpg" }
+      ]
+    },
+    "async": true
+  }'
+```

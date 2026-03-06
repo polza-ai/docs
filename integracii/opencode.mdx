@@ -1,0 +1,163 @@
+﻿---
+title: OpenCode
+description: Интеграция Polza.ai с OpenCode — терминальным AI-ассистентом
+icon: terminal
+---
+
+![OpenCode](/images/opencode.png)
+
+[OpenCode](https://opencode.ai) — терминальный AI-ассистент для разработчиков. Работает прямо в терминале, понимает контекст проекта и помогает писать, редактировать и отлаживать код.
+
+## Требования
+
+- Современный терминал (WezTerm, Alacritty, Ghostty, Kitty или iTerm2)
+- `curl` и `jq` для скрипта автонастройки
+- API-ключ
+
+## Установка OpenCode
+
+<CodeGroup>
+```bash curl (рекомендуется)
+curl -fsSL https://opencode.ai/install | bash
+```
+
+```bash npm
+npm install -g opencode-ai
+```
+
+```bash Homebrew
+brew install anomalyco/tap/opencode
+```
+
+```bash Chocolatey (Windows)
+choco install opencode
+```
+
+```bash Docker
+docker run -it --rm ghcr.io/anomalyco/opencode
+```
+</CodeGroup>
+
+## Быстрая настройка
+
+Используйте скрипт автонастройки для подключения Polza.ai к OpenCode:
+
+```bash
+curl -fsSL https://s3.polza.ai/scripts/opencode.sh | bash
+```
+
+<Steps>
+  <Step title="Запустите скрипт">
+    Скрипт проверит наличие зависимостей (`curl`, `jq`, `opencode`) и запросит ваш API-ключ.
+  </Step>
+
+  <Step title="Введите API-ключ">
+    Получите ключ в [личном кабинете](https://polza.ai/dashboard/api-keys) и вставьте его в терминал.
+  </Step>
+
+  <Step title="Готово">
+    Скрипт автоматически:
+    - Проверит валидность ключа
+    - Загрузит список доступных моделей
+    - Создаст или обновит `opencode.json` с провайдером `polza`
+  </Step>
+</Steps>
+
+## Ручная настройка
+
+Если вы предпочитаете настроить вручную, создайте файл `opencode.json` в корне проекта:
+
+```json
+{
+  "provider": {
+    "polza": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://polza.ai/api/v1",
+        "apiKey": "<POLZA_AI_API_KEY>"
+      },
+      "models": {
+        "anthropic/claude-sonnet-4": {
+          "name": "Claude Sonnet 4"
+        },
+        "anthropic/claude-opus-4": {
+          "name": "Claude Opus 4"
+        }
+      }
+    }
+  }
+}
+```
+
+Затем выберите модель командой `/models` в OpenCode.
+
+## Использование
+
+Запустите OpenCode в директории проекта:
+
+```bash
+cd /path/to/project
+opencode
+```
+
+### Основные команды
+
+| Команда | Описание |
+|---------|----------|
+| `/init` | Инициализация проекта (создаёт AGENTS.md) |
+| `/models` | Выбор модели |
+| `/undo` | Отменить последние изменения |
+| `/redo` | Вернуть отменённые изменения |
+| `/share` | Создать ссылку на диалог |
+
+### Режимы работы
+
+- **Tab** — переключение в режим планирования (Plan Mode)
+- **@** — поиск и добавление файлов в контекст
+- Перетаскивание изображений для визуального контекста
+
+## Рекомендуемые модели
+
+| Модель | ID | Особенности |
+|--------|-----|-------------|
+| Claude Opus 4 | `anthropic/claude-opus-4` | Лучшая для сложных задач |
+| Claude Sonnet 4 | `anthropic/claude-sonnet-4` | Быстрая и качественная |
+| Claude 3.5 Sonnet | `anthropic/claude-3-5-sonnet` | Оптимальный баланс |
+| DeepSeek V3 | `deepseek/deepseek-v3` | Экономичная |
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Ошибка 'opencode not found'">
+    Убедитесь что OpenCode установлен и доступен в PATH:
+    ```bash
+    which opencode
+    ```
+    Если команда не найдена, переустановите OpenCode.
+  </Accordion>
+
+  <Accordion title="Ошибка аутентификации">
+    - Проверьте правильность API-ключа
+    - Убедитесь в наличии средств на [балансе](https://polza.ai/dashboard)
+  </Accordion>
+
+  <Accordion title="Модель не найдена">
+    - Проверьте правильность Model ID
+    - Актуальный список моделей: [polza.ai/models](https://polza.ai/models)
+    - Перезапустите скрипт настройки для обновления списка
+  </Accordion>
+
+  <Accordion title="Скрипт не работает">
+    Убедитесь что установлены зависимости:
+    ```bash
+    curl --version
+    jq --version
+    ```
+    На macOS установите jq через Homebrew: `brew install jq`
+  </Accordion>
+</AccordionGroup>
+
+## Поддержка
+
+- [Документация OpenCode](https://opencode.ai/docs)
+- [Страница поддержки Polza.ai](/glavnoe/support)

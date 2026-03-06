@@ -1,0 +1,49 @@
+---
+title: Seedream 4.5
+description: Генерация изображений с моделью Seedream 4.5
+icon: sparkles
+---
+
+Модель генерации изображений Seedream 4.5. Промпт до 3000 символов, до 14 референс-изображений, качество Basic (2K) или High (4K).
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `bytedance/seedream-4.5` |
+| Max prompt | 3000 символов |
+| aspect_ratio | 1:1, 4:3, 3:4, 3:2, 2:3, 16:9, 9:16, 21:9 (по умолчанию 1:1) |
+| quality | basic (2K), high (4K). По умолчанию basic |
+| images | 0–14 |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `bytedance/seedream-4.5` |
+| `prompt` | Да | Текст, до 3000 символов |
+| `aspect_ratio` | Да | По умолчанию `1:1` |
+| `images` | Нет | Референс-изображения, 0–14 |
+| `quality` | Да | `basic` (2K) или `high` (4K). По умолчанию `basic` |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "bytedance/seedream-4.5",
+    "input": {
+      "prompt": "Описание изображения",
+      "aspect_ratio": "1:1",
+      "quality": "basic",
+      "images": []
+    },
+    "async": true
+  }'
+```

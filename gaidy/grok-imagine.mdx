@@ -1,0 +1,46 @@
+---
+title: Grok Image
+description: Генерация изображений с моделью Grok Imagine
+icon: image
+---
+
+Модель генерации изображений Grok Imagine. Промпт до 5000 символов, до 1 референс-изображения.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `x-ai/grok-imagine-image` |
+| Max prompt | 5000 символов |
+| aspect_ratio | 1:1, 2:3, 3:2 |
+| images | 0–1 |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `x-ai/grok-imagine-image` |
+| `prompt` | Да | Текст, до 5000 символов |
+| `aspect_ratio` | Нет | 1:1, 2:3, 3:2 |
+| `images` | Нет | Референс-изображение, 0–1 |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "x-ai/grok-imagine-image",
+    "input": {
+      "prompt": "Описание изображения",
+      "aspect_ratio": "1:1",
+      "images": []
+    },
+    "async": true
+  }'
+```

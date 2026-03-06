@@ -1,0 +1,52 @@
+---
+title: Wan 2.6
+description: Генерация видео с моделью Wan 2.6
+icon: video
+---
+
+Модель генерации видео Wan 2.6. Поддержка мульти-шотовой композиции с переходами между сценами. Разрешения 720p, 1080p, длительность 5–15 сек.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `wan/2.6` |
+| Max prompt | 5 000 символов |
+| resolution | 720p, 1080p |
+| duration | 5, 10, 15 сек |
+| images | 0–1 |
+| multi_shots | true / false (переходы между сценами) |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `wan/2.6` |
+| `prompt` | Да | Текст, до 5000 символов |
+| `resolution` | Нет | 720p, 1080p |
+| `duration` | Нет | 5, 10, 15 |
+| `images` | Нет | 0–1 |
+| `multi_shots` | Нет | Мульти-шотовая композиция. По умолчанию false |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "wan/2.6",
+    "input": {
+      "prompt": "Описание видео",
+      "resolution": "720p",
+      "duration": "10",
+      "images": [],
+      "multi_shots": "false"
+    },
+    "async": true
+  }'
+```

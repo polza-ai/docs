@@ -1,0 +1,117 @@
+﻿---
+title: Roo Code
+description: Интеграция Polza.ai с Roo Code - AI-ассистент для программирования
+icon: robot
+---
+
+Roo Code — мощный AI-ассистент для VS Code с поддержкой автономного выполнения задач.
+
+## Требования
+
+- VS Code, Cursor или VSCodium
+- Расширение Roo Code
+- API-ключ [polza.ai](https://polza.ai/dashboard)
+
+## Установка Roo Code
+
+<Steps>
+  <Step title="Откройте Extensions">
+    Нажмите на иконку Extensions в боковой панели или используйте `Ctrl+Shift+X` (Windows/Linux) или `Cmd+Shift+X` (macOS).
+  </Step>
+
+  <Step title="Найдите Roo Code">
+    Введите "Roo Code" в поиске расширений.
+
+    <Frame>
+      <img src="/images/roo-code/roo-code-install.png" alt="Установка Roo Code из VS Code Marketplace" />
+    </Frame>
+  </Step>
+
+  <Step title="Установите расширение">
+    Нажмите **Install** на расширении "Roo Code".
+  </Step>
+</Steps>
+
+## Настройка подключения к Polza.ai
+
+<Steps>
+  <Step title="Откройте настройки Roo Code">
+    Нажмите на иконку Roo Code в боковой панели, затем на шестерёнку (настройки).
+  </Step>
+
+  <Step title="Перейдите в раздел Провайдеры">
+    В настройках выберите вкладку **Провайдеры** (Providers).
+  </Step>
+
+  <Step title="Выберите провайдера">
+    В выпадающем списке **Провайдер API** выберите **OpenAI Compatible**.
+  </Step>
+
+  <Step title="Введите настройки подключения">
+    Заполните поля:
+    - **Базовый URL:** `https://polza.ai/api/v1`
+    - **API-ключ:** Ваш ключ
+    - **Модель:** Выберите модель из списка, например `anthropic/claude-opus-4`
+
+    <Frame>
+      <img src="/images/roo-code/roo-code-provider-settings.png" alt="Настройки провайдера Polza.ai в Roo Code" />
+    </Frame>
+  </Step>
+
+  <Step title="Сохраните настройки">
+    Нажмите **Сохранить** в правом верхнем углу.
+  </Step>
+</Steps>
+
+## Рекомендуемые модели для кодинга
+
+| Модель | ID | Особенности |
+|--------|-----|-------------|
+| Claude Opus 4 | `anthropic/claude-opus-4` | Лучшая для сложных задач |
+| Claude 3.5 Sonnet | `anthropic/claude-3-5-sonnet` | Оптимальный баланс |
+| GPT-4o | `openai/gpt-4o` | Универсальная |
+| DeepSeek V3 | `deepseek/deepseek-v3` | Экономичная |
+
+## Возможности Roo Code
+
+<CardGroup cols={2}>
+  <Card title="Автономные задачи" icon="robot">
+    Roo Code может самостоятельно выполнять многошаговые задачи: создавать файлы, запускать команды, исправлять ошибки
+  </Card>
+  <Card title="Написание кода" icon="code">
+    Генерация кода по описанию на естественном языке
+  </Card>
+  <Card title="Рефакторинг" icon="wand-magic-sparkles">
+    Улучшение и оптимизация существующего кода
+  </Card>
+  <Card title="Отладка" icon="bug">
+    Поиск и исправление ошибок в коде
+  </Card>
+</CardGroup>
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Ошибка аутентификации">
+    - Проверьте правильность API-ключа
+    - Убедитесь в наличии средств на балансе
+    - Проверьте Base URL: `https://polza.ai/api/v1`
+  </Accordion>
+
+  <Accordion title="Модель не найдена">
+    - Проверьте правильность Model ID
+    - Актуальный список: [polza.ai/models](https://polza.ai/models)
+  </Accordion>
+
+  <Accordion title="Медленные ответы">
+    - Используйте более быстрые модели (Sonnet вместо Opus)
+    - Уменьшите размер контекста
+    - Проверьте интернет-соединение
+  </Accordion>
+
+  <Accordion title="Расширение не видит модели">
+    - Убедитесь что провайдер выбран как **OpenAI Compatible**
+    - Проверьте что Base URL указан без слеша в конце
+    - Перезагрузите VS Code
+  </Accordion>
+</AccordionGroup>

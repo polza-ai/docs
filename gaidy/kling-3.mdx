@@ -1,0 +1,55 @@
+﻿---
+title: Kling 3.0
+description: Генерация видео с моделью Kling 3.0
+icon: video
+---
+
+Модель генерации видео Kling 3.0. Длительность 3–15 сек, режимы std и pro, опциональный звук.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `kling/v3` |
+| Max prompt | 2 500 символов |
+| aspect_ratio | 16:9, 9:16, 1:1 (игнорируется при start frame) |
+| duration | 3–15 сек (обязательный) |
+| images | 0–2 (start/end frame или start frame для multi-shot) |
+| mode | std, pro. По умолчанию std |
+| sound | true / false. При multi_shots обязательно true |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `kling/v3` |
+| `prompt` | Да | Текстовое описание, до 2500 символов |
+| `aspect_ratio` | Нет | 16:9, 9:16, 1:1. По умолчанию 1:1 |
+| `duration` | Да | 3–15 секунд |
+| `images` | Нет | 0–2 |
+| `mode` | Да | std или pro. По умолчанию std |
+| `sound` | Да | true/false. По умолчанию false |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "kling/v3",
+    "input": {
+      "prompt": "Описание видео",
+      "aspect_ratio": "16:9",
+      "duration": 10,
+      "images": [],
+      "mode": "std",
+      "sound": "false"
+    },
+    "async": true
+  }'
+```

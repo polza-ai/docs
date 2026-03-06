@@ -1,0 +1,61 @@
+﻿---
+title: ElevenLabs TTS Turbo
+description: Синтез речи с моделью ElevenLabs TTS Turbo
+icon: volume-high
+---
+
+Быстрая модель синтеза речи (text-to-speech) от ElevenLabs. Текст до 5000 символов, выбор голоса, скорость 0.7–1.2, опциональные временные метки и контекст (previous_text, next_text).
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `elevenlabs/text-to-speech-turbo-2-5` |
+| Max prompt | 5 000 символов |
+| voice | Rachel, Aria, Roger, Sarah и др. (по умолчанию Rachel) |
+| speed | 0.7–1.2, по умолчанию 1 |
+| stability, similarity_boost, style | 0–1 |
+| timestamps | true / false |
+| language_code | ru, en, de, fr, es и др. (ISO 639-1) |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `elevenlabs/text-to-speech-turbo-2-5` |
+| `prompt` | Да | Текст для синтеза речи, до 5000 символов |
+| `voice` | Нет | Голос. По умолчанию Rachel |
+| `speed` | Нет | 0.7–1.2. По умолчанию 1 |
+| `stability` | Нет | Стабильность голоса 0–1 |
+| `similarity_boost` | Нет | Усиление схожести 0–1 |
+| `style` | Нет | Экспрессия стиля 0–1 |
+| `timestamps` | Нет | true/false — возвращать временные метки слов |
+| `previous_text` | Нет | Предшествующий текст для контекста, до 5000 символов |
+| `next_text` | Нет | Последующий текст для контекста, до 5000 символов |
+| `language_code` | Нет | Код языка ISO 639-1 |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "elevenlabs/text-to-speech-turbo-2-5",
+    "input": {
+      "prompt": "Текст для синтеза речи",
+      "voice": "Rachel",
+      "speed": 1,
+      "stability": 0.5,
+      "similarity_boost": 0.75,
+      "style": 0,
+      "timestamps": "false",
+      "language_code": "ru"
+    },
+    "async": true
+  }'
+```

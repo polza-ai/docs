@@ -1,0 +1,197 @@
+﻿---
+title: История генераций
+description: Получение истории генераций с фильтрацией и пагинацией
+icon: clock-rotate-left
+---
+
+## Авторизация
+
+Эндпоинт поддерживает два типа авторизации с разным уровнем доступа:
+
+| Тип | Видимость |
+|-----|-----------|
+| **API ключ** (`sk-...`) | Только генерации этого ключа |
+| **JWT токен** | Все генерации организации |
+
+## Параметры запроса
+
+### Пагинация
+
+| Параметр | Тип | По умолчанию | Описание |
+|----------|-----|--------------|----------|
+| `page` | integer | 1 | Номер страницы (от 1) |
+| `limit` | integer | 20 | Количество записей на странице (1-100) |
+
+### Фильтрация
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `dateFrom` | string | Дата начала периода (ISO 8601) |
+| `dateTo` | string | Дата конца периода (ISO 8601) |
+| `requestType` | string | Тип запроса: chat, image, video, audio |
+| `status` | string | Статус: completed, failed, pending |
+| `apiKeyId` | string | ID API ключа (только при JWT авторизации) |
+| `withoutApiKey` | boolean | Показать генерации без API ключа (только JWT) |
+
+### Сортировка
+
+| Параметр | Тип | По умолчанию | Описание |
+|----------|-----|--------------|----------|
+| `sortBy` | string | createdAt | Поле: createdAt, clientCost |
+| `sortOrder` | string | desc | Направление: asc, desc |
+
+## Примеры
+
+<CodeGroup>
+```bash Все генерации
+curl "https://polza.ai/api/v1/history/generations" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```bash С фильтрацией
+curl "https://polza.ai/api/v1/history/generations?requestType=chat&status=completed&dateFrom=2025-01-01T00:00:00Z&limit=50" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+```python Python
+import requests
+
+response = requests.get(
+    'https://polza.ai/api/v1/history/generations',
+    headers={'Authorization': 'Bearer YOUR_API_KEY'},
+    params={
+        'requestType': 'chat',
+        'status': 'completed',
+        'page': 1,
+        'limit': 20,
+        'sortBy': 'createdAt',
+        'sortOrder': 'desc'
+    }
+)
+
+data = response.json()
+for item in data['items']:
+    print(f"{item['model']}: {item['cost']} руб.")
+```
+</CodeGroup>
+
+## Ответ (200)
+
+```json
+{
+  "items": [
+    {
+      "id": "gen_581761234567890123",
+      "model": "gpt-4o",
+      "modelDisplayName": "GPT-4o",
+      "requestType": "chat",
+      "provider": "openai",
+      "status": "completed",
+      "cost": "0.15",
+      "usage": {
+        "prompt_tokens": 150,
+        "completion_tokens": 200,
+        "total_tokens": 350
+      },
+      "generationTimeMs": 1500,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "apiKeyName": "Production Key",
+      "apiKeyShort": "abc123"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8
+  }
+}
+```
+
+## Поля элемента
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | string | ID генерации |
+| `model` | string | Slug модели |
+| `modelDisplayName` | string | Отображаемое имя модели |
+| `requestType` | string | Тип: chat, image, video, audio |
+| `provider` | string\|null | Провайдер, обработавший запрос |
+| `status` | string | Статус: completed, failed, pending |
+| `cost` | string | Стоимость в рублях |
+| `usage` | object\|null | Использование токенов |
+| `generationTimeMs` | number\|null | Время генерации в миллисекундах |
+| `createdAt` | string | Дата создания |
+| `apiKeyName` | string | Имя API ключа (при JWT авторизации) |
+| `apiKeyShort` | string | Последние 6 символов ключа |
+
+---
+
+## GET Детали генерации
+
+```
+GET /v1/history/generations/{id}
+```
+
+Возвращает подробную информацию о конкретной генерации.
+
+### Пример
+
+```bash
+curl "https://polza.ai/api/v1/history/generations/gen_581761234567890123" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Ответ (200)
+
+```json
+{
+  "id": "gen_581761234567890123",
+  "organizationId": "org_123",
+  "apiKeyId": "key_456",
+  "unifiedModelId": "model_789",
+  "requestType": "chat",
+  "apiType": "chat_completions",
+  "responseMode": "sync",
+  "status": "completed",
+  "finishReason": "stop",
+  "finalEndpointSlug": "openai",
+  "usage": {
+    "prompt_tokens": 150,
+    "completion_tokens": 200,
+    "total_tokens": 350
+  },
+  "clientCost": "0.15",
+  "generationTimeMs": 1500,
+  "latencyMs": 120,
+  "queueTimeMs": 5,
+  "isCancelled": false,
+  "createdAt": "2025-01-15T10:30:00Z",
+  "completedAt": "2025-01-15T10:30:01.500Z",
+  "attemptsCount": 1
+}
+```
+
+### Поля ответа
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | string | ID генерации |
+| `organizationId` | string | ID организации |
+| `apiKeyId` | string | ID API ключа |
+| `unifiedModelId` | string | ID модели |
+| `requestType` | string | Тип запроса |
+| `apiType` | string | Тип API (chat_completions, responses, media и т.д.) |
+| `responseMode` | string | Режим ответа (sync, stream, async) |
+| `status` | string | Статус генерации |
+| `finishReason` | string | Причина завершения (stop, length, tool_calls и т.д.) |
+| `finalEndpointSlug` | string | Провайдер |
+| `usage` | object\|null | Использование |
+| `clientCost` | string | Стоимость (RUB) |
+| `generationTimeMs` | number\|null | Время генерации (ms) |
+| `latencyMs` | number\|null | Задержка до первого ответа (ms) |
+| `queueTimeMs` | number\|null | Время в очереди (ms) |
+| `isCancelled` | boolean | Была ли генерация отменена |
+| `createdAt` | string | Дата создания |
+| `completedAt` | string\|null | Дата завершения |
+| `attemptsCount` | number | Количество попыток |

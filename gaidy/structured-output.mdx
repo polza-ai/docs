@@ -1,0 +1,372 @@
+﻿---
+title: Структурный вывод
+description: Получение структурированных данных (JSON) от AI моделей
+icon: brackets-curly
+---
+
+Структурный вывод позволяет получать ответы от AI моделей в строгом JSON формате, соответствующем заданной схеме.
+
+<Note>
+Поддержка структурного вывода зависит от модели. Проверяйте возможности в [каталоге моделей](/gaidy/models).
+</Note>
+
+## Зачем это нужно?
+
+<CardGroup cols={2}>
+  <Card title="Парсинг данных" icon="file-code">
+    Извлечение структурированной информации из текста
+  </Card>
+  <Card title="API интеграции" icon="plug">
+    Получение данных в формате, готовом для обработки
+  </Card>
+  <Card title="Валидация" icon="check">
+    Гарантия соответствия ответа заданной структуре
+  </Card>
+  <Card title="Автоматизация" icon="robot">
+    Надёжная интеграция с бизнес-процессами
+  </Card>
+</CardGroup>
+
+## Способы получения структурного вывода
+
+### 1. response_format (рекомендуется)
+
+Самый надёжный способ — использовать параметр `response_format` с JSON Schema:
+
+<CodeGroup>
+```typescript TypeScript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  baseURL: 'https://polza.ai/api/v1',
+  apiKey: '<POLZA_AI_API_KEY>'
+});
+
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    {
+      role: 'user',
+      content: 'Извлеки информацию о товаре: iPhone 15 Pro, 256GB, цена 89990 рублей, в наличии'
+    }
+  ],
+  response_format: {
+    type: 'json_schema',
+    json_schema: {
+      name: 'product',
+      strict: true,
+      schema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string', description: 'Название товара' },
+          storage: { type: 'string', description: 'Объём памяти' },
+          price: { type: 'number', description: 'Цена в рублях' },
+          in_stock: { type: 'boolean', description: 'Наличие на складе' }
+        },
+        required: ['name', 'storage', 'price', 'in_stock'],
+        additionalProperties: false
+      }
+    }
+  }
+});
+
+const product = JSON.parse(completion.choices[0].message.content);
+console.log(product);
+// { name: "iPhone 15 Pro", storage: "256GB", price: 89990, in_stock: true }
+```
+
+```python Python
+from openai import OpenAI
+import json
+
+client = OpenAI(
+    base_url="https://polza.ai/api/v1",
+    api_key="<POLZA_AI_API_KEY>"
+)
+
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {
+            "role": "user",
+            "content": "Извлеки информацию о товаре: iPhone 15 Pro, 256GB, цена 89990 рублей, в наличии"
+        }
+    ],
+    response_format={
+        "type": "json_schema",
+        "json_schema": {
+            "name": "product",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "description": "Название товара"},
+                    "storage": {"type": "string", "description": "Объём памяти"},
+                    "price": {"type": "number", "description": "Цена в рублях"},
+                    "in_stock": {"type": "boolean", "description": "Наличие на складе"}
+                },
+                "required": ["name", "storage", "price", "in_stock"],
+                "additionalProperties": False
+            }
+        }
+    }
+)
+
+product = json.loads(completion.choices[0].message.content)
+print(product)
+# {'name': 'iPhone 15 Pro', 'storage': '256GB', 'price': 89990, 'in_stock': True}
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [
+      {"role": "user", "content": "Извлеки информацию о товаре: iPhone 15 Pro, 256GB, цена 89990 рублей, в наличии"}
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "product",
+        "strict": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "storage": {"type": "string"},
+            "price": {"type": "number"},
+            "in_stock": {"type": "boolean"}
+          },
+          "required": ["name", "storage", "price", "in_stock"],
+          "additionalProperties": false
+        }
+      }
+    }
+  }'
+```
+</CodeGroup>
+
+### 2. json_object (простой JSON)
+
+Для простых случаев, когда схема не критична:
+
+<CodeGroup>
+```typescript TypeScript
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    {
+      role: 'system',
+      content: 'Всегда отвечай в формате JSON с полями: name, price, currency'
+    },
+    { role: 'user', content: 'Цена на MacBook Air?' }
+  ],
+  response_format: { type: 'json_object' }
+});
+```
+
+```python Python
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {
+            "role": "system",
+            "content": "Всегда отвечай в формате JSON с полями: name, price, currency"
+        },
+        {"role": "user", "content": "Цена на MacBook Air?"}
+    ],
+    response_format={"type": "json_object"}
+)
+```
+</CodeGroup>
+
+## Примеры схем
+
+### Извлечение контактов
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": { "type": "string" },
+    "email": { "type": "string", "format": "email" },
+    "phone": { "type": "string" },
+    "company": { "type": "string" }
+  },
+  "required": ["name"]
+}
+```
+
+### Анализ отзыва
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "sentiment": {
+      "type": "string",
+      "enum": ["positive", "negative", "neutral"]
+    },
+    "score": { "type": "number", "minimum": 1, "maximum": 5 },
+    "topics": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "summary": { "type": "string" }
+  },
+  "required": ["sentiment", "score", "summary"]
+}
+```
+
+### Список задач
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+          "due_date": { "type": "string", "format": "date" }
+        },
+        "required": ["title", "priority"]
+      }
+    }
+  },
+  "required": ["tasks"]
+}
+```
+
+## Параметр strict
+
+| Значение | Описание |
+|----------|----------|
+| `true` | Ответ **точно** соответствует схеме. Рекомендуется. |
+| `false` | Модель может отклоняться от схемы. Не рекомендуется. |
+
+<Note>
+При `strict: true` модель гарантированно вернёт JSON, соответствующий схеме, или ошибку.
+</Note>
+
+## Обработка массивов
+
+Для извлечения списка объектов:
+
+<CodeGroup>
+```typescript TypeScript
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    {
+      role: 'user',
+      content: 'Извлеки все упомянутые компании: Apple выпустила iPhone, Google показала Pixel, Microsoft представила Surface'
+    }
+  ],
+  response_format: {
+    type: 'json_schema',
+    json_schema: {
+      name: 'companies',
+      strict: true,
+      schema: {
+        type: 'object',
+        properties: {
+          items: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                company: { type: 'string' },
+                product: { type: 'string' }
+              },
+              required: ['company', 'product'],
+              additionalProperties: false
+            }
+          }
+        },
+        required: ['items'],
+        additionalProperties: false
+      }
+    }
+  }
+});
+```
+
+```python Python
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {
+            "role": "user",
+            "content": "Извлеки все упомянутые компании: Apple выпустила iPhone, Google показала Pixel, Microsoft представила Surface"
+        }
+    ],
+    response_format={
+        "type": "json_schema",
+        "json_schema": {
+            "name": "companies",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "company": {"type": "string"},
+                                "product": {"type": "string"}
+                            },
+                            "required": ["company", "product"],
+                            "additionalProperties": False
+                        }
+                    }
+                },
+                "required": ["items"],
+                "additionalProperties": False
+            }
+        }
+    }
+)
+```
+</CodeGroup>
+
+## Советы и лучшие практики
+
+<AccordionGroup>
+  <Accordion title="Всегда используйте strict: true" icon="lock">
+    Это гарантирует соответствие ответа схеме и предотвращает ошибки парсинга.
+  </Accordion>
+
+  <Accordion title="Добавляйте описания полей" icon="pen">
+    Описания помогают модели лучше понять, что ожидается в каждом поле.
+  </Accordion>
+
+  <Accordion title="Используйте enum для ограниченных значений" icon="list">
+    Если поле должно содержать одно из нескольких значений, используйте enum.
+  </Accordion>
+
+  <Accordion title="Ограничивайте additionalProperties" icon="ban">
+    Установите `additionalProperties: false` чтобы модель не добавляла лишние поля.
+  </Accordion>
+
+  <Accordion title="Оборачивайте массивы в объект" icon="box">
+    Вместо `type: "array"` на верхнем уровне, используйте объект с полем-массивом.
+  </Accordion>
+</AccordionGroup>
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Tool Calling" icon="wrench" href="/gaidy/tool-calling">
+    Вызов функций для получения данных
+  </Card>
+  <Card title="Плагины" icon="plug" href="/gaidy/plugins">
+    Расширение возможностей моделей
+  </Card>
+</CardGroup>

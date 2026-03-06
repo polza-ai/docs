@@ -1,0 +1,85 @@
+﻿---
+title: POST Responses
+description: Responses API — альтернативный формат запросов
+icon: reply
+openapi: POST /v1/responses
+---
+
+## О Responses API
+
+<Warning>
+Responses API находится в **бета-версии**. API может измениться без предварительного уведомления.
+</Warning>
+
+Responses API — альтернативный формат, совместимый с OpenAI Responses API.
+Автоматически трансформируется в Chat Completions формат внутри.
+
+## Основные параметры
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `model` | string | ID модели |
+| `input` | string / array | Текст или массив сообщений |
+| `instructions` | string | Системные инструкции |
+| `stream` | boolean | Потоковая передача через SSE |
+
+### Дополнительные параметры
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `tools` | array | Определения инструментов |
+| `tool_choice` | string/object | Выбор инструмента: none, auto, required |
+| `reasoning` | object | Настройки reasoning (effort: xhigh/high/medium/low/minimal/none) |
+| `max_output_tokens` | integer | Максимум выходных токенов |
+| `temperature` | float (0-2) | Температура генерации |
+| `top_p` | float (0-1) | Nucleus sampling |
+| `top_logprobs` | integer (0-20) | Количество log probabilities |
+| `previous_response_id` | string | ID предыдущего ответа для продолжения |
+| `models` | array | Массив fallback-моделей |
+| `text` | object | Формат текста: text, json_object, json_schema |
+| `metadata` | object | Произвольные key-value данные |
+
+## Примеры
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/responses" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "input": "Расскажи о квантовых компьютерах"
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/responses',
+    headers={'Authorization': 'Bearer YOUR_API_KEY'},
+    json={
+        'model': 'openai/gpt-4o',
+        'input': [
+            {"role": "user", "content": "Привет!"}
+        ],
+        'instructions': 'Отвечай кратко и по делу'
+    }
+)
+
+data = response.json()
+print(data['output'][0]['content'][0]['text'])
+```
+</CodeGroup>
+
+## Streaming
+
+При `stream: true` ответ приходит в формате SSE с типами событий:
+
+| Событие | Описание |
+|---------|----------|
+| `response.created` | Ответ создан |
+| `response.output_item.added` | Новый элемент вывода |
+| `response.content_part.delta` | Инкрементальный контент |
+| `response.content_part.done` | Часть контента завершена |
+| `response.done` | Ответ завершён |

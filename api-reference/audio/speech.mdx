@@ -1,0 +1,170 @@
+﻿---
+title: POST Audio Speech
+description: Синтез речи из текста (Text-to-Speech)
+icon: volume-high
+openapi: POST /v1/audio/speech
+---
+
+<Info>
+Этот эндпоинт совместим с OpenAI SDK и подходит для быстрой миграции существующего кода.
+Если вы разрабатываете новый софт — рекомендуем использовать [Media API](/api-reference/media/create), который предоставляет единый интерфейс для всех медиа-операций.
+</Info>
+
+## Доступные модели
+
+| Модель | ID | Описание |
+|--------|-----|----------|
+| TTS | `openai/tts-1` | OpenAI-совместимая модель (по умолчанию) |
+| TTS HD | `openai/tts-1-hd` | Высокое качество |
+| GPT-4o Mini TTS | `openai/gpt-4o-mini-tts` | Поддержка голосовых инструкций |
+
+## Доступные голоса
+
+**OpenAI:** alloy, ash, ballad, coral, echo, fable, onyx, nova, sage, shimmer, verse
+
+**ElevenLabs:** Rachel, Aria, Roger, Sarah, Laura, Charlie, George, Callum, River, Liam, Charlotte, Alice, Matilda, Will, Jessica, Eric, Chris, Brian, Daniel, Lily, Bill
+
+## Параметры запроса
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `model` | string | Нет | Модель TTS (по умолчанию openai/tts-1) |
+| `input` | string | Да | Текст для озвучки (макс. 5000 символов) |
+| `voice` | string | Да | Имя голоса |
+| `response_format` | string | Нет | Формат: mp3, opus, aac, flac, wav, pcm (по умолчанию mp3) |
+| `speed` | number | Нет | Скорость речи (0.25-4.0, по умолчанию 1.0) |
+| `instructions` | string | Нет | Инструкции для голоса (макс. 4096, только openai/gpt-4o-mini-tts) |
+| `user` | string | Нет | Идентификатор конечного пользователя |
+
+### Параметры ElevenLabs
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `stability` | number (0-1) | Стабильность голоса (меньше = экспрессивнее) |
+| `similarity_boost` | number (0-1) | Схожесть с оригинальным голосом |
+| `style` | number (0-1) | Эмоциональность |
+| `timestamps` | boolean | Временные метки слов |
+| `previous_text` | string | Текст перед текущим фрагментом (контекст) |
+| `next_text` | string | Текст после текущего фрагмента (контекст) |
+| `language_code` | string | Код языка (для ElevenLabs Turbo v2.5) |
+
+## Примеры
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/audio/speech" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/tts-1",
+    "input": "Привет! Это Polza.AI!",
+    "voice": "alloy"
+  }'
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/audio/speech',
+    headers={'Authorization': 'Bearer YOUR_API_KEY'},
+    json={
+        'model': 'openai/tts-1',
+        'input': 'Привет! Это тестовое сообщение.',
+        'voice': 'alloy'
+    }
+)
+
+data = response.json()
+print(f"Аудио: {data['audio']}")
+print(f"Длительность: {data.get('duration')} сек")
+```
+
+```javascript JavaScript
+const response = await fetch('https://polza.ai/api/v1/audio/speech', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'openai/tts-1',
+    input: 'Hello! This is a test message.',
+    voice: 'nova'
+  })
+});
+
+const data = await response.json();
+console.log(data.audio);
+```
+</CodeGroup>
+
+## Ответ (200)
+
+```json
+{
+  "audio": "https://cdn.polza.ai/audio/9a0127a1.mp3",
+  "contentType": "audio/mpeg",
+  "model": "openai/tts-1",
+  "duration": 3.5,
+  "usage": {
+    "characters": 25,
+    "cost_rub": 0.50,
+    "cost": 0.50
+  }
+}
+```
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `audio` | string | URL или base64 аудио |
+| `contentType` | string | MIME-тип (например, audio/mpeg) |
+| `model` | string | Использованная модель |
+| `duration` | number | Длительность в секундах |
+| `usage` | object | Использование: characters, cost_rub, cost |
+| `alignment` | object | Временные метки слов (при timestamps: true) |
+
+---
+
+## Генерация звуковых эффектов
+
+Также доступна генерация звуков по текстовому описанию через тот же эндпоинт.
+
+### Параметры
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `model` | string | Да | `elevenlabs/sound-effect-v2` |
+| `input` | string | Да | Описание звука на английском |
+| `duration_seconds` | number | Нет | Длительность (0.5-10 сек) |
+| `loop` | boolean | Нет | Зацикленность |
+| `output_format` | string | Нет | Формат аудио |
+| `prompt_influence` | number | Нет | Влияние промпта |
+
+### Форматы вывода
+
+- `mp3_22050_32` — MP3 22050Hz 32kbps
+- `mp3_44100_32` — MP3 44100Hz 32kbps
+- `mp3_44100_64` — MP3 44100Hz 64kbps
+- `mp3_44100_128` — MP3 44100Hz 128kbps (рекомендуется)
+- `mp3_44100_192` — MP3 44100Hz 192kbps
+
+### Пример
+
+```bash
+curl -X POST "https://polza.ai/api/v1/audio/speech" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "elevenlabs/sound-effect-v2",
+    "input": "sound of guitar strumming",
+    "duration_seconds": 2.5,
+    "loop": false,
+    "output_format": "mp3_44100_128",
+    "prompt_influence": 0.3
+  }'
+```
+
+<Note>
+Описание звуковых эффектов должно быть на английском языке.
+</Note>

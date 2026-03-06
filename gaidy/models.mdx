@@ -1,0 +1,223 @@
+﻿---
+title: Получение списка моделей
+description: Как получить и фильтровать список доступных AI моделей через API
+icon: microchip
+---
+
+<Note>
+Актуальный список всех моделей с ценами и возможностями доступен на [polza.ai/models](https://polza.ai/models).
+</Note>
+
+В этом гайде вы узнаете как получить список моделей программно через API, фильтровать их по типу и получать детальную информацию о ценах и возможностях.
+
+<Note>
+Полная документация endpoint доступна в [API Reference](/api-reference/models/list).
+</Note>
+
+## Endpoint
+
+```
+GET https://polza.ai/api/v1/models
+```
+
+Возвращает список всех доступных AI моделей с информацией о типе, возможностях и ценах.
+
+## Параметры запроса
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `type` | string | Нет | Фильтр по типу модели |
+| `include_providers` | boolean | Нет | Включить детальную информацию о провайдерах |
+
+### Значения параметра type
+
+| Значение | Описание |
+|----------|----------|
+| `chat` | Текстовые модели для чата (GPT-4o, Claude, Gemini и др.) |
+| `image` | Модели генерации изображений (DALL-E, Flux и др.) |
+| `embedding` | Модели для создания эмбеддингов (text-embedding-3 и др.) |
+| `audio` | Модели для работы с аудио |
+| `video` | Модели генерации видео |
+| `tts` | Модели синтеза речи (Text-to-Speech) |
+| `stt` | Модели распознавания речи (Speech-to-Text) |
+
+## Примеры запросов
+
+<CodeGroup>
+```typescript TypeScript
+// Все модели
+const response = await fetch('https://polza.ai/api/v1/models', {
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>'
+  }
+});
+const data = await response.json();
+console.log(`Найдено ${data.data.length} моделей`);
+
+// Только чат-модели
+const chatModels = await fetch('https://polza.ai/api/v1/models?type=chat', {
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>'
+  }
+});
+
+// С информацией о провайдерах
+const detailed = await fetch('https://polza.ai/api/v1/models?type=chat&include_providers=true', {
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>'
+  }
+});
+```
+
+```python Python
+import requests
+
+headers = {'Authorization': 'Bearer <POLZA_AI_API_KEY>'}
+
+# Все модели
+response = requests.get(
+    'https://polza.ai/api/v1/models',
+    headers=headers
+)
+data = response.json()
+print(f"Найдено {len(data['data'])} моделей")
+
+# Только чат-модели
+chat_models = requests.get(
+    'https://polza.ai/api/v1/models',
+    params={'type': 'chat'},
+    headers=headers
+)
+
+# С информацией о провайдерах
+detailed = requests.get(
+    'https://polza.ai/api/v1/models',
+    params={'type': 'chat', 'include_providers': 'true'},
+    headers=headers
+)
+```
+
+```bash cURL
+# Все модели
+curl "https://polza.ai/api/v1/models" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>"
+
+# Только чат-модели
+curl "https://polza.ai/api/v1/models?type=chat" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>"
+
+# С информацией о провайдерах
+curl "https://polza.ai/api/v1/models?type=chat&include_providers=true" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>"
+```
+</CodeGroup>
+
+## Структура ответа
+
+```json
+{
+  "data": [
+    {
+      "id": "openai/gpt-4o",
+      "name": "GPT-4o",
+      "type": "chat",
+      "short_description": "Флагманская мультимодальная модель OpenAI",
+      "created": 1715367049,
+      "architecture": {
+        "modality": "text+image->text",
+        "input_modalities": ["text", "image"],
+        "output_modalities": ["text"],
+        "tokenizer": "o200k_base"
+      },
+      "top_provider": {
+        "is_moderated": true,
+        "context_length": 128000,
+        "max_completion_tokens": 16384,
+        "pricing": {
+          "prompt_per_million": "7.50",
+          "completion_per_million": "22.50",
+          "currency": "RUB"
+        },
+        "supported_parameters": ["temperature", "top_p", "frequency_penalty", "presence_penalty", "tools", "tool_choice", "response_format"],
+        "default_parameters": {
+          "temperature": 1.0,
+          "top_p": 1.0,
+          "frequency_penalty": 0
+        }
+      },
+      "endpoints": ["/api/v1/chat/completions"]
+    }
+  ]
+}
+```
+
+### Описание полей
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | string | Идентификатор модели для использования в API запросах |
+| `name` | string | Человекочитаемое название модели |
+| `type` | string | Тип модели: `chat`, `image`, `embedding`, `audio`, `video`, `tts`, `stt` |
+| `short_description` | string? | Краткое описание модели |
+| `created` | number | Unix timestamp создания модели |
+| `architecture` | object | Информация об архитектуре модели |
+| `top_provider` | object | Информация о лучшем доступном провайдере |
+| `endpoints` | array | Список endpoint'ов, поддерживающих эту модель |
+| `parameters` | object? | Параметры медиа-моделей (разрешения, форматы и др.) |
+| `operations` | array? | Доступные операции (для video/tts/stt моделей) |
+
+### Поля architecture
+
+| Поле | Описание |
+|------|----------|
+| `modality` | Строка вида `input->output` (например `text+image->text`) |
+| `input_modalities` | Массив поддерживаемых входных модальностей |
+| `output_modalities` | Массив поддерживаемых выходных модальностей |
+| `tokenizer` | Используемый токенизатор |
+
+### Поля top_provider
+
+| Поле | Описание |
+|------|----------|
+| `is_moderated` | Модерируется ли контент провайдером |
+| `context_length` | Максимальный размер контекста в токенах |
+| `max_completion_tokens` | Максимальное количество токенов в ответе |
+| `pricing` | Цены (см. ниже) |
+| `supported_parameters` | Список поддерживаемых параметров запроса |
+| `default_parameters` | Значения параметров по умолчанию |
+
+### Поля pricing
+
+Набор полей зависит от типа модели:
+
+| Поле | Описание |
+|------|----------|
+| `prompt_per_million` | Цена за промпт (RUB за 1М токенов) |
+| `completion_per_million` | Цена за completion (RUB за 1М токенов) |
+| `image_input_per_million` | Цена за входные изображения (RUB за 1М токенов) |
+| `audio_per_million` | Цена за аудио (RUB за 1М токенов) |
+| `per_request` | Цена за запрос (RUB) |
+| `stt_per_minute` | Цена за минуту распознавания речи (RUB) |
+| `tts_per_million_characters` | Цена за 1М символов синтеза речи (RUB) |
+| `video_per_second` | Цена за секунду видео (RUB) |
+| `internal_reasoning_per_million` | Цена за reasoning токены (RUB за 1М) |
+| `input_cache_read_per_million` | Цена за чтение из кэша (RUB за 1М токенов) |
+| `input_cache_write_per_million` | Цена за запись в кэш (RUB за 1М токенов) |
+| `currency` | Валюта (всегда `RUB`) |
+
+## Использование ID модели
+
+ID модели из ответа используется в параметре `model` при отправке запросов:
+
+```typescript
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',  // ID модели из /models
+  messages: [...]
+});
+```
+
+## Следующие шаги
+
+<Card title="Текстовые запросы" icon="comments" href="/gaidy/chat-completions">
+  Научитесь отправлять запросы к текстовым моделям
+</Card>

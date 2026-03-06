@@ -1,0 +1,49 @@
+---
+title: Flux-2 Pro
+description: Генерация изображений с моделью Flux-2 Pro
+icon: wand-magic-sparkles
+---
+
+Модель генерации изображений Flux-2 Pro. Промпт до 5000 символов, разрешения 1K и 2K, до 8 изображений за запрос.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `black-forest-labs/flux.2-pro` |
+| Max prompt | 5000 символов |
+| aspect_ratio | 1:1, 4:3, 3:4, 16:9, 9:16, 3:2, 2:3 |
+| image_resolution | 1K, 2K |
+| images | 0–8 |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `black-forest-labs/flux.2-pro` |
+| `prompt` | Да | Текст, до 5000 символов |
+| `aspect_ratio` | Нет | Соотношение сторон. При image-to-image без указания — сохраняются пропорции исходного изображения |
+| `image_resolution` | Нет | 1K, 2K |
+| `images` | Нет | Референс-изображения, 0–8 |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "black-forest-labs/flux.2-pro",
+    "input": {
+      "prompt": "Описание изображения",
+      "aspect_ratio": "1:1",
+      "image_resolution": "2K",
+      "images": []
+    },
+    "async": true
+  }'
+```

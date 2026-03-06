@@ -1,0 +1,121 @@
+﻿---
+title: PyCharm / JetBrains
+description: Интеграция с PyCharm и другими IDE JetBrains
+icon: python
+---
+
+ProxyAI — плагин для JetBrains IDE с поддержкой чата и автодополнения кода.
+
+## Требования
+
+- PyCharm, IntelliJ IDEA, WebStorm или любая JetBrains IDE
+- Плагин ProxyAI
+- API-ключ [polza.ai](https://polza.ai/dashboard)
+
+## Установка ProxyAI
+
+<Steps>
+  <Step title="Откройте настройки плагинов">
+    Перейдите в **Settings / Preferences → Plugins** в вашей JetBrains IDE.
+  </Step>
+
+  <Step title="Найдите ProxyAI">
+    Введите `ProxyAI` в поиске вкладки Marketplace.
+
+    <Frame>
+      <img src="/images/pycharm/proxyai-install.png" alt="Установка ProxyAI из JetBrains Marketplace" />
+    </Frame>
+  </Step>
+
+  <Step title="Установите плагин">
+    Нажмите **Install** и перезапустите IDE.
+  </Step>
+
+  <Step title="Откройте ProxyAI">
+    Найдите окно **ProxyAI Chat** справа или через **Find Action** (`Cmd/Ctrl + Shift + A` → "ProxyAI Chat").
+
+    <Frame>
+      <img src="/images/pycharm/proxyai-toolwindow.png" alt="Расположение окна ProxyAI" />
+    </Frame>
+  </Step>
+</Steps>
+
+## Настройка подключения
+
+<Steps>
+  <Step title="Откройте настройки провайдера">
+    Перейдите в **ProxyAI → Providers → Custom OpenAI**.
+  </Step>
+
+  <Step title="Настройте подключение">
+    Заполните поля:
+    - **Preset template:** OpenAI
+    - **Custom provider name:** Polza.AI
+    - **API key:** Ваш ключ
+    - **Chat Completions URL:** `https://polza.ai/api/v1`
+    - **Code Completions URL:** `https://polza.ai/api/v1`
+  </Step>
+
+  <Step title="Настройте модель">
+    В разделе Body укажите модель и параметры:
+
+    ```json
+    {
+      "model": "anthropic/claude-3-5-sonnet",
+      "temperature": 0.3,
+      "max_tokens": 2048
+    }
+    ```
+  </Step>
+</Steps>
+
+## Рекомендуемые модели
+
+| Задача | Модель | ID |
+|--------|--------|-----|
+| Code Completion | Claude 3.5 Haiku | `anthropic/claude-3-5-haiku` |
+| Chat / Explain | Claude 3.5 Sonnet | `anthropic/claude-3-5-sonnet` |
+| Сложные задачи | Claude Opus 4 | `anthropic/claude-opus-4` |
+| Бюджетный вариант | DeepSeek V3 | `deepseek/deepseek-v3` |
+
+<Note>
+Для code completion рекомендуется использовать низкую temperature (0.1-0.3) для более предсказуемых результатов.
+</Note>
+
+## Возможности
+
+<CardGroup cols={2}>
+  <Card title="Автодополнение кода" icon="keyboard">
+    Умное автодополнение на основе контекста
+  </Card>
+  <Card title="Chat в IDE" icon="comments">
+    Общение с AI прямо в редакторе
+  </Card>
+  <Card title="Генерация кода" icon="wand-magic-sparkles">
+    Создание кода по описанию
+  </Card>
+  <Card title="Документация" icon="book">
+    Автоматическая генерация docstrings
+  </Card>
+</CardGroup>
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Ошибка аутентификации">
+    - Проверьте правильность API-ключа
+    - Убедитесь, что URL указан как `https://polza.ai/api/v1`
+    - Проверьте баланс в [консоли](https://polza.ai/dashboard)
+  </Accordion>
+
+  <Accordion title="Модель не найдена">
+    - Проверьте правильность ID модели
+    - Список моделей: [polza.ai/models](https://polza.ai/models)
+  </Accordion>
+
+  <Accordion title="Плагин не появляется">
+    - Перезапустите IDE после установки
+    - Откройте через Find Action: `Cmd/Ctrl + Shift + A` → "ProxyAI Chat"
+    - Проверьте что плагин включён в Settings → Plugins → Installed
+  </Accordion>
+</AccordionGroup>

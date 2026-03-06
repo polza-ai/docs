@@ -1,0 +1,58 @@
+﻿---
+title: Seedance 1.5 Pro
+description: Генерация видео с моделью Seedance 1.5 Pro от ByteDance
+icon: video
+---
+
+Модель генерации видео от ByteDance. Поддержка text-to-video и image-to-video, разрешения 480p–1080p, длительность 4–12 сек, опциональная генерация звука.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `bytedance/seedance-1.5-pro` |
+| Max prompt | 2 500 символов (3–2500) |
+| aspect_ratio | 1:1, 21:9, 4:3, 3:4, 16:9, 9:16 |
+| resolution | 480p, 720p, 1080p |
+| duration | 4, 8, 12 сек |
+| images | 0–2 |
+| fixed_lens | true / false (статичная камера) |
+| generate_audio | true / false |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `bytedance/seedance-1.5-pro` |
+| `prompt` | Да | Описание видео (3–2500 символов) |
+| `aspect_ratio` | Нет | 1:1, 21:9, 4:3, 3:4, 16:9, 9:16 |
+| `resolution` | Нет | 480p, 720p, 1080p |
+| `duration` | Нет | 4, 8, 12 |
+| `images` | Нет | 0–2 (референс) |
+| `fixed_lens` | Нет | Статичная камера. По умолчанию false |
+| `generate_audio` | Нет | Генерация звука. По умолчанию false |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "bytedance/seedance-1.5-pro",
+    "input": {
+      "prompt": "Описание видео (3-2500 символов)",
+      "aspect_ratio": "16:9",
+      "resolution": "720p",
+      "duration": "8",
+      "images": [],
+      "fixed_lens": "false",
+      "generate_audio": "false"
+    },
+    "async": true
+  }'
+```

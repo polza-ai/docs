@@ -1,0 +1,116 @@
+﻿---
+title: GET Models
+description: Получение списка доступных моделей
+icon: list
+openapi: GET /v1/models
+---
+
+<Note>
+Этот эндпоинт не требует аутентификации и доступен всем пользователям.
+</Note>
+
+## Параметры запроса
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `type` | string | Фильтр по типу: chat, image, embedding, video, audio |
+| `include_providers` | boolean | Включить массив провайдеров для каждой модели |
+
+## Примеры
+
+<CodeGroup>
+```bash Все модели
+curl "https://polza.ai/api/v1/models"
+```
+
+```bash Только чат-модели
+curl "https://polza.ai/api/v1/models?type=chat"
+```
+
+```bash С информацией о провайдерах
+curl "https://polza.ai/api/v1/models?type=chat&include_providers=true"
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://polza.ai/api/v1",
+    api_key="YOUR_API_KEY"
+)
+
+models = client.models.list()
+for model in models.data:
+    print(model.id)
+```
+</CodeGroup>
+
+## Поля модели
+
+### Основные
+
+| Поле | Описание |
+|------|----------|
+| `id` | Уникальный идентификатор для API |
+| `name` | Человекочитаемое название |
+| `context_length` | Максимальная длина контекста в токенах |
+| `created` | Unix timestamp создания |
+
+### Архитектура
+
+| Поле | Описание |
+|------|----------|
+| `input_modalities` | Поддерживаемые входные типы: text, image, audio, video |
+| `output_modalities` | Поддерживаемые выходные типы: text, image, audio |
+| `tokenizer` | Используемый токенизатор |
+| `instruct_type` | Тип инструкций |
+
+### Ценообразование (в рублях за токен)
+
+| Поле | Описание |
+|------|----------|
+| `prompt` | Входные токены |
+| `completion` | Выходные токены |
+| `image` | Обработка изображений |
+| `internal_reasoning` | Reasoning токены |
+| `input_cache_read` | Чтение из кеша |
+| `input_cache_write` | Запись в кеш |
+
+## Примеры фильтрации
+
+### Мультимодальные модели
+
+```python
+multimodal = [
+    m for m in models
+    if 'image' in m.get('architecture', {}).get('input_modalities', [])
+]
+```
+
+### Модели с большим контекстом
+
+```python
+large_context = [
+    m for m in models
+    if m.get('context_length', 0) > 100000
+]
+```
+
+### Модели конкретного провайдера
+
+```python
+anthropic = [m for m in models if m['id'].startswith('anthropic/')]
+google = [m for m in models if m['id'].startswith('google/')]
+meta = [m for m in models if m['id'].startswith('meta-llama/')]
+```
+
+## Использование ID моделей
+
+ID модели напрямую используется в запросах:
+
+```python
+response = client.chat.completions.create(
+    model="anthropic/claude-3-5-sonnet",
+    messages=[{"role": "user", "content": "Привет!"}]
+)
+```

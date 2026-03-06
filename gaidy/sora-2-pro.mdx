@@ -1,0 +1,52 @@
+---
+title: Sora 2 Pro
+description: Генерация видео с моделью Sora 2 Pro
+icon: video
+---
+
+Модель генерации видео Sora 2 Pro. Высокое качество: standard (720p) или high (1080p), длительность 10 или 15 сек.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `openai/sora-2-pro` |
+| Max prompt | 10 000 символов |
+| aspect_ratio | 9:16, 16:9 |
+| duration | 10, 15 сек. По умолчанию 10 |
+| images | 0–1 |
+| size | standard (720p), high (1080p). По умолчанию high |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `openai/sora-2-pro` |
+| `prompt` | Да | Текст, до 10000 символов |
+| `aspect_ratio` | Нет | 9:16, 16:9 |
+| `duration` | Нет | 10, 15. По умолчанию 10 |
+| `images` | Нет | 0–1 |
+| `size` | Нет | standard или high. По умолчанию high |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/sora-2-pro",
+    "input": {
+      "prompt": "Описание видео",
+      "aspect_ratio": "16:9",
+      "duration": "10",
+      "images": [],
+      "size": "high"
+    },
+    "async": true
+  }'
+```

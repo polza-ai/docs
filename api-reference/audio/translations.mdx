@@ -1,0 +1,57 @@
+﻿---
+title: POST Audio Translations
+description: Перевод аудио на английский язык
+icon: language
+openapi: POST /v1/audio/translations
+---
+
+## О переводе аудио
+
+Эндпоинт транскрибирует аудио на любом языке и переводит результат на английский.
+
+## Доступные модели
+
+| Модель | ID | Описание |
+|--------|-----|----------|
+| Whisper 1 | `openai/whisper-1` | Классическая модель OpenAI (по умолчанию) |
+| GPT-4o Transcribe | `openai/gpt-4o-transcribe` | Улучшенная версия |
+
+## Параметры запроса
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `file` | string | Да | Аудиофайл в формате base64 или URL |
+| `model` | string | Нет | Модель перевода (по умолчанию openai/whisper-1) |
+| `temperature` | number | Нет | Температура (0-1) |
+| `response_format` | string | Нет | Формат ответа: json, text, srt, vtt, verbose_json |
+| `prompt` | string | Нет | Подсказка для модели |
+| `stream` | boolean | Нет | Потоковый режим |
+| `user` | string | Нет | Идентификатор конечного пользователя |
+
+## Поддерживаемые форматы
+
+MP3, WAV, M4A, FLAC, OGG, WebM
+
+## Пример
+
+```bash
+curl -X POST "https://polza.ai/api/v1/audio/translations" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/whisper-1",
+    "file": "BASE64_ENCODED_AUDIO"
+  }'
+```
+
+## Ответ (200)
+
+```json
+{
+  "text": "Hello, this is a test recording for checking transcription."
+}
+```
+
+<Note>
+В отличие от [Audio Transcriptions](/api-reference/audio/transcriptions), этот эндпоинт всегда возвращает текст на английском языке, независимо от языка исходного аудио.
+</Note>

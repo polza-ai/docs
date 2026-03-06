@@ -1,0 +1,299 @@
+﻿---
+title: POST Chat Completions
+description: Основной эндпоинт для генерации текста и диалогов
+openapi: POST /v1/chat/completions
+icon: message
+---
+
+Поддерживает текстовые диалоги, мультимодальные запросы (текст + изображения + аудио + видео + файлы), вызов функций и потоковую передачу.
+
+## Возможности
+
+- **Агрегация провайдеров** — автоматический выбор оптимального провайдера
+- **Биллинг в рублях** — точный учет стоимости
+- **Reasoning Tokens** — поддержка моделей с рассуждениями
+- **Streaming** — потоковая передача через SSE
+- **Tool Calling** — вызов внешних функций
+- **Мультимодальность** — обработка текста, изображений, аудио, видео и файлов
+
+## Параметры запроса
+
+### Обязательные
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `model` | string | ID модели из [списка моделей](/api-reference/models/list) |
+
+### Контент
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `messages` | array | Массив сообщений диалога (рекомендуется) |
+| `prompt` | string | Простой текстовый промпт (альтернатива messages) |
+
+### Параметры генерации
+
+| Параметр | Тип | По умолчанию | Описание |
+|----------|-----|--------------|----------|
+| `max_tokens` | integer | Без лимита | Максимум токенов в ответе |
+| `max_completion_tokens` | integer | Без лимита | Альтернатива max_tokens |
+| `temperature` | float (0-2) | 1.0 | Температура (0=детерминированный, 2=креативный) |
+| `top_p` | float (0-1) | 1.0 | Nucleus sampling |
+| `top_k` | integer | — | Top-K sampling |
+| `frequency_penalty` | float (-2..2) | 0 | Штраф за повторение слов |
+| `presence_penalty` | float (-2..2) | 0 | Штраф за повторение токенов |
+| `stop` | string/array | — | Стоп-последовательности |
+| `seed` | integer | — | Seed для воспроизводимости |
+
+### Специальные возможности
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `stream` | boolean | Включить streaming (SSE) |
+| `reasoning` | object | Настройки reasoning tokens |
+| `tools` | array | Доступные функции для вызова |
+| `tool_choice` | string/object | Выбор инструмента: "none", "auto", "required" |
+| `response_format` | object | Формат ответа: text, json_object, json_schema, grammar |
+| `web_search_options` | object | Встроенный веб-поиск |
+| `provider` | object | Конфигурация роутинга по провайдерам |
+| `plugins` | array | Подключение плагинов |
+| `modalities` | array | Выходные модальности: "text", "image", "audio" |
+| `audio` | object | Конфигурация аудио-вывода (voice, format) |
+| `user` | string | Идентификатор конечного пользователя |
+
+## Структура сообщений
+
+### Базовый формат
+
+```json
+{
+  "role": "user|assistant|system|developer|tool",
+  "content": "Текст сообщения"
+}
+```
+
+### Мультимодальные сообщения
+
+```json
+{
+  "role": "user",
+  "content": [
+    {"type": "text", "text": "Что на этом изображении?"},
+    {"type": "image_url", "image_url": {"url": "https://example.com/image.jpg"}}
+  ]
+}
+```
+
+### Другие типы контента
+
+```json
+// Аудио вход
+{"type": "input_audio", "input_audio": {"data": "base64...", "format": "mp3"}}
+
+// Видео вход
+{"type": "video_url", "video_url": {"url": "https://example.com/video.mp4"}}
+
+// Файл
+{"type": "file", "file": {"filename": "doc.pdf", "file_data": "data:application/pdf;base64,..."}}
+```
+
+### Системные сообщения с кешированием
+
+```json
+{
+  "role": "system",
+  "content": [
+    {
+      "type": "text",
+      "text": "Длинная системная инструкция...",
+      "cache_control": {"type": "ephemeral"}
+    }
+  ]
+}
+```
+
+## Примеры
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [{"role": "user", "content": "Привет!"}]
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://polza.ai/api/v1",
+    api_key="YOUR_API_KEY"
+)
+
+response = client.chat.completions.create(
+    model="anthropic/claude-sonnet-4-5-20250929",
+    messages=[{"role": "user", "content": "Объясни квантовую механику"}]
+)
+
+print(response.choices[0].message.content)
+print(f"Стоимость: {response.usage.cost_rub} руб.")
+```
+
+```typescript TypeScript
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+    baseURL: 'https://polza.ai/api/v1',
+    apiKey: 'YOUR_API_KEY'
+});
+
+const response = await client.chat.completions.create({
+    model: 'openai/gpt-4o',
+    messages: [{role: 'user', content: 'Напиши историю'}],
+    stream: true
+});
+
+for await (const chunk of response) {
+    process.stdout.write(chunk.choices[0]?.delta?.content || '');
+}
+```
+</CodeGroup>
+
+## Ответ
+
+### Успешный ответ (200)
+
+```json
+{
+  "id": "gen_581761234567890123",
+  "object": "chat.completion",
+  "created": 1677652288,
+  "model": "openai/gpt-4o",
+  "provider": "OpenAI",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Текст ответа"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 25,
+    "completion_tokens": 150,
+    "total_tokens": 175,
+    "cost_rub": 0.04131306,
+    "cost": 0.04131306,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  }
+}
+```
+
+### Streaming (SSE)
+
+При `stream: true` ответ приходит в формате Server-Sent Events:
+
+```
+data: {"id":"gen_123","object":"chat.completion.chunk","created":1703001234,"model":"openai/gpt-4o","choices":[{"index":0,"delta":{"role":"assistant","content":"Привет"}}]}
+
+data: {"id":"gen_123","object":"chat.completion.chunk","created":1703001234,"model":"openai/gpt-4o","choices":[{"index":0,"delta":{"content":" мир"}}]}
+
+data: {"id":"gen_123","object":"chat.completion.chunk","created":1703001234,"model":"openai/gpt-4o","choices":[],"usage":{"prompt_tokens":10,"completion_tokens":20,"total_tokens":30,"cost_rub":0.015,"cost":0.015}}
+
+data: [DONE]
+```
+
+## Tool Calling
+
+### Определение функций
+
+```json
+{
+  "tools": [{
+    "type": "function",
+    "function": {
+      "name": "get_weather",
+      "description": "Получить текущую погоду",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {"type": "string"}
+        },
+        "required": ["city"]
+      }
+    }
+  }],
+  "tool_choice": "auto"
+}
+```
+
+### Ответ модели с вызовом функции
+
+```json
+{
+  "tool_calls": [{
+    "id": "call_123",
+    "function": {"name": "get_weather", "arguments": "{\"city\": \"Москва\"}"}
+  }]
+}
+```
+
+## Response Format
+
+### JSON Schema (структурированный вывод)
+
+```json
+{
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "my_schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": {"type": "string"},
+          "confidence": {"type": "number"}
+        }
+      },
+      "strict": true
+    }
+  }
+}
+```
+
+Поддерживаемые типы: `text`, `json_object`, `json_schema`, `grammar` (GBNF).
+
+## Reasoning Tokens
+
+Для моделей с рассуждениями (o1, o3, DeepSeek-R1 и другие):
+
+```json
+{
+  "model": "openai/o1-preview",
+  "messages": [{"role": "user", "content": "Реши: 2x + 5 = 13"}],
+  "reasoning": {
+    "effort": "high",
+    "max_tokens": 1000
+  }
+}
+```
+
+### Параметры reasoning
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `effort` | string | Уровень усилий: xhigh, high, medium, low, minimal, none |
+| `max_tokens` | integer | Максимум токенов на рассуждения |
+| `summary` | string | Детализация: auto, concise, detailed |
+| `enabled` | boolean | Включить/выключить рассуждения |
+| `exclude` | boolean | Скрыть рассуждения из ответа |

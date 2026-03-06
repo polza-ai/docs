@@ -1,0 +1,66 @@
+﻿---
+title: Список файлов
+description: Получение списка файлов с фильтрацией и пагинацией
+icon: list
+openapi: GET /v1/storage/files
+---
+
+## Параметры запроса
+
+### Пагинация
+
+| Параметр | Тип | По умолчанию | Описание |
+|----------|-----|--------------|----------|
+| `page` | integer | 1 | Номер страницы (от 1) |
+| `limit` | integer | 20 | Количество записей на странице (1-100) |
+
+### Фильтрация
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `fileType` | string | Тип файла: IMAGE, VIDEO, AUDIO |
+| `source` | string | Источник: USER_UPLOAD, AI_GENERATION |
+| `storagePolicy` | string | Политика: TEMP_UPLOAD, TEMP_GENERATION, PERMANENT |
+| `externalUserId` | string | ID внешнего пользователя (макс. 128 символов) |
+
+### Сортировка
+
+| Параметр | Тип | По умолчанию | Описание |
+|----------|-----|--------------|----------|
+| `sortBy` | string | createdAt | Поле: createdAt, size, expiresAt, externalUserId |
+| `sortOrder` | string | desc | Направление: asc, desc |
+
+## Пример
+
+```bash
+curl "https://polza.ai/api/v1/storage/files?fileType=IMAGE&page=1&limit=10&sortBy=createdAt&sortOrder=desc" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Ответ (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "file_abc123",
+      "fileType": "IMAGE",
+      "mimeType": "image/png",
+      "source": "USER_UPLOAD",
+      "storagePolicy": "PERMANENT",
+      "url": "https://cdn.polza.ai/files/file_abc123.png",
+      "size": 245760,
+      "externalUserId": null,
+      "expiresAt": null,
+      "createdAt": "2025-01-15T10:30:00Z",
+      "updatedAt": "2025-01-15T10:30:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 10,
+    "total": 42,
+    "totalPages": 5
+  }
+}
+```

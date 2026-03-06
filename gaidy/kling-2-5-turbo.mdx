@@ -1,0 +1,56 @@
+﻿---
+title: Kling 2.5 Turbo
+description: Генерация видео с моделью Kling 2.5 Turbo
+icon: video
+---
+
+Модель генерации видео Kling 2.5 Turbo. Длительность 5 или 10 сек, поддержка image-to-video с tail_image_url, cfg_scale и negative_prompt.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `kling/v2.5-turbo` |
+| aspect_ratio | 16:9, 9:16, 1:1 |
+| duration | 5, 10 сек. По умолчанию 5 |
+| images | 0–1 |
+| cfg_scale | 0–1 |
+| tail_image_url | URL изображения для конца видео (image-to-video) |
+| negative_prompt | Элементы, которых избегать |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `kling/v2.5-turbo` |
+| `prompt` | Да | Текстовое описание |
+| `aspect_ratio` | Нет | 16:9, 9:16, 1:1 |
+| `duration` | Нет | 5, 10. По умолчанию 5 |
+| `images` | Нет | 0–1 |
+| `cfg_scale` | Нет | 0–1 |
+| `tail_image_url` | Нет | URL изображения для конца видео |
+| `negative_prompt` | Нет | Что исключить из видео |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "kling/v2.5-turbo",
+    "input": {
+      "prompt": "Описание видео",
+      "aspect_ratio": "16:9",
+      "duration": "5",
+      "images": [],
+      "cfg_scale": 0.7,
+      "negative_prompt": ""
+    },
+    "async": true
+  }'
+```

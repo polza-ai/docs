@@ -1,0 +1,51 @@
+﻿---
+title: Seedream 3.0
+description: Генерация изображений с моделью Seedream 3.0 от ByteDance
+icon: sparkles
+---
+
+Модель генерации изображений Seedream 3.0 от ByteDance. Поддержка aspect_ratio, seed, guidance_scale, enable_safety_checker.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `bytedance/seedream` |
+| aspect_ratio | 1:1, 4:3, 3:4, 16:9, 9:16 |
+| seed | 1–4294967295 |
+| guidance_scale | 0–20, по умолчанию 2.5 |
+| enable_safety_checker | true, false. По умолчанию true |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `bytedance/seedream` |
+| `prompt` | Да | Текстовое описание |
+| `aspect_ratio` | Нет | 1:1, 4:3, 3:4, 16:9, 9:16 |
+| `seed` | Нет | 1–4294967295 |
+| `guidance_scale` | Нет | 0–20, по умолчанию 2.5 |
+| `enable_safety_checker` | Нет | true/false, по умолчанию true |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "bytedance/seedream",
+    "input": {
+      "prompt": "Описание изображения",
+      "aspect_ratio": "1:1",
+      "seed": 12345,
+      "guidance_scale": 2.5,
+      "enable_safety_checker": "true"
+    },
+    "async": true
+  }'
+```

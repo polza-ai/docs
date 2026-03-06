@@ -1,0 +1,94 @@
+﻿---
+title: Быстрый старт
+description: Начните работу за несколько минут
+icon: rocket
+---
+
+## Шаг 1: Получите API ключ
+
+1. Зарегистрируйтесь на [polza.ai/dashboard](https://polza.ai/dashboard)
+2. Пополните баланс в личном кабинете
+3. Создайте API-ключ в разделе [API Keys](https://polza.ai/dashboard/api-keys)
+
+## Шаг 2: Используйте API
+
+<CodeGroup>
+```typescript TypeScript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  baseURL: 'https://polza.ai/api/v1',
+  apiKey: '<POLZA_AI_API_KEY>'
+});
+
+async function main() {
+  const completion = await openai.chat.completions.create({
+    model: 'openai/gpt-4o',
+    messages: [{
+      role: 'user',
+      content: 'Что думаешь об этой жизни?',
+    }],
+  });
+  console.log(completion.choices[0].message);
+}
+
+main();
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+  base_url="https://polza.ai/api/v1",
+  api_key="<POLZA_AI_API_KEY>",
+)
+
+completion = client.chat.completions.create(
+  model="openai/gpt-4o",
+  messages=[{
+    "role": "user",
+    "content": "Что думаешь об этой жизни?"
+  }]
+)
+
+print(completion.choices[0].message.content)
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [{"role": "user", "content": "Привет!"}]
+  }'
+```
+</CodeGroup>
+
+## Шаг 3: Выберите модель
+
+Полный каталог моделей доступен на [polza.ai/models](https://polza.ai/models) или через API:
+
+```bash
+curl https://polza.ai/api/v1/models
+```
+
+### Популярные модели
+
+| Модель | ID | Описание |
+|--------|-----|----------|
+| GPT-4o | `openai/gpt-4o` | Флагманская модель OpenAI |
+| Claude 3.5 Sonnet | `anthropic/claude-3-5-sonnet` | Лучшая модель Anthropic |
+| Gemini 2.5 Pro | `google/gemini-2.5-pro-preview` | Продвинутая модель Google |
+| Llama 3.3 70B | `meta-llama/llama-3.3-70b` | Open-source модель Meta |
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="API Справочник" icon="code" href="/api-reference/chat/completions">
+    Изучите полную документацию API
+  </Card>
+  <Card title="Интеграции" icon="plug" href="/integracii/cline">
+    Подключите к вашим инструментам
+  </Card>
+</CardGroup>

@@ -1,0 +1,96 @@
+﻿---
+title: POST Media Operations
+description: Выполнение операций над существующими медиа (extend, upscale)
+icon: wand-magic-sparkles
+openapi: POST /v1/media/{id}/operations
+---
+
+## Операции над медиа
+
+После генерации медиа контента можно выполнять дополнительные операции:
+
+| Операция | Описание | Тип |
+|----------|----------|-----|
+| `extend` | Продление видео | Асинхронная |
+| `upscale_1080p` | Увеличение разрешения до 1080p | Синхронная |
+| `upscale_4k` | Увеличение разрешения до 4K | Синхронная |
+
+## Синхронные vs Асинхронные операции
+
+### Синхронные операции (upscale)
+
+Результат возвращается сразу в поле `data`:
+
+```json
+{
+  "id": "aig_abc123",
+  "object": "media.generation",
+  "status": "completed",
+  "created": 1703001244,
+  "model": "google/gemini-2.5-flash-image",
+  "data": {
+    "url": "https://storage.polza.ai/video_1080p.mp4"
+  }
+}
+```
+
+### Асинхронные операции (extend)
+
+Создаётся новая генерация со статусом `pending`:
+
+```json
+{
+  "id": "aig_xyz789",
+  "object": "media.generation",
+  "status": "pending",
+  "created": 1703001244,
+  "model": "pending"
+}
+```
+
+Для получения результата используйте [GET /v1/media/{id}](/api-reference/media/status) с новым ID.
+
+### Параметр async
+
+- `async: false` (по умолчанию) — ждёт результат до 120 секунд
+- `async: true` — сразу возвращает ID новой генерации
+
+## Примеры
+
+### Продление видео (extend)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media/aig_abc123/operations" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operation": "extend",
+    "params": {
+      "prompt": "Камера отдаляется, показывая панораму города"
+    }
+  }'
+```
+
+### Увеличение разрешения (upscale)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media/aig_abc123/operations" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operation": "upscale_1080p"
+  }'
+```
+
+## Параметры операции extend
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `prompt` | string | Да | Промпт для продолжения видео |
+| `seeds` | number | Нет | Seed для воспроизводимости |
+| `duration` | number | Нет | Длительность продления (3-10 сек) |
+
+<Note>
+Операция extend создаёт новую генерацию с новым ID.
+Оригинальное видео не изменяется.
+</Note>

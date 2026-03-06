@@ -1,0 +1,49 @@
+---
+title: Seedream 5.0 Lite
+description: Генерация и редактирование изображений с моделью Seedream 5.0 Lite
+icon: sparkles
+---
+
+Модель генерации изображений Seedream 5.0 Lite от ByteDance. Промпт до 2996 символов, поддержка image-to-image, качество Basic (2K) или High (3K).
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `bytedance/seedream-5-lite` |
+| Max prompt | 2996 символов |
+| aspect_ratio | 1:1, 4:3, 3:4, 16:9, 9:16, 2:3, 3:2, 21:9 (по умолчанию 1:1) |
+| quality | basic (2K), high (3K). По умолчанию basic |
+| images | 0–10 (до 10 МБ каждое, jpeg/png/webp) |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `bytedance/seedream-5-lite` |
+| `prompt` | Да | Текст, до 2996 символов |
+| `aspect_ratio` | Да | По умолчанию `1:1` |
+| `images` | Нет | Референс-изображения для редактирования, 0–10 |
+| `quality` | Да | `basic` (2K) или `high` (3K). По умолчанию `basic` |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "bytedance/seedream-5-lite",
+    "input": {
+      "prompt": "Описание изображения",
+      "aspect_ratio": "1:1",
+      "quality": "basic",
+      "images": []
+    },
+    "async": true
+  }'
+```

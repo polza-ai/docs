@@ -1,0 +1,74 @@
+﻿---
+title: Загрузить файл
+description: Загрузка файла в хранилище
+icon: upload
+openapi: POST /v1/storage/upload
+---
+
+## Способы загрузки
+
+Storage API поддерживает два способа загрузки файлов:
+
+1. **Multipart/form-data** — загрузка файла напрямую
+2. **Base64** — загрузка закодированного файла в JSON
+
+## Параметры
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `file` | binary | Да (multipart) | Файл для загрузки (multipart/form-data) |
+| `base64` | string | Да (JSON) | Файл в формате base64 |
+| `mimeType` | string | Нет | MIME-тип файла (определяется автоматически при multipart) |
+| `externalUserId` | string | Нет | Внешний идентификатор пользователя (макс. 128 символов) |
+| `storagePolicy` | string | Нет | Политика хранения (по умолчанию TEMP_UPLOAD) |
+
+## Политики хранения
+
+| Политика | Срок хранения | Описание |
+|----------|---------------|----------|
+| `TEMP_UPLOAD` | 24 часа | Временная загрузка пользователя (по умолчанию) |
+| `PERMANENT` | Бессрочно | Постоянное хранение |
+
+<Note>
+Политика `TEMP_GENERATION` (7 дней) применяется автоматически к результатам AI генераций через Media API и не может быть задана вручную.
+</Note>
+
+## Примеры
+
+<CodeGroup>
+```bash Multipart
+curl -X POST "https://polza.ai/api/v1/storage/upload" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "file=@image.png" \
+  -F "storagePolicy=PERMANENT"
+```
+
+```bash Base64
+curl -X POST "https://polza.ai/api/v1/storage/upload" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "base64": "iVBORw0KGgoAAAANSUhEUg...",
+    "mimeType": "image/png",
+    "storagePolicy": "PERMANENT"
+  }'
+```
+</CodeGroup>
+
+## Ответ (200)
+
+```json
+{
+  "id": "file_abc123",
+  "fileType": "IMAGE",
+  "mimeType": "image/png",
+  "source": "USER_UPLOAD",
+  "storagePolicy": "PERMANENT",
+  "url": "https://cdn.polza.ai/files/file_abc123.png",
+  "size": 245760,
+  "externalUserId": null,
+  "expiresAt": null,
+  "createdAt": "2025-01-15T10:30:00Z",
+  "updatedAt": "2025-01-15T10:30:00Z"
+}
+```

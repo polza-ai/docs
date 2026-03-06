@@ -1,0 +1,76 @@
+﻿---
+title: GET Models Catalog
+description: Каталог моделей с фильтрацией и пагинацией
+icon: table-cells
+openapi: GET /v1/models/catalog
+---
+
+## О каталоге моделей
+
+Расширенный эндпоинт для получения каталога моделей с поддержкой поиска, фильтрации и пагинации.
+
+## Параметры запроса
+
+| Параметр | Тип | По умолчанию | Описание |
+|----------|-----|--------------|----------|
+| `search` | string | — | Поиск по названию модели |
+| `type` | string | — | Тип: chat, image, embedding, video, audio |
+| `inputModalities` | string[] | — | Входные модальности: text, image |
+| `outputModalities` | string[] | — | Выходные модальности: text, image |
+| `providers` | string[] | — | Фильтр по провайдерам |
+| `contextLengthMin` | number | — | Минимальная длина контекста |
+| `contextLengthMax` | number | — | Максимальная длина контекста |
+| `page` | number | 1 | Номер страницы |
+| `limit` | number | 20 | Количество на странице |
+| `sortBy` | string | — | Сортировка: price, name, created_at |
+| `sortOrder` | string | desc | Порядок: asc, desc |
+
+## Примеры
+
+<CodeGroup>
+```bash Поиск по названию
+curl "https://polza.ai/api/v1/models/catalog?search=claude&type=chat"
+```
+
+```bash Мультимодальные модели
+curl "https://polza.ai/api/v1/models/catalog?inputModalities=image&type=chat&sortBy=price&sortOrder=asc"
+```
+
+```bash С пагинацией
+curl "https://polza.ai/api/v1/models/catalog?type=chat&page=2&limit=10"
+```
+</CodeGroup>
+
+## Ответ (200)
+
+```json
+{
+  "data": [
+    {
+      "id": "anthropic/claude-3-5-sonnet",
+      "name": "Claude 3.5 Sonnet",
+      "type": "chat",
+      "created": 1677652288,
+      "architecture": {
+        "input_modalities": ["text", "image"],
+        "output_modalities": ["text"]
+      },
+      "top_provider": {
+        "context_length": 200000,
+        "max_completion_tokens": 8192,
+        "pricing": {
+          "prompt_per_million": "0.27",
+          "completion_per_million": "1.35",
+          "currency": "RUB"
+        }
+      }
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8
+  }
+}
+```

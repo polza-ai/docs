@@ -1,0 +1,111 @@
+﻿---
+title: N8N
+description: Интеграция Polza.ai с N8N для автоматизации рабочих процессов
+icon: n
+---
+
+N8N — это визуальная платформа для автоматизации рабочих процессов. С помощью интеграции Polza.ai вы можете использовать сотни AI-моделей прямо в ваших N8N workflows через стандартный OpenAI-совместимый интерфейс.
+
+## Требования
+
+- Установленный N8N (локально или в облаке)
+- API-ключ Polza.ai из [polza.ai/dashboard](https://polza.ai/dashboard)
+- Базовое знание работы с N8N
+
+## Настройка
+
+<Steps>
+  <Step title="Добавьте OpenAI Chat Model">
+    В N8N найдите и добавьте ноду "OpenAI Chat Model" в ваш workflow. Для этого введите "openai" в поиске при добавлении ноды.
+
+    <Frame>
+      <img src="/images/n8n/n8n-search-openai.png" alt="Поиск OpenAI Chat Model в N8N" />
+    </Frame>
+  </Step>
+
+  <Step title="Создайте credentials">
+    Нажмите на создание новых credentials и заполните:
+    - **API Key:** Ваш API-ключ Polza.ai
+    - **Base URL:** `https://polza.ai/api/v1`
+
+    <Frame>
+      <img src="/images/n8n/n8n-credentials.png" alt="Настройка credentials для Polza.ai" />
+    </Frame>
+  </Step>
+
+  <Step title="Выберите модель">
+    В поле Model введите ID модели, например:
+    - `deepseek/deepseek-r1` — для reasoning задач
+    - `openai/gpt-4o` — универсальная модель
+    - `anthropic/claude-3.5-sonnet` — для кодинга
+    - `google/gemini-2.5-pro-preview` — мультимодальная
+
+    <Frame>
+      <img src="/images/n8n/n8n-model-settings.png" alt="Выбор модели в настройках" />
+    </Frame>
+  </Step>
+
+  <Step title="Готово!">
+    Теперь вы можете использовать AI-модели Polza.ai в ваших N8N workflows.
+
+    <Frame>
+      <img src="/images/n8n/n8n-workflow-chat.png" alt="Рабочий workflow с чатом" />
+    </Frame>
+  </Step>
+</Steps>
+
+<Note>
+Polza.ai поддерживает **Responses API** в beta-режиме. Если при использовании возникают проблемы, попробуйте отключить опцию "Use Responses API" в настройках модели.
+</Note>
+
+### Мультимодальные запросы
+
+С мультимодальными моделями (GPT-4o, Claude 3.5) можно обрабатывать изображения.
+
+## Расширенные настройки
+
+В настройках AI Agent доступны параметры:
+
+| Параметр | Описание |
+|----------|----------|
+| Temperature | Креативность ответов (0-2) |
+| Max Tokens | Максимальная длина ответа |
+| Top P | Nucleus sampling |
+| Frequency Penalty | Штраф за повторения |
+| Presence Penalty | Штраф за повторные токены |
+
+## Оптимизация стоимости
+
+<CardGroup cols={2}>
+  <Card title="Выбирайте модель" icon="scale-balanced">
+    Используйте модели соответствующие сложности задачи
+  </Card>
+  <Card title="Оптимизируйте промпты" icon="text">
+    Сокращайте промпты для снижения токенов
+  </Card>
+</CardGroup>
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Ошибка аутентификации">
+    - Проверьте правильность API-ключа
+    - Убедитесь, что Base URL указан как `https://polza.ai/api/v1`
+    - Проверьте баланс
+  </Accordion>
+
+  <Accordion title="Модель не найдена">
+    - Проверьте правильность написания ID модели
+    - Актуальный список моделей: [polza.ai/models](https://polza.ai/models)
+  </Accordion>
+
+  <Accordion title="Превышен лимит токенов">
+    - Уменьшите значение Max Tokens
+    - Сократите входной текст
+  </Accordion>
+
+  <Accordion title="Проблемы с Responses API">
+    - Отключите опцию "Use Responses API" в настройках модели
+    - Responses API находится в beta-режиме и может работать нестабильно с некоторыми моделями
+  </Accordion>
+</AccordionGroup>

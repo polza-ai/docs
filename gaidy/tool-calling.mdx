@@ -1,0 +1,355 @@
+﻿---
+title: Вызов функций (Tool Calling)
+description: Как использовать функции и инструменты в запросах к AI моделям
+icon: wrench
+---
+
+Tool Calling позволяет AI моделям вызывать определённые вами функции для получения данных или выполнения действий.
+
+<Note>
+Поддержка tool calling зависит от модели. Проверяйте возможности в [каталоге моделей](/gaidy/models).
+</Note>
+
+## Что такое Tool Calling?
+
+Tool Calling (вызов функций) — это механизм, позволяющий модели:
+1. Понять, когда нужно вызвать функцию
+2. Определить, какую функцию вызвать
+3. Извлечь параметры из запроса пользователя
+4. Вернуть структурированный ответ для вызова
+
+## Сценарии использования
+
+<CardGroup cols={2}>
+  <Card title="Получение данных" icon="database">
+    Запрос актуальной информации из внешних источников
+  </Card>
+  <Card title="Выполнение действий" icon="play">
+    Отправка email, создание задач, бронирование
+  </Card>
+  <Card title="Интеграции" icon="plug">
+    Подключение к CRM, ERP, базам данных
+  </Card>
+  <Card title="Вычисления" icon="calculator">
+    Сложные расчёты, которые модель не может выполнить
+  </Card>
+</CardGroup>
+
+## Как это работает
+
+<Steps>
+  <Step title="Определите функции">
+    Опишите доступные функции с параметрами в формате JSON Schema
+  </Step>
+
+  <Step title="Отправьте запрос">
+    Передайте описание функций вместе с сообщением пользователя
+  </Step>
+
+  <Step title="Получите вызов">
+    Модель вернёт название функции и параметры для вызова
+  </Step>
+
+  <Step title="Выполните функцию">
+    Вызовите функцию в своём коде и верните результат модели
+  </Step>
+
+  <Step title="Получите финальный ответ">
+    Модель использует результат для формирования ответа пользователю
+  </Step>
+</Steps>
+
+## Пример использования
+
+### 1. Определение функций
+
+<CodeGroup>
+```typescript TypeScript
+const tools = [
+  {
+    type: 'function',
+    function: {
+      name: 'get_weather',
+      description: 'Получить текущую погоду в указанном городе',
+      parameters: {
+        type: 'object',
+        properties: {
+          city: {
+            type: 'string',
+            description: 'Название города, например "Москва"'
+          },
+          units: {
+            type: 'string',
+            enum: ['celsius', 'fahrenheit'],
+            description: 'Единицы измерения температуры'
+          }
+        },
+        required: ['city']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'send_email',
+      description: 'Отправить email',
+      parameters: {
+        type: 'object',
+        properties: {
+          to: { type: 'string', description: 'Email получателя' },
+          subject: { type: 'string', description: 'Тема письма' },
+          body: { type: 'string', description: 'Текст письма' }
+        },
+        required: ['to', 'subject', 'body']
+      }
+    }
+  }
+];
+```
+
+```python Python
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Получить текущую погоду в указанном городе",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "city": {
+                        "type": "string",
+                        "description": "Название города, например 'Москва'"
+                    },
+                    "units": {
+                        "type": "string",
+                        "enum": ["celsius", "fahrenheit"],
+                        "description": "Единицы измерения температуры"
+                    }
+                },
+                "required": ["city"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "send_email",
+            "description": "Отправить email",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "to": {"type": "string", "description": "Email получателя"},
+                    "subject": {"type": "string", "description": "Тема письма"},
+                    "body": {"type": "string", "description": "Текст письма"}
+                },
+                "required": ["to", "subject", "body"]
+            }
+        }
+    }
+]
+```
+</CodeGroup>
+
+### 2. Отправка запроса с функциями
+
+<CodeGroup>
+```typescript TypeScript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  baseURL: 'https://polza.ai/api/v1',
+  apiKey: '<POLZA_AI_API_KEY>'
+});
+
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    { role: 'user', content: 'Какая погода в Москве?' }
+  ],
+  tools: tools,
+  tool_choice: 'auto'  // или 'required' для обязательного вызова
+});
+
+// Проверяем, запросила ли модель вызов функции
+if (completion.choices[0].message.tool_calls) {
+  const toolCall = completion.choices[0].message.tool_calls[0];
+  console.log('Функция:', toolCall.function.name);
+  console.log('Параметры:', toolCall.function.arguments);
+}
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://polza.ai/api/v1",
+    api_key="<POLZA_AI_API_KEY>"
+)
+
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {"role": "user", "content": "Какая погода в Москве?"}
+    ],
+    tools=tools,
+    tool_choice="auto"  # или "required" для обязательного вызова
+)
+
+# Проверяем, запросила ли модель вызов функции
+if completion.choices[0].message.tool_calls:
+    tool_call = completion.choices[0].message.tool_calls[0]
+    print(f"Функция: {tool_call.function.name}")
+    print(f"Параметры: {tool_call.function.arguments}")
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [
+      {"role": "user", "content": "Какая погода в Москве?"}
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "description": "Получить текущую погоду в указанном городе",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "city": {"type": "string", "description": "Название города"}
+            },
+            "required": ["city"]
+          }
+        }
+      }
+    ],
+    "tool_choice": "auto"
+  }'
+```
+</CodeGroup>
+
+### 3. Обработка вызова и отправка результата
+
+<CodeGroup>
+```typescript TypeScript
+// Получаем вызов функции от модели
+const toolCall = completion.choices[0].message.tool_calls[0];
+const args = JSON.parse(toolCall.function.arguments);
+
+// Выполняем функцию (ваша реализация)
+const weatherData = await getWeather(args.city, args.units);
+
+// Отправляем результат обратно модели
+const finalCompletion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    { role: 'user', content: 'Какая погода в Москве?' },
+    completion.choices[0].message,  // Сообщение с tool_calls
+    {
+      role: 'tool',
+      tool_call_id: toolCall.id,
+      content: JSON.stringify(weatherData)
+    }
+  ],
+  tools: tools
+});
+
+console.log(finalCompletion.choices[0].message.content);
+// "В Москве сейчас +15°C, облачно с прояснениями."
+```
+
+```python Python
+import json
+
+# Получаем вызов функции от модели
+tool_call = completion.choices[0].message.tool_calls[0]
+args = json.loads(tool_call.function.arguments)
+
+# Выполняем функцию (ваша реализация)
+weather_data = get_weather(args["city"], args.get("units"))
+
+# Отправляем результат обратно модели
+final_completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {"role": "user", "content": "Какая погода в Москве?"},
+        completion.choices[0].message,  # Сообщение с tool_calls
+        {
+            "role": "tool",
+            "tool_call_id": tool_call.id,
+            "content": json.dumps(weather_data)
+        }
+    ],
+    tools=tools
+)
+
+print(final_completion.choices[0].message.content)
+# "В Москве сейчас +15°C, облачно с прояснениями."
+```
+</CodeGroup>
+
+## Параметры tool_choice
+
+| Значение | Описание |
+|----------|----------|
+| `auto` | Модель решает, вызывать ли функцию |
+| `required` | Модель обязательно вызовет одну из функций |
+| `none` | Модель не будет вызывать функции |
+| `{"type": "function", "function": {"name": "..."}}` | Вызвать конкретную функцию |
+
+## Параллельные вызовы
+
+Модель может запросить несколько функций одновременно:
+
+```json
+{
+  "tool_calls": [
+    {
+      "id": "call_1",
+      "function": { "name": "get_weather", "arguments": "{\"city\": \"Москва\"}" }
+    },
+    {
+      "id": "call_2",
+      "function": { "name": "get_weather", "arguments": "{\"city\": \"Санкт-Петербург\"}" }
+    }
+  ]
+}
+```
+
+Обрабатывайте все вызовы и возвращайте результаты для каждого `tool_call_id`.
+
+## Советы и лучшие практики
+
+<AccordionGroup>
+  <Accordion title="Пишите понятные описания" icon="pen">
+    Чем точнее описание функции и параметров, тем лучше модель понимает, когда её использовать.
+  </Accordion>
+
+  <Accordion title="Используйте enum для ограниченных значений" icon="list">
+    Если параметр имеет фиксированный набор значений, используйте `enum` для валидации.
+  </Accordion>
+
+  <Accordion title="Обрабатывайте ошибки" icon="triangle-exclamation">
+    Если функция завершилась с ошибкой, верните понятное описание ошибки модели.
+  </Accordion>
+
+  <Accordion title="Ограничивайте количество функций" icon="list-ol">
+    Большое количество функций усложняет выбор для модели. Группируйте связанные операции.
+  </Accordion>
+</AccordionGroup>
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Плагины" icon="plug" href="/gaidy/plugins">
+    Готовые интеграции с сервисами
+  </Card>
+  <Card title="Структурный вывод" icon="brackets-curly" href="/gaidy/structured-output">
+    Получение структурированных данных
+  </Card>
+</CardGroup>

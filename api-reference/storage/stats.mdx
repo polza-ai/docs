@@ -1,0 +1,49 @@
+﻿---
+title: Статистика хранилища
+description: Получение статистики использования хранилища
+icon: chart-pie
+openapi: GET /v1/storage/stats
+---
+
+<Warning>
+Этот эндпоинт доступен только пользователям с ролью **admin** в организации. Обычный API-ключ не подойдёт — требуется JWT-авторизация через консоль.
+</Warning>
+
+## Пример
+
+```bash
+curl "https://polza.ai/api/v1/storage/stats" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+## Ответ (200)
+
+```json
+{
+  "usedBytes": 1073741824,
+  "totalBytes": 10737418240,
+  "fileCount": 256,
+  "filesByType": {
+    "IMAGE": 180,
+    "VIDEO": 50,
+    "AUDIO": 26
+  },
+  "filesByPolicy": {
+    "TEMP_UPLOAD": 30,
+    "TEMP_GENERATION": 186,
+    "PERMANENT": 40
+  },
+  "usagePercent": 10.0
+}
+```
+
+## Поля ответа
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `usedBytes` | number | Использованный объём в байтах |
+| `totalBytes` | number | Общий доступный объём |
+| `fileCount` | number | Общее количество файлов |
+| `filesByType` | object | Количество файлов по типам (IMAGE, VIDEO, AUDIO) |
+| `filesByPolicy` | object | Количество файлов по политикам хранения |
+| `usagePercent` | number | Процент использования хранилища |

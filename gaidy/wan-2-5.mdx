@@ -1,0 +1,61 @@
+---
+title: Wan 2.5
+description: Генерация видео с моделью Wan 2.5
+icon: video
+---
+
+Модель генерации видео Wan 2.5. Разрешения 720p, 1080p, длительность 5 или 10 сек. Поддержка seed, negative_prompt и расширения промпта через LLM.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `wan/2.5` |
+| Max prompt | 800 символов |
+| aspect_ratio | 16:9, 9:16, 1:1 |
+| resolution | 720p, 1080p |
+| duration | 5, 10 сек |
+| images | 0–1 |
+| seed | -1 – 2147483647 |
+| negative_prompt | до 500 символов |
+| enable_prompt_expansion | true / false |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `wan/2.5` |
+| `prompt` | Да | Текст, до 800 символов |
+| `aspect_ratio` | Нет | 16:9, 9:16, 1:1 |
+| `resolution` | Нет | 720p, 1080p |
+| `duration` | Нет | 5, 10 |
+| `images` | Нет | 0–1 |
+| `seed` | Нет | Seed для воспроизводимости |
+| `negative_prompt` | Нет | Что исключить, до 500 символов |
+| `enable_prompt_expansion` | Нет | Улучшить промпт с LLM. По умолчанию false |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "wan/2.5",
+    "input": {
+      "prompt": "Описание видео",
+      "aspect_ratio": "16:9",
+      "resolution": "720p",
+      "duration": "5",
+      "images": [],
+      "seed": 42,
+      "negative_prompt": "",
+      "enable_prompt_expansion": "false"
+    },
+    "async": true
+  }'
+```

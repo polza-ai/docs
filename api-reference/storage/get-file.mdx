@@ -1,0 +1,47 @@
+﻿---
+title: Информация о файле
+description: Получение информации о конкретном файле
+icon: file
+openapi: GET /v1/storage/files/{id}
+---
+
+## Пример
+
+```bash
+curl "https://polza.ai/api/v1/storage/files/file_abc123" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Ответ (200)
+
+```json
+{
+  "id": "file_abc123",
+  "fileType": "IMAGE",
+  "mimeType": "image/png",
+  "source": "USER_UPLOAD",
+  "storagePolicy": "PERMANENT",
+  "url": "https://cdn.polza.ai/files/file_abc123.png",
+  "size": 245760,
+  "externalUserId": null,
+  "expiresAt": null,
+  "createdAt": "2025-01-15T10:30:00Z",
+  "updatedAt": "2025-01-15T10:30:00Z"
+}
+```
+
+## Поля ответа
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | string | ID файла |
+| `fileType` | string | Тип: IMAGE, VIDEO, AUDIO |
+| `mimeType` | string | MIME-тип (например, image/png) |
+| `source` | string | Источник: USER_UPLOAD, AI_GENERATION |
+| `storagePolicy` | string | Политика хранения |
+| `url` | string | URL файла на CDN |
+| `size` | number | Размер в байтах |
+| `externalUserId` | string\|null | Внешний ID пользователя |
+| `expiresAt` | string\|null | Дата истечения (null для PERMANENT) |
+| `createdAt` | string | Дата создания |
+| `updatedAt` | string | Дата обновления |

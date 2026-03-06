@@ -1,0 +1,96 @@
+﻿---
+title: GET Media Status
+description: Получение статуса генерации медиа
+icon: spinner
+openapi: GET /v1/media/{id}
+---
+
+## Polling
+
+Рекомендуется проверять статус с интервалом 3-5 секунд для изображений и 5-10 секунд для видео.
+
+## Статусы
+
+| Статус | Описание |
+|--------|----------|
+| `pending` | В очереди |
+| `processing` | Генерация выполняется |
+| `completed` | Готово — результат в поле `data` |
+| `failed` | Ошибка — подробности в поле `error` |
+
+## Ответ (completed)
+
+```json
+{
+  "id": "aig_abc123",
+  "object": "media.generation",
+  "status": "completed",
+  "created": 1703001244,
+  "model": "google/gemini-2.5-flash-image",
+  "data": {
+    "url": "https://s3.polza.ai/f/205141/2026/03/aig_abc123.jpg"
+  },
+  "usage": {
+    "output_units": 1,
+    "cost_rub": 5.00,
+    "cost": 5.00
+  }
+}
+```
+
+## Примеры polling
+
+<CodeGroup>
+```python Python
+import requests
+import time
+
+def wait_for_media(api_key, media_id, interval=5, max_wait=300):
+    url = f'https://polza.ai/api/v1/media/{media_id}'
+    headers = {'Authorization': f'Bearer {api_key}'}
+    elapsed = 0
+
+    while elapsed < max_wait:
+        response = requests.get(url, headers=headers)
+        data = response.json()
+
+        if data['status'] == 'completed':
+            return data
+        elif data['status'] == 'failed':
+            raise Exception(f"Генерация не удалась: {data.get('error')}")
+
+        time.sleep(interval)
+        elapsed += interval
+
+    raise TimeoutError("Превышено время ожидания")
+
+result = wait_for_media('YOUR_API_KEY', 'aig_abc123')
+print(f"Результат: {result['data']['url']}")
+```
+
+```javascript JavaScript
+async function waitForMedia(apiKey, mediaId, interval = 5000, maxWait = 300000) {
+  const url = `https://polza.ai/api/v1/media/${mediaId}`;
+  let elapsed = 0;
+
+  while (elapsed < maxWait) {
+    const response = await fetch(url, {
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    });
+    const data = await response.json();
+
+    if (data.status === 'completed') return data;
+    if (data.status === 'failed') throw new Error(`Ошибка: ${data.error}`);
+
+    await new Promise(resolve => setTimeout(resolve, interval));
+    elapsed += interval;
+  }
+
+  throw new Error('Превышено время ожидания');
+}
+```
+</CodeGroup>
+
+<Note>
+Результаты хранятся 7 дней на CDN. Для постоянного хранения используйте [Storage API](/api-reference/storage/upload).
+</Note>

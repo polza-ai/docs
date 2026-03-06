@@ -1,0 +1,133 @@
+﻿---
+title: POST Embeddings
+description: Создание векторных представлений текста
+icon: vector-square
+openapi: POST /v1/embeddings
+---
+
+## Доступные модели
+
+| Модель | ID | Размерность |
+|--------|-----|-------------|
+| text-embedding-3-large | `text-embedding-3-large` | 3072 |
+| text-embedding-3-small | `text-embedding-3-small` | 1536 |
+
+## Параметры запроса
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `model` | string | Да | ID модели |
+| `input` | string/array | Да | Текст или массив текстов |
+| `encoding_format` | string | Нет | Формат: float, base64 |
+| `dimensions` | integer | Нет | Размерность вывода |
+| `user` | string | Нет | Идентификатор конечного пользователя |
+
+## Примеры
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/embeddings" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "text-embedding-3-large",
+    "input": ["Пример текста для поиска", "Второй пример"]
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://polza.ai/api/v1",
+    api_key="YOUR_API_KEY"
+)
+
+response = client.embeddings.create(
+    model="text-embedding-3-large",
+    input=["Первый документ", "Второй документ"]
+)
+
+for item in response.data:
+    print(f"Index {item.index}: {len(item.embedding)} dimensions")
+```
+
+```javascript JavaScript
+const response = await fetch('https://polza.ai/api/v1/embeddings', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'text-embedding-3-large',
+    input: 'Текст для получения эмбеддинга'
+  })
+});
+
+const data = await response.json();
+console.log(data.data[0].embedding);
+```
+</CodeGroup>
+
+## Ответ (200)
+
+```json
+{
+  "id": "emb_123456",
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "embedding": [0.01, -0.02, 0.03, "..."],
+      "index": 0
+    },
+    {
+      "object": "embedding",
+      "embedding": [0.03, 0.11, -0.05, "..."],
+      "index": 1
+    }
+  ],
+  "model": "text-embedding-3-large",
+  "usage": {
+    "prompt_tokens": 42,
+    "total_tokens": 42,
+    "cost_rub": 0.05,
+    "cost": 0.05
+  }
+}
+```
+
+## Применения
+
+<CardGroup cols={2}>
+  <Card title="Семантический поиск" icon="magnifying-glass">
+    Поиск по смыслу, а не по ключевым словам
+  </Card>
+  <Card title="RAG" icon="book">
+    Retrieval-Augmented Generation для LLM
+  </Card>
+  <Card title="Кластеризация" icon="object-group">
+    Группировка похожих документов
+  </Card>
+  <Card title="Классификация" icon="tags">
+    Категоризация текстов
+  </Card>
+</CardGroup>
+
+## Рекомендации
+
+<Steps>
+  <Step title="Нормализуйте тексты">
+    Приведите тексты к единому формату перед получением эмбеддингов
+  </Step>
+  <Step title="Разделяйте на чанки">
+    Оптимальный размер чанка: 200-800 токенов
+  </Step>
+  <Step title="Используйте косинусное сходство">
+    Для сравнения эмбеддингов используйте cosine similarity или dot-product
+  </Step>
+  <Step title="Кэшируйте результаты">
+    Сохраняйте эмбеддинги и кэшируйте повторяющиеся по хешу текста
+  </Step>
+</Steps>

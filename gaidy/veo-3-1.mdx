@@ -1,0 +1,401 @@
+﻿---
+title: Veo 3.1
+description: Генерация видео с моделью Veo 3.1 от Google
+icon: video
+---
+
+Veo 3.1 — флагманская модель генерации видео от Google DeepMind с поддержкой 4K апскейлинга и продления видео. Доступна в двух вариантах: Quality и Fast.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Quality | Fast |
+|----------------|---------|------|
+| ID модели | `google/veo3` | `google/veo3_fast` |
+| Max prompt | 2 000 символов | 2 000 символов |
+| Aspect ratio | 16:9, 9:16, Auto | 16:9, 9:16, Auto |
+| Seeds | 10000-99999 | 10000-99999 |
+| Watermark | до 50 символов | до 50 символов |
+| Референс-изображения | до 2 | до 3 |
+| Режимы генерации | TEXT_2_VIDEO, FIRST_AND_LAST_FRAMES_2_VIDEO | TEXT_2_VIDEO, FIRST_AND_LAST_FRAMES_2_VIDEO, REFERENCE_2_VIDEO |
+| Авто-перевод промпта | Да | Да |
+
+## Пример запроса (cURL) со всеми параметрами
+
+**Veo 3.1 Quality** (`veo3`):
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "veo3",
+    "input": {
+      "prompt": "Текстовое описание видео",
+      "aspect_ratio": "16:9",
+      "seeds": 12345,
+      "watermark": "",
+      "images": [],
+      "generationType": "TEXT_2_VIDEO",
+      "enableTranslation": "true"
+    },
+    "async": true
+  }'
+```
+
+**Veo 3.1 Fast** (`veo3_fast`):
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "veo3_fast",
+    "input": {
+      "prompt": "Текстовое описание видео",
+      "aspect_ratio": "16:9",
+      "seeds": 12345,
+      "watermark": "",
+      "images": [],
+      "generationType": "TEXT_2_VIDEO",
+      "enableTranslation": "true"
+    },
+    "async": true
+  }'
+```
+
+## Возможности
+
+<CardGroup cols={2}>
+  <Card title="Text-to-Video" icon="text">
+    Создание видео по текстовому описанию
+  </Card>
+  <Card title="Image-to-Video" icon="image">
+    Анимация статичного изображения
+  </Card>
+  <Card title="Продление видео" icon="arrows-left-right">
+    Операция extend для продолжения видео
+  </Card>
+  <Card title="4K апскейлинг" icon="expand">
+    Увеличение разрешения до 4K
+  </Card>
+</CardGroup>
+
+## Сценарии использования
+
+<CardGroup cols={2}>
+  <Card title="Рекламные ролики" icon="bullhorn">
+    Короткие видео для рекламы и промо
+  </Card>
+  <Card title="Социальные сети" icon="share-nodes">
+    Контент для TikTok, Reels, Shorts
+  </Card>
+  <Card title="Презентации" icon="presentation-screen">
+    Визуализация идей и концепций
+  </Card>
+  <Card title="Прототипирование" icon="film">
+    Быстрое создание видео-концептов
+  </Card>
+</CardGroup>
+
+## Примеры запросов
+
+### Text-to-Video
+
+<CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'google/veo3',
+    input: {
+      prompt: 'Кофейная чашка на столе, пар поднимается вверх, утренний свет из окна',
+      aspect_ratio: '16:9'
+    }
+  })
+});
+
+const result = await response.json();
+console.log('ID генерации:', result.id);
+
+// Проверка статуса
+const status = await fetch(`https://polza.ai/api/v1/media/${result.id}`, {
+  headers: { 'Authorization': 'Bearer <POLZA_AI_API_KEY>' }
+});
+console.log(await status.json());
+```
+
+```python Python
+import requests
+import time
+
+# Создание запроса на генерацию видео
+response = requests.post(
+    'https://polza.ai/api/v1/media',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'model': 'google/veo3',
+        'input': {
+            'prompt': 'Кофейная чашка на столе, пар поднимается вверх, утренний свет из окна',
+            'aspect_ratio': '16:9'
+        }
+    }
+)
+
+result = response.json()
+generation_id = result['id']
+print(f'ID генерации: {generation_id}')
+
+# Проверка статуса
+status = requests.get(
+    f'https://polza.ai/api/v1/media/{generation_id}',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'}
+)
+print(status.json())
+```
+
+```bash cURL
+# Создание запроса на генерацию видео
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "google/veo3",
+    "input": {
+      "prompt": "Кофейная чашка на столе, пар поднимается вверх, утренний свет из окна",
+      "aspect_ratio": "16:9"
+    }
+  }'
+
+# Проверка статуса генерации
+curl "https://polza.ai/api/v1/media/{id}" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>"
+```
+</CodeGroup>
+
+### Image-to-Video с референсным изображением
+
+<CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'google/veo3',
+    input: {
+      prompt: 'Плавное движение камеры вперёд, лёгкий ветер колышет листья',
+      aspect_ratio: '16:9',
+      images: [
+        { type: 'url', data: 'https://example.com/landscape.jpg' }
+      ]
+    }
+  })
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/media',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'model': 'google/veo3',
+        'input': {
+            'prompt': 'Плавное движение камеры вперёд, лёгкий ветер колышет листья',
+            'aspect_ratio': '16:9',
+            'images': [
+                {'type': 'url', 'data': 'https://example.com/landscape.jpg'}
+            ]
+        }
+    }
+)
+
+print(response.json())
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "google/veo3",
+    "input": {
+      "prompt": "Плавное движение камеры вперёд, лёгкий ветер колышет листья",
+      "aspect_ratio": "16:9",
+      "images": [
+        { "type": "url", "data": "https://example.com/landscape.jpg" }
+      ]
+    }
+  }'
+```
+</CodeGroup>
+
+## Параметры
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `model` | string | Да | ID модели: `google/veo3` (Quality) или `google/veo3_fast` (Fast) |
+| `prompt` | string | Да | Текстовое описание желаемого видео (до 2 000 символов) |
+| `aspect_ratio` | string | Нет | Соотношение сторон: `16:9`, `9:16`, `Auto` (по умолчанию `16:9`) |
+| `images` | array | Нет | Массив референс-изображений (Quality: до 2, Fast: до 3) |
+| `seeds` | number | Нет | Seed для воспроизводимости: 10000-99999 |
+| `watermark` | string | Нет | Текст водяного знака (до 50 символов) |
+| `generationType` | string | Нет | Режим генерации: `TEXT_2_VIDEO`, `FIRST_AND_LAST_FRAMES_2_VIDEO`, `REFERENCE_2_VIDEO` (только Fast). Авто-определяется по наличию изображений, если не указан |
+| `enableTranslation` | string | Нет | Автоматический перевод промпта на английский: `true`, `false` (по умолчанию `true`) |
+
+## Операции над видео
+
+После создания видео вы можете выполнить дополнительные операции:
+
+| Операция | Описание |
+|----------|----------|
+| `extend` | Продление видео с новым промптом |
+| `upscale_1080p` | Апскейл до 1080p |
+| `upscale_4k` | Апскейл до 4K |
+
+### Пример продления видео
+
+<CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media/{id}/operations', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    operation: 'extend',
+    params: {
+      prompt: 'Камера отдаляется, показывая панораму города',
+      model: 'quality'
+    }
+  })
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/media/{id}/operations',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'operation': 'extend',
+        'params': {
+            'prompt': 'Камера отдаляется, показывая панораму города',
+            'model': 'quality'
+        }
+    }
+)
+
+print(response.json())
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/media/{id}/operations" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "operation": "extend",
+    "params": {
+      "prompt": "Камера отдаляется, показывая панораму города",
+      "model": "quality"
+    }
+  }'
+```
+</CodeGroup>
+
+### Параметры операции extend
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `prompt` | string | Да | Описание продолжения видео (до 2 000 символов) |
+| `seeds` | number | Нет | Seed для воспроизводимости: 10000-99999 |
+| `watermark` | string | Нет | Текст водяного знака (до 50 символов) |
+| `model` | string | Нет | Качество продления: `fast`, `quality` |
+
+## Примеры промптов
+
+### Для продуктов
+
+```
+Вращение продукта на 360 градусов, белый фон, студийное освещение
+```
+
+### Для природы
+
+```
+Закат над морем, волны мягко накатывают на берег, камера медленно поднимается
+```
+
+### Для людей
+
+```
+Портрет человека, лёгкая улыбка, волосы развеваются на ветру, кинематографичное освещение
+```
+
+## Советы и лучшие практики
+
+<AccordionGroup>
+  <Accordion title="Описывайте движение" icon="arrows-rotate">
+    Veo 3.1 лучше работает, когда в промпте явно описано движение: «камера приближается», «объект вращается», «волны движутся».
+  </Accordion>
+
+  <Accordion title="Указывайте стиль съёмки" icon="camera">
+    Используйте кинематографические термины: «крупный план», «панорама», «tracking shot», «slow motion».
+  </Accordion>
+
+  <Accordion title="Выбирайте между Quality и Fast" icon="gauge-high">
+    Для тестирования и быстрых итераций используйте `google/veo3_fast`. Для финального результата — `google/veo3` (Quality).
+  </Accordion>
+
+  <Accordion title="Используйте Image-to-Video" icon="image">
+    Для большего контроля над результатом загрузите исходное изображение и опишите желаемую анимацию.
+  </Accordion>
+</AccordionGroup>
+
+## Асинхронная генерация
+
+Генерация видео — асинхронный процесс. После отправки запроса вы получите `id`, который нужно использовать для проверки статуса:
+
+<Steps>
+  <Step title="Отправка запроса">
+    POST запрос на `/api/v1/media` возвращает `id` генерации
+  </Step>
+
+  <Step title="Проверка статуса">
+    GET запрос на `/api/v1/media/{id}` возвращает текущий статус
+  </Step>
+
+  <Step title="Получение результата">
+    Когда статус `completed`, в ответе будет URL готового видео
+  </Step>
+</Steps>
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Статус генерации" icon="spinner" href="/api-reference/media/status">
+    Проверка статуса генерации медиа
+  </Card>
+  <Card title="Операции над медиа" icon="gears" href="/api-reference/media/operations">
+    Продление и апскейлинг видео
+  </Card>
+</CardGroup>

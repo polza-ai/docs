@@ -1,0 +1,253 @@
+﻿---
+title: Seedream 4
+description: Генерация изображений с моделью Seedream 4 от ByteDance
+icon: sparkles
+---
+
+Seedream 4 — модель генерации изображений от ByteDance с уникальным художественным стилем и поддержкой до 4K разрешения.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| Тип | Генерация изображений |
+| ID модели | `bytedance/seedream-4` |
+| Max prompt | 5 000 символов |
+| Разрешения | 1K, 2K, 4K |
+| Соотношения сторон | 1:1, 4:3, 3:4, 3:2, 2:3, 16:9, 9:16, 21:9 |
+| Референс-изображения | до 10 |
+
+## Отличительные особенности
+
+<CardGroup cols={2}>
+  <Card title="Художественный стиль" icon="palette">
+    Уникальная стилизация изображений
+  </Card>
+  <Card title="Контроль генерации" icon="sliders">
+    Точная настройка через seed для воспроизводимости результатов
+  </Card>
+  <Card title="Высокое разрешение" icon="expand">
+    Генерация до 4K разрешения
+  </Card>
+</CardGroup>
+
+## Сценарии использования
+
+<CardGroup cols={2}>
+  <Card title="Концепт-арт" icon="pen-fancy">
+    Создание концептов для игр и фильмов
+  </Card>
+  <Card title="Обложки" icon="book">
+    Дизайн обложек книг и альбомов
+  </Card>
+  <Card title="Арт-проекты" icon="paintbrush">
+    Художественные и творческие проекты
+  </Card>
+  <Card title="Стилизация" icon="wand-magic-sparkles">
+    Создание изображений в определённом стиле
+  </Card>
+</CardGroup>
+
+## Примеры запросов
+
+### Генерация изображения
+
+<CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'bytedance/seedream-4',
+    input: {
+      prompt: 'Волшебный лес на закате, светящиеся грибы, туман между деревьями, фэнтези стиль',
+      aspect_ratio: '16:9',
+      image_resolution: '2K'
+    }
+  })
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/media',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'model': 'bytedance/seedream-4',
+        'input': {
+            'prompt': 'Волшебный лес на закате, светящиеся грибы, туман между деревьями, фэнтези стиль',
+            'aspect_ratio': '16:9',
+            'image_resolution': '2K'
+        }
+    }
+)
+
+print(response.json())
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "bytedance/seedream-4",
+    "input": {
+      "prompt": "Волшебный лес на закате, светящиеся грибы, туман между деревьями, фэнтези стиль",
+      "aspect_ratio": "16:9",
+      "image_resolution": "2K"
+    }
+  }'
+```
+</CodeGroup>
+
+### Редактирование с референсным изображением
+
+<CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'bytedance/seedream-4',
+    input: {
+      prompt: 'Перерисуй в стиле аниме, яркие цвета, мягкие тени',
+      aspect_ratio: '1:1',
+      image_resolution: '2K',
+      images: [
+        { type: 'url', data: 'https://example.com/portrait.jpg' }
+      ]
+    }
+  })
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/media',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'model': 'bytedance/seedream-4',
+        'input': {
+            'prompt': 'Перерисуй в стиле аниме, яркие цвета, мягкие тени',
+            'aspect_ratio': '1:1',
+            'image_resolution': '2K',
+            'images': [
+                {'type': 'url', 'data': 'https://example.com/portrait.jpg'}
+            ]
+        }
+    }
+)
+
+print(response.json())
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "bytedance/seedream-4",
+    "input": {
+      "prompt": "Перерисуй в стиле аниме, яркие цвета, мягкие тени",
+      "aspect_ratio": "1:1",
+      "image_resolution": "2K",
+      "images": [
+        { "type": "url", "data": "https://example.com/portrait.jpg" }
+      ]
+    }
+  }'
+```
+</CodeGroup>
+
+## Параметры
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `model` | string | Да | ID модели: `bytedance/seedream-4` |
+| `prompt` | string | Да | Текстовое описание желаемого изображения (до 5 000 символов) |
+| `aspect_ratio` | string | Нет | Соотношение сторон: `1:1`, `4:3`, `3:4`, `3:2`, `2:3`, `16:9`, `9:16`, `21:9` |
+| `image_resolution` | string | Нет | Разрешение: `1K`, `2K`, `4K` |
+| `seed` | number | Нет | Seed для воспроизводимости результатов (1–4294967295) |
+| `images` | array | Нет | Массив референс-изображений для редактирования (до 10 шт.) |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "bytedance/seedream-v4",
+    "input": {
+      "prompt": "Описание изображения",
+      "aspect_ratio": "16:9",
+      "image_resolution": "2K",
+      "seed": 12345,
+      "images": []
+    },
+    "async": true
+  }'
+```
+
+## Примеры промптов
+
+### Фэнтези
+
+```
+Древний замок на вершине горы, драматическое небо, молнии, эпический масштаб
+```
+
+### Научная фантастика
+
+```
+Космическая станция над планетой, кольца астероидов, свечение звёзд
+```
+
+### Природа
+
+```
+Цветущая сакура у горного озера, отражение в воде, туман, утренний свет
+```
+
+## Советы и лучшие практики
+
+<AccordionGroup>
+  <Accordion title="Указывайте стиль явно" icon="palette">
+    Seedream 4 хорошо работает со стилистическими указаниями: «в стиле аниме», «импрессионизм», «киберпанк».
+  </Accordion>
+
+  <Accordion title="Используйте seed для вариаций" icon="seedling">
+    Зафиксируйте `seed` для воспроизводимости или меняйте его для получения вариаций удачной генерации.
+  </Accordion>
+</AccordionGroup>
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="NanoBanano" icon="wand-magic-sparkles" href="/gaidy/nanobanano">
+    Модель для реалистичных изображений
+  </Card>
+  <Card title="Veo 3.1" icon="video" href="/gaidy/veo-3-1">
+    Генерация видео
+  </Card>
+</CardGroup>

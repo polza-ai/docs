@@ -1,0 +1,25 @@
+﻿---
+title: Удалить файл
+description: Удаление файла из хранилища
+icon: trash
+openapi: DELETE /v1/storage/files/{id}
+---
+
+## Пример
+
+```bash
+curl -X DELETE "https://polza.ai/api/v1/storage/files/file_abc123" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Ответ (200)
+
+```json
+{
+  "success": true
+}
+```
+
+<Warning>
+Удаление файла необратимо. Файл будет удалён из хранилища и CDN.
+</Warning>

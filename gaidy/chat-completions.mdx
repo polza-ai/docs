@@ -1,0 +1,346 @@
+﻿---
+title: Текстовые запросы
+description: Отправка запросов к текстовым моделям через Chat Completions API
+icon: comments
+---
+
+В этом гайде вы узнаете как отправлять текстовые запросы к AI моделям и получать ответы.
+
+<Note>
+Полная документация endpoint доступна в [API Reference](/api-reference/chat/completions).
+</Note>
+
+## Endpoint
+
+```
+POST https://polza.ai/api/v1/chat/completions
+```
+
+Отправляет диалог (массив сообщений) в модель и получает ответ.
+
+## Базовые параметры
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `model` | string | Да | ID модели (например, `openai/gpt-4o`) |
+| `messages` | array | Да* | Массив сообщений диалога |
+| `prompt` | string | Да* | Текстовый промпт (альтернатива `messages`) |
+| `temperature` | number | Нет | Креативность ответа (0.0-2.0, по умолчанию 1.0) |
+| `max_tokens` | number | Нет | Максимальное количество токенов в ответе |
+| `stream` | boolean | Нет | Включить потоковую передачу (SSE) |
+
+<Note>
+\* Укажите `messages` **или** `prompt`. При передаче `prompt` он автоматически преобразуется в `messages` с ролью `user`.
+</Note>
+
+## Дополнительные параметры
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `max_completion_tokens` | number | Альтернатива `max_tokens` |
+| `top_p` | number | Nucleus sampling (0.0-1.0) |
+| `frequency_penalty` | number | Штраф за частоту токенов (-2.0 до 2.0) |
+| `presence_penalty` | number | Штраф за присутствие токенов (-2.0 до 2.0) |
+| `response_format` | object | Формат ответа ([structured output](/gaidy/structured-output)) |
+| `tools` | array | Определения функций ([tool calling](/gaidy/tool-calling)) |
+| `tool_choice` | string/object | Выбор инструмента: `none`, `auto`, `required` |
+| `reasoning` | object | Настройки reasoning ([reasoning](/osobennosti/reasoning-tokens)) |
+| `web_search_options` | object | Встроенный веб-поиск |
+| `provider` | object | Выбор провайдера ([подробнее](/gaidy/provider-selection)) |
+| `user` | string | ID конечного пользователя |
+
+## Структура messages
+
+Каждое сообщение содержит роль и содержимое:
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `role` | string | Роль отправителя (см. ниже) |
+| `content` | string \| array \| null | Текст, массив content parts или null |
+
+### Роли сообщений
+
+| Роль | Описание |
+|------|----------|
+| `system` | Системное сообщение, задающее контекст и поведение модели |
+| `developer` | Инструкции разработчика (аналог `system` для некоторых моделей) |
+| `user` | Сообщение от пользователя |
+| `assistant` | Ответ модели (для продолжения диалога). `content` может быть `null`, если есть `tool_calls` |
+| `tool` | Результат вызова инструмента. Требуется поле `tool_call_id` |
+
+### Типы content
+
+Поле `content` может быть строкой или массивом content parts для передачи медиа:
+
+```json
+// Строка
+{ "role": "user", "content": "Привет!" }
+
+// Массив content parts (для медиа)
+{
+  "role": "user",
+  "content": [
+    { "type": "text", "text": "Что на картинке?" },
+    { "type": "image_url", "image_url": { "url": "https://example.com/img.jpg" } }
+  ]
+}
+```
+
+Подробнее о передаче медиа — в гайде [Передача медиа на вход](/gaidy/media-input).
+
+## Простой пример
+
+<CodeGroup>
+```typescript TypeScript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  baseURL: 'https://polza.ai/api/v1',
+  apiKey: '<POLZA_AI_API_KEY>'
+});
+
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [
+    { role: 'system', content: 'Ты полезный ассистент.' },
+    { role: 'user', content: 'Напиши хайку о программировании' }
+  ],
+  temperature: 0.7,
+  max_tokens: 100
+});
+
+console.log(completion.choices[0].message.content);
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://polza.ai/api/v1",
+    api_key="<POLZA_AI_API_KEY>"
+)
+
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[
+        {"role": "system", "content": "Ты полезный ассистент."},
+        {"role": "user", "content": "Напиши хайку о программировании"}
+    ],
+    temperature=0.7,
+    max_tokens=100
+)
+
+print(completion.choices[0].message.content)
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [
+      {"role": "system", "content": "Ты полезный ассистент."},
+      {"role": "user", "content": "Напиши хайку о программировании"}
+    ],
+    "temperature": 0.7,
+    "max_tokens": 100
+  }'
+```
+</CodeGroup>
+
+## Структура ответа
+
+```json
+{
+  "id": "gen_581761234567890123",
+  "object": "chat.completion",
+  "created": 1703001234,
+  "model": "openai/gpt-4o",
+  "provider": "openai-direct",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Код течёт рекой\nБаги тают на рассвете\nРелиз близко..."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 25,
+    "completion_tokens": 20,
+    "total_tokens": 45,
+    "cost_rub": 0.15,
+    "cost": 0.15
+  }
+}
+```
+
+### Описание полей ответа
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `id` | string | Уникальный идентификатор запроса |
+| `provider` | string | Провайдер, обработавший запрос |
+| `choices[0].message.content` | string | Текст ответа модели |
+| `choices[0].finish_reason` | string | Причина завершения генерации |
+| `usage.prompt_tokens` | number | Количество токенов во входных сообщениях |
+| `usage.completion_tokens` | number | Количество токенов в ответе |
+| `usage.total_tokens` | number | Общее количество токенов |
+| `usage.cost_rub` | number | Стоимость запроса в рублях |
+| `usage.cost` | number | Стоимость запроса в рублях (алиас `cost_rub`) |
+
+### Значения finish_reason
+
+| Значение | Описание |
+|----------|----------|
+| `stop` | Модель завершила генерацию естественным образом |
+| `length` | Достигнут лимит `max_tokens` |
+| `tool_calls` | Модель запросила вызов функции |
+| `content_filter` | Контент заблокирован модерацией |
+
+## Стриминг
+
+Для получения ответа по мере генерации установите `stream: true`. Ответ приходит в формате Server-Sent Events (SSE):
+
+<CodeGroup>
+```typescript TypeScript
+const stream = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [{ role: 'user', content: 'Напиши короткую историю' }],
+  stream: true
+});
+
+for await (const chunk of stream) {
+  const content = chunk.choices[0]?.delta?.content;
+  if (content) {
+    process.stdout.write(content);
+  }
+}
+```
+
+```python Python
+stream = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[{"role": "user", "content": "Напиши короткую историю"}],
+    stream=True
+)
+
+for chunk in stream:
+    content = chunk.choices[0].delta.content
+    if content:
+        print(content, end="", flush=True)
+```
+</CodeGroup>
+
+## Пример диалога
+
+Для ведения диалога передавайте историю сообщений:
+
+<CodeGroup>
+```typescript TypeScript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  baseURL: 'https://polza.ai/api/v1',
+  apiKey: '<POLZA_AI_API_KEY>'
+});
+
+const messages = [
+  { role: 'system', content: 'Ты помощник по программированию.' },
+  { role: 'user', content: 'Как создать массив в JavaScript?' },
+  { role: 'assistant', content: 'В JavaScript массив создаётся так: const arr = [1, 2, 3];' },
+  { role: 'user', content: 'А как добавить элемент?' }
+];
+
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: messages
+});
+
+// Модель ответит с учётом контекста диалога
+console.log(completion.choices[0].message.content);
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://polza.ai/api/v1",
+    api_key="<POLZA_AI_API_KEY>"
+)
+
+messages = [
+    {"role": "system", "content": "Ты помощник по программированию."},
+    {"role": "user", "content": "Как создать массив в JavaScript?"},
+    {"role": "assistant", "content": "В JavaScript массив создаётся так: const arr = [1, 2, 3];"},
+    {"role": "user", "content": "А как добавить элемент?"}
+]
+
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=messages
+)
+
+# Модель ответит с учётом контекста диалога
+print(completion.choices[0].message.content)
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [
+      {"role": "system", "content": "Ты помощник по программированию."},
+      {"role": "user", "content": "Как создать массив в JavaScript?"},
+      {"role": "assistant", "content": "В JavaScript массив создаётся так: const arr = [1, 2, 3];"},
+      {"role": "user", "content": "А как добавить элемент?"}
+    ]
+  }'
+```
+</CodeGroup>
+
+## Советы по использованию
+
+<AccordionGroup>
+  <Accordion title="Используйте system message" icon="gear">
+    System message задаёт контекст и поведение модели. Например:
+    - «Ты опытный Python-разработчик»
+    - «Отвечай кратко, в 2-3 предложениях»
+    - «Всегда приводи примеры кода»
+  </Accordion>
+
+  <Accordion title="Настройте temperature" icon="temperature-half">
+    - **Низкая (0.0-0.3)** — для точных, детерминированных ответов (код, факты)
+    - **Средняя (0.5-0.7)** — баланс между точностью и разнообразием
+    - **Высокая (0.8-1.0)** — для креативных задач (тексты, идеи)
+  </Accordion>
+
+  <Accordion title="Ограничивайте max_tokens" icon="scissors">
+    Установка `max_tokens` помогает:
+    - Экономить средства на коротких ответах
+    - Ускорять время ответа
+    - Контролировать длину генерации
+  </Accordion>
+</AccordionGroup>
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Передача медиа" icon="upload" href="/gaidy/media-input">
+    Изображения, документы, аудио и видео на вход
+  </Card>
+  <Card title="Tool Calling" icon="wrench" href="/gaidy/tool-calling">
+    Вызов функций из модели
+  </Card>
+  <Card title="Structured Output" icon="code" href="/gaidy/structured-output">
+    JSON-ответы с гарантированной структурой
+  </Card>
+  <Card title="Выбор провайдера" icon="server" href="/gaidy/provider-selection">
+    Управление роутингом между провайдерами
+  </Card>
+</CardGroup>

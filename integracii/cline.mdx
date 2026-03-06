@@ -1,0 +1,113 @@
+﻿---
+title: Cline (VS Code / Cursor)
+description: Интеграция Polza.ai с Cline - AI-ассистент для VS Code и Cursor
+icon: code
+---
+
+Cline — AI-ассистент для VS Code и Cursor с поддержкой автономного выполнения задач.
+
+## Требования
+
+- VS Code, Cursor или VSCodium
+- Расширение Cline
+- API-ключ [polza.ai](https://polza.ai/dashboard)
+
+## Установка Cline
+
+<Steps>
+  <Step title="Откройте Extensions">
+    Нажмите на иконку Extensions в боковой панели или используйте `Ctrl+Shift+X` (Windows/Linux) или `Cmd+Shift+X` (macOS).
+  </Step>
+
+  <Step title="Найдите Cline">
+    Введите "Cline" в поиске расширений.
+
+    <Frame>
+      <img src="/images/cline/cline-install.png" alt="Установка Cline из VS Code Marketplace" />
+    </Frame>
+  </Step>
+
+  <Step title="Установите расширение">
+    Нажмите **Install** на расширении "Cline".
+  </Step>
+
+  <Step title="Откройте Cline">
+    После установки нажмите на иконку Cline в боковой панели.
+  </Step>
+</Steps>
+
+## Настройка подключения к Polza.ai
+
+<Steps>
+  <Step title="Откройте настройки модели">
+    В панели Cline нажмите на выбор модели (под полем ввода).
+  </Step>
+
+  <Step title="Выберите провайдера">
+    Выберите **OpenAI Compatible** в качестве API провайдера.
+  </Step>
+
+  <Step title="Введите настройки подключения">
+    Заполните поля:
+    - **Base URL:** `https://polza.ai/api/v1`
+    - **API Key:** Ваш ключ
+    - **Model ID:** Например, `anthropic/claude-opus-4`
+
+    <Frame>
+      <img src="/images/cline/cline-provider-settings.png" alt="Настройки провайдера Polza.ai в Cline" />
+    </Frame>
+  </Step>
+</Steps>
+
+## Рекомендуемые модели для кодинга
+
+| Модель | ID | Особенности |
+|--------|-----|-------------|
+| Claude Opus 4 | `anthropic/claude-opus-4` | Лучшая для сложных задач |
+| Claude 3.5 Sonnet | `anthropic/claude-3-5-sonnet` | Оптимальный баланс |
+| GPT-4o | `openai/gpt-4o` | Универсальная |
+| DeepSeek V3 | `deepseek/deepseek-v3` | Экономичная |
+
+## Возможности
+
+<CardGroup cols={2}>
+  <Card title="Автономные задачи" icon="robot">
+    Cline может самостоятельно выполнять многошаговые задачи: создавать файлы, запускать команды, исправлять ошибки
+  </Card>
+  <Card title="Написание кода" icon="code">
+    Генерация кода по описанию на естественном языке
+  </Card>
+  <Card title="Рефакторинг" icon="wand-magic-sparkles">
+    Улучшение и оптимизация существующего кода
+  </Card>
+  <Card title="Отладка" icon="bug">
+    Поиск и исправление ошибок в коде
+  </Card>
+</CardGroup>
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Ошибка аутентификации">
+    - Проверьте правильность API-ключа
+    - Убедитесь в наличии средств на балансе
+    - Проверьте Base URL: `https://polza.ai/api/v1`
+  </Accordion>
+
+  <Accordion title="Модель не найдена">
+    - Проверьте правильность Model ID
+    - Актуальный список: [polza.ai/models](https://polza.ai/models)
+  </Accordion>
+
+  <Accordion title="Медленные ответы">
+    - Используйте более быстрые модели (Sonnet вместо Opus)
+    - Уменьшите размер контекста
+    - Проверьте интернет-соединение
+  </Accordion>
+
+  <Accordion title="Расширение не появляется">
+    - Перезагрузите VS Code
+    - Проверьте что расширение включено в Extensions
+    - Откройте через Command Palette: "Cline: Open In New Tab"
+  </Accordion>
+</AccordionGroup>

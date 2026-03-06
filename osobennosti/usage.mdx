@@ -1,0 +1,120 @@
+﻿---
+title: Учет средств (Usage)
+description: Отслеживание использования токенов и стоимости
+icon: chart-pie
+---
+
+Usage Accounting — встроенная функция для отслеживания использования токенов и стоимости AI-запросов с возвратом информации в ответе.
+
+## Как работает
+
+- Автоматический подсчет токенов и расходов
+- Детальная аналитика по типам (prompt, completion, reasoning, cached)
+- Готовая стоимость в рублях, уже списанная
+- Информация включается в стандартный ответ API без задержек
+
+## Структура ответа
+
+Каждый ответ API содержит объект `usage`:
+
+```json
+{
+  "usage": {
+    "prompt_tokens": 150,
+    "completion_tokens": 250,
+    "total_tokens": 400,
+    "cost_rub": 15.75,
+    "cost": 15.75,
+    "prompt_tokens_details": {
+      "cached_tokens": 100,
+      "audio_tokens": 10,
+      "video_tokens": 5
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 50,
+      "audio_tokens": 10,
+      "image_tokens": 5
+    }
+  }
+}
+```
+
+### Поля usage
+
+| Поле | Описание |
+|------|----------|
+| `prompt_tokens` | Входящие токены |
+| `completion_tokens` | Выходящие токены |
+| `total_tokens` | Сумма всех токенов |
+| `cost_rub` | Стоимость в рублях |
+| `cost` | Стоимость в рублях (алиас `cost_rub`) |
+
+### Детализация входных токенов (prompt_tokens_details)
+
+| Поле | Описание |
+|------|----------|
+| `cached_tokens` | Токены из кеша (~90% дешевле) |
+| `audio_tokens` | Токены аудио во входных данных |
+| `video_tokens` | Токены видео во входных данных |
+
+### Детализация выходных токенов (completion_tokens_details)
+
+| Поле | Описание |
+|------|----------|
+| `reasoning_tokens` | Токены рассуждений (для o1, R1 и др.) |
+| `audio_tokens` | Токены аудио в ответе |
+| `image_tokens` | Токены изображений в ответе |
+
+## Типы токенов и стоимость
+
+| Тип | Описание | Стоимость |
+|-----|----------|-----------|
+| Prompt | Входящие сообщения, контекст | Базовая цена |
+| Completion | Генерируемый текст | 2-4x выше prompt |
+| Reasoning | Внутренние рассуждения моделей | ~4x выше обычных |
+| Cached | Из кеша провайдера | ~90% дешевле |
+
+## Streaming режим
+
+В потоковом режиме информация о `usage` приходит в последнем SSE-сообщении перед `[DONE]`:
+
+```
+data: {"choices":[{"delta":{"content":"..."}}]}
+data: {"choices":[{"delta":{"content":"..."}}]}
+data: {"choices":[],"usage":{"prompt_tokens":100,"completion_tokens":200,"cost_rub":5.50,"cost":5.50}}
+data: [DONE]
+```
+
+## Оптимизация расходов
+
+<CardGroup cols={2}>
+  <Card title="Используйте кеширование" icon="database">
+    Для повторяющихся промптов экономия до 90%
+  </Card>
+  <Card title="Выбирайте модель" icon="scale-balanced">
+    Подбирайте модель под сложность задачи
+  </Card>
+  <Card title="Ограничивайте max_tokens" icon="scissors">
+    Устанавливайте разумные лимиты
+  </Card>
+  <Card title="Мониторьте reasoning" icon="brain">
+    Reasoning токены дороже, но эффективнее
+  </Card>
+</CardGroup>
+
+## Проверка баланса
+
+Для отслеживания общего баланса используйте [API баланса](/api-reference/other/balance):
+
+```bash
+curl -H "Authorization: Bearer <API_KEY>" \
+  https://polza.ai/api/v1/balance
+```
+
+Ответ:
+
+```json
+{
+  "amount": "1250.50"
+}
+```
