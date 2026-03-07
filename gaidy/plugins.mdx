@@ -109,99 +109,9 @@ curl -X POST "https://polza.ai/api/v1/chat/completions" \
 
 ## Поиск в интернете (web)
 
-Плагин `web` дополняет ответ модели актуальными результатами поиска в интернете.
+Плагин `web` дополняет ответ модели актуальными результатами поиска в интернете. Работает с любой моделью — от GPT-5 до Claude и Gemini.
 
-### Шорткат :online
-
-Вместо указания плагина можно добавить `:online` к имени модели:
-
-```json
-{
-  "model": "openai/gpt-4o:online"
-}
-```
-
-Это эквивалентно:
-
-```json
-{
-  "model": "openai/gpt-4o",
-  "plugins": [{ "id": "web" }]
-}
-```
-
-### Параметры
-
-| Параметр | Тип | Описание |
-|----------|-----|----------|
-| `enabled` | boolean | Включить/выключить плагин |
-| `max_results` | number | Максимум результатов поиска (по умолчанию 5) |
-| `search_prompt` | string | Пользовательский промпт для поиска |
-| `engine` | string | Поисковый движок: `native` или `exa` |
-
-### Выбор поискового движка
-
-| Значение | Описание |
-|----------|----------|
-| `native` | Встроенный поиск провайдера (OpenAI, Anthropic, Perplexity, xAI) |
-| `exa` | Поиск через [Exa](https://exa.ai/) — комбинация ключевых слов и эмбеддингов |
-| Не указан | Автоматически: `native` если доступен, иначе `exa` |
-
-### Пример с настройками
-
-```json
-{
-  "model": "openai/gpt-4o",
-  "plugins": [
-    {
-      "id": "web",
-      "engine": "exa",
-      "max_results": 3,
-      "search_prompt": "Найти актуальную информацию:"
-    }
-  ]
-}
-```
-
-### Альтернативный синтаксис: web_search_options
-
-Для нативного поиска OpenAI также поддерживается параметр `web_search_options`:
-
-```json
-{
-  "model": "openai/gpt-4o",
-  "web_search_options": {
-    "search_context_size": "medium"
-  }
-}
-```
-
-Значения `search_context_size`: `low`, `medium`, `high`.
-
-### Парсинг результатов поиска
-
-Результаты поиска возвращаются в поле `annotations` ответа:
-
-```json
-{
-  "message": {
-    "role": "assistant",
-    "content": "Последние новости: ...",
-    "annotations": [
-      {
-        "type": "url_citation",
-        "url_citation": {
-          "url": "https://example.com/article",
-          "title": "Заголовок статьи",
-          "content": "Содержание результата",
-          "start_index": 100,
-          "end_index": 200
-        }
-      }
-    ]
-  }
-}
-```
+Подробное руководство по веб-поиску, включая параметры, формат ответа, совместимость моделей и Responses API — на странице [Поиск в интернете](/gaidy/web-search).
 
 ## Парсинг файлов (file-parser)
 
@@ -287,6 +197,9 @@ curl -X POST "https://polza.ai/api/v1/chat/completions" \
 ## Следующие шаги
 
 <CardGroup cols={2}>
+  <Card title="Поиск в интернете" icon="globe" href="/gaidy/web-search">
+    Подробный гайд по веб-поиску для любой модели
+  </Card>
   <Card title="Tool Calling" icon="wrench" href="/gaidy/tool-calling">
     Вызов функций для получения данных
   </Card>
