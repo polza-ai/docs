@@ -143,7 +143,7 @@ curl -X POST "https://polza.ai/api/v1/responses" \
 3. **Выполнение поиска**:
    - Для моделей с нативным поиском (OpenAI, Anthropic, xAI, Perplexity — 38 моделей) — активируется встроенный web search провайдера
    - Для остальных моделей (Gemini, DeepSeek и др.) — поиск выполняется через Exa и результаты добавляются в контекст модели
-4. **Ответ с цитатами** — модель формирует ответ на основе найденных данных. Для моделей с нативным поиском ссылки на источники возвращаются в `annotations`
+4. **Ответ с цитатами** — модель формирует ответ на основе найденных данных. Ссылки на источники возвращаются в `annotations` для обоих типов поиска
 
 ## Формат ответа
 
@@ -177,8 +177,15 @@ curl -X POST "https://polza.ai/api/v1/responses" \
 
 ```json
 {
+  "id": "resp_abc123",
+  "object": "response",
+  "status": "completed",
+  "output_text": "Квантовый компьютер IBM достиг рекордных показателей...",
   "output": [{
     "type": "message",
+    "id": "msg_abc123",
+    "status": "completed",
+    "role": "assistant",
     "content": [{
       "type": "output_text",
       "text": "Квантовый компьютер IBM достиг рекордных показателей...",
@@ -187,7 +194,9 @@ curl -X POST "https://polza.ai/api/v1/responses" \
           "type": "url_citation",
           "url_citation": {
             "url": "https://example.com/quantum",
-            "title": "IBM Quantum Breakthrough"
+            "title": "IBM Quantum Breakthrough",
+            "start_index": 0,
+            "end_index": 55
           }
         }
       ]
@@ -255,14 +264,27 @@ curl -X POST "https://polza.ai/api/v1/responses" \
     "total_tokens": 8807,
     "server_tool_use": {
       "web_search_requests": 1
-    }
+    },
+    "cost_rub": 1.07,
+    "cost": 1.07
   }
 }
 ```
 
+Поля `cost_rub` и `cost` содержат стоимость запроса в рублях, списанную с баланса.
+
 <Note>
-`server_tool_use` и `annotations` присутствуют только при нативном поиске провайдера. Если модель не поддерживает нативный поиск — используется плагин (Exa), и эти поля не возвращаются.
+`server_tool_use` присутствует только при нативном поиске провайдера. `annotations` возвращаются в обоих случаях, но формат отличается — см. таблицу ниже.
 </Note>
+
+### Различия аннотаций: нативный поиск vs Exa
+
+| Поле | Нативный поиск | Exa поиск |
+|------|---------------|-----------|
+| `start_index` / `end_index` | Позиция цитаты в тексте ответа | `0` (позиция не указывается) |
+| `content` | Отсутствует | Текст страницы-источника |
+| `title` | Заголовок страницы | Заголовок страницы |
+| `url` | URL источника | URL источника |
 
 ## Совместимость
 
