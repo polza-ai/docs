@@ -101,6 +101,13 @@
                   "gaidy/elevenlabs-tts-turbo",
                   "gaidy/elevenlabs-tts-multilingual"
                 ]
+              },
+              {
+                "group": "Музыка",
+                "icon": "music",
+                "pages": [
+                  "gaidy/suno-music"
+                ]
               }
             ]
           },
