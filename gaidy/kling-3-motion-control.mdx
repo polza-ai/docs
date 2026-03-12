@@ -1,0 +1,52 @@
+---
+title: Kling 3.0 Motion Control
+description: Перенос движения из видео на персонажа с изображения — Kling 3.0 Motion Control
+icon: video
+---
+
+Модель Kling 3.0 Motion Control переносит движение из референсного видео на персонажа с изображения. Требуется одно изображение и одно видео, режимы 720p и 1080p.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `kling/v3-motion-control` |
+| Max prompt | 2 500 символов (необязательный) |
+| images | 1 (обязательно) — референсное изображение персонажа |
+| videos | 1 (обязательно) — референсное видео с движением |
+| mode | 720p, 1080p. По умолчанию 720p |
+| character_orientation | image (макс 10 сек), video (макс 30 сек) |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+|----------|---------------|----------|
+| `model` | Да | `kling/v3-motion-control` |
+| `prompt` | Нет | Текстовое описание, до 2500 символов |
+| `images` | Да | Референсное изображение персонажа (ровно 1) |
+| `videos` | Да | Референсное видео с движением (ровно 1) |
+| `mode` | Нет | 720p или 1080p. По умолчанию 720p |
+| `character_orientation` | Нет | image: ориентация по картинке (макс 10с), video: по видео (макс 30с) |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "kling/v3-motion-control",
+    "input": {
+      "prompt": "Описание видео",
+      "images": ["https://example.com/character.jpg"],
+      "videos": ["https://example.com/motion-reference.mp4"],
+      "mode": "720p",
+      "character_orientation": "image"
+    },
+    "async": true
+  }'
+```
