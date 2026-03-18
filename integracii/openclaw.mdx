@@ -1,0 +1,332 @@
+---
+title: OpenClaw
+description: Интеграция Polza.ai с OpenClaw — мультиканальным AI-ассистентом для мессенджеров
+icon: paw
+---
+
+[OpenClaw](https://openclaw-ai.com) — open-source платформа для создания персонального AI-ассистента, работающего через Telegram, WhatsApp, Discord, Slack и другие мессенджеры. OpenClaw запускает локальный Gateway-сервер, который маршрутизирует сообщения из разных каналов к AI-модели.
+
+## Требования
+
+* Установленный OpenClaw ([инструкция по установке](https://openclaw-ai.com/en/install))
+* Node.js ≥ 22
+* API-ключ [polza.ai](https://polza.ai/dashboard)
+
+## Настройка подключения к Polza.ai
+
+Polza.ai подключается к OpenClaw как **custom provider** через OpenAI-совместимый API.
+
+<Steps>
+  <Step title="Откройте конфигурацию OpenClaw">
+    Откройте файл конфигурации в текстовом редакторе:
+
+    ```bash
+    nano ~/.openclaw/openclaw.json
+    ```
+
+    Или используйте встроенные инструменты:
+
+    ```bash
+    openclaw configure
+    ```
+  </Step>
+
+  <Step title="Добавьте провайдер Polza.ai">
+    В секции `models.providers` добавьте провайдер `polza` с вашим API-ключом:
+
+    ```json5
+    {
+      models: {
+        mode: "merge",
+        providers: {
+          polza: {
+            baseUrl: "https://polza.ai/api/v1",
+            apiKey: "<ваш API-ключ Polza.ai>",
+            api: "openai-completions",
+            models: [
+              {
+                id: "anthropic/claude-sonnet-4.6",
+                name: "Claude Sonnet 4.6"
+              },
+              {
+                id: "google/gemini-3.1-flash-lite-preview",
+                name: "Gemini 3.1 Flash Lite"
+              },
+              {
+                id: "moonshotai/kimi-k2.5",
+                name: "Kimi K2.5"
+              }
+            ]
+          }
+        }
+      }
+    }
+    ```
+
+    <Note>
+      Поле `api: "openai-completions"` обязательно — без него OpenClaw не сможет определить тип API.
+    </Note>
+  </Step>
+
+  <Step title="Назначьте модель по умолчанию">
+    Укажите модель Polza.ai как основную в секции `agents.defaults`:
+
+    ```json5
+    {
+      agents: {
+        defaults: {
+          model: {
+            primary: "polza/anthropic/claude-sonnet-4.6"
+          },
+          models: {
+            "polza/anthropic/claude-sonnet-4.6": {
+              alias: "Claude"
+            },
+            "polza/google/gemini-3.1-flash-lite-preview": {
+              alias: "Gemini"
+            },
+            "polza/moonshotai/kimi-k2.5": {
+              alias: "Kimi"
+            }
+          }
+        }
+      }
+    }
+    ```
+
+    <Tip>
+      Формат ссылки на модель: `polza/<model-id>`, где `polza` — имя провайдера из конфига, а `<model-id>` — ID модели из списка `models`.
+    </Tip>
+  </Step>
+
+  <Step title="Перезапустите Gateway">
+    Если у вас включён hot reload (по умолчанию), изменения применятся автоматически. Если нет:
+
+    ```bash
+    openclaw gateway restart
+    ```
+  </Step>
+</Steps>
+
+## Полный пример конфигурации
+
+Готовый `~/.openclaw/openclaw.json` с Polza.ai и Telegram-каналом:
+
+```json5
+{
+  gateway: {
+    port: 18789,
+    mode: "local",
+    bind: "loopback"
+  },
+  models: {
+    mode: "merge",
+    providers: {
+      polza: {
+        baseUrl: "https://polza.ai/api/v1",
+        apiKey: "<ваш API-ключ Polza.ai>",
+        api: "openai-completions",
+        models: [
+          {
+            id: "anthropic/claude-sonnet-4.6",
+            name: "Claude Sonnet 4.6"
+          },
+          {
+            id: "google/gemini-3.1-flash-lite-preview",
+            name: "Gemini 3.1 Flash Lite"
+          },
+          {
+            id: "moonshotai/kimi-k2.5",
+            name: "Kimi K2.5"
+          },
+          {
+            id: "z-ai/glm-5-turbo",
+            name: "GLM-5 Turbo"
+          },
+          {
+            id: "qwen/qwen3-coder-480b-a35b",
+            name: "Qwen3 Coder 480B"
+          }
+        ]
+      }
+    }
+  },
+  agents: {
+    defaults: {
+      model: {
+        primary: "polza/anthropic/claude-sonnet-4.6",
+        fallbacks: ["polza/moonshotai/kimi-k2.5"]
+      },
+      models: {
+        "polza/anthropic/claude-sonnet-4.6": {
+          alias: "Claude"
+        },
+        "polza/google/gemini-3.1-flash-lite-preview": {
+          alias: "Gemini"
+        },
+        "polza/moonshotai/kimi-k2.5": {
+          alias: "Kimi"
+        },
+        "polza/z-ai/glm-5-turbo": {
+          alias: "GLM"
+        },
+        "polza/qwen/qwen3-coder-480b-a35b": {
+          alias: "QwenCoder"
+        }
+      }
+    }
+  },
+  channels: {
+    telegram: {
+      dmPolicy: "allowlist",
+      botToken: "<токен бота Telegram>",
+      allowFrom: ["<ID аккаунта Telegram>"],
+      groupPolicy: "allowlist"
+    }
+  },
+  plugins: {
+    entries: {
+      telegram: {
+        enabled: true
+      }
+    }
+  }
+}
+```
+
+## Переключение моделей
+
+После настройки нескольких моделей вы можете переключаться между ними прямо в чате:
+
+```
+/model polza/moonshotai/kimi-k2.5
+```
+
+Или через CLI:
+
+```bash
+openclaw models set polza/qwen/qwen3-coder-480b-a35b
+```
+
+Список доступных моделей:
+
+```bash
+openclaw models list
+```
+
+## Настройка фоллбеков
+
+OpenClaw поддерживает автоматическое переключение на запасную модель при недоступности основной:
+
+```json5
+{
+  agents: {
+    defaults: {
+      model: {
+        primary: "polza/anthropic/claude-sonnet-4.6",
+        fallbacks: [
+          "polza/moonshotai/kimi-k2.5",
+          "polza/google/gemini-3.1-flash-lite-preview"
+        ]
+      }
+    }
+  }
+}
+```
+
+## Рекомендуемые модели
+
+| Модель | ID в Polza.ai | Для чего подходит |
+| ------ | ------------- | ----------------- |
+| Claude Sonnet 4.6 | `anthropic/claude-sonnet-4.6` | Основная рабочая модель: длинные рассуждения, генерация кода, анализ документов, мультиязычные диалоги |
+| Gemini 3.1 Flash Lite | `google/gemini-3.1-flash-lite-preview` | Экономичная модель для коротких ответов, суммаризации и простых вопросов |
+| Kimi K2.5 | `moonshotai/kimi-k2.5` | Кодинг и reasoning-задачи. MoE-архитектура, высокая скорость при низкой стоимости |
+| GLM-5 Turbo | `z-ai/glm-5-turbo` | Мультиязычные задачи (CN/EN), обработка длинного контекста, аналитика |
+| Qwen3 Coder 480B | `qwen/qwen3-coder-480b-a35b` | Специализированная модель для кодинга: 480B параметров, агентские сценарии, контекст до 256K токенов |
+
+Актуальный список моделей: [polza.ai/models](https://polza.ai/models)
+
+## Использование переменных окружения
+
+Вместо хранения API-ключа в конфиге можно использовать переменную окружения:
+
+```json5
+{
+  env: {
+    vars: {
+      POLZA_API_KEY: "<ваш API-ключ>"
+    }
+  },
+  models: {
+    mode: "merge",
+    providers: {
+      polza: {
+        baseUrl: "https://polza.ai/api/v1",
+        apiKey: "${POLZA_API_KEY}",
+        api: "openai-completions",
+        models: [
+          { id: "anthropic/claude-sonnet-4.6", name: "Claude Sonnet 4.6" },
+          { id: "moonshotai/kimi-k2.5", name: "Kimi K2.5" }
+        ]
+      }
+    }
+  }
+}
+```
+
+Или задайте ключ через `.env` файл в `~/.openclaw/.env`:
+
+```
+POLZA_API_KEY=sk-...
+```
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Ошибка аутентификации (401)">
+    * Проверьте правильность API-ключа Polza.ai
+    * Убедитесь в наличии средств на [балансе](https://polza.ai/dashboard)
+    * Проверьте Base URL: `https://polza.ai/api/v1`
+  </Accordion>
+
+  <Accordion title="'No API provider registered for api: undefined'">
+    Убедитесь, что в конфиге провайдера указано поле `api`:
+
+    ```json5
+    polza: {
+      baseUrl: "https://polza.ai/api/v1",
+      apiKey: "...",
+      api: "openai-completions",  // ← обязательно
+      models: [...]
+    }
+    ```
+  </Accordion>
+
+  <Accordion title="Модель не найдена">
+    * Проверьте что модель добавлена в `models.providers.polza.models`
+    * Проверьте что модель есть в `agents.defaults.models` (это allowlist)
+    * Формат ссылки: `polza/<model-id>` — например, `polza/anthropic/claude-sonnet-4.6`
+    * Актуальный список моделей: [polza.ai/models](https://polza.ai/models)
+  </Accordion>
+
+  <Accordion title="Gateway не запускается после изменения конфига">
+    OpenClaw строго валидирует конфигурацию. Запустите диагностику:
+
+    ```bash
+    openclaw doctor
+    openclaw doctor --fix
+    ```
+  </Accordion>
+
+  <Accordion title="Медленные ответы">
+    * Переключитесь на более быстрые модели: Gemini 3.1 Flash Lite или GLM-5 Turbo
+    * Проверьте интернет-соединение
+    * Установите `streamMode: "partial"` в настройках канала для стриминга ответов
+  </Accordion>
+</AccordionGroup>
+
+## Поддержка
+
+* [Документация OpenClaw](https://openclaw-ai.com/en/docs)
+* [Discord OpenClaw](https://discord.gg/clawd)
+* [Страница поддержки Polza.ai](/glavnoe/support)
