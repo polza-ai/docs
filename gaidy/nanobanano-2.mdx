@@ -1,123 +1,25 @@
 ---
 title: Nano Banana 2
-description: Генерация изображений с Nano Banana 2
+description: Генерация изображений до 4K — полный API-гайд
 icon: star
+openapi: POST /v1/media/nanobanano-2
 ---
 
-Nano Banana 2 — модель генерации изображений с теми же возможностями, что и Nano Banana Pro: до 4K разрешения, точный рендеринг текста и до 8 референс-изображений. ID модели: `google/gemini-3.1-flash-image-preview`.
+Nano Banana 2 (`google/gemini-3.1-flash-image-preview`) — модель генерации и редактирования изображений с поддержкой до 4K разрешения, точным рендерингом текста и возможностью передавать до 8 референс-изображений.
 
-<Note>
-Полная документация API: [Генерация медиа](/api-reference/media/create)
-</Note>
-
-## Обзор
+## Характеристики
 
 | Характеристика | Nano Banana | Nano Banana 2 |
 |----------------|-------------|----------------|
 | ID модели | `google/gemini-2.5-flash-image` | `google/gemini-3.1-flash-image-preview` |
 | Max prompt | 20 000 символов | 20 000 символов |
-| Разрешения | - | 1K, 2K, 4K |
+| Разрешения | — | 1K, 2K, 4K |
 | Aspect ratio | 10 вариантов | 11 вариантов |
 | Референс-изображения | до 8 | до 8 |
 
-## Преимущества
+## Примеры
 
-<CardGroup cols={2}>
-  <Card title="Высокое разрешение" icon="expand">
-    Генерация изображений до 4K разрешения
-  </Card>
-  <Card title="Точный рендеринг текста" icon="font">
-    Улучшенная генерация текста на изображениях
-  </Card>
-  <Card title="Авто-соотношение" icon="crop">
-    Автоматический выбор оптимального aspect ratio
-  </Card>
-  <Card title="Детализация" icon="magnifying-glass">
-    Более точная проработка мелких деталей
-  </Card>
-</CardGroup>
-
-## Сценарии использования
-
-<CardGroup cols={2}>
-  <Card title="Профессиональная фотография" icon="camera">
-    Коммерческие съёмки и каталоги
-  </Card>
-  <Card title="Печатная продукция" icon="print">
-    Баннеры, постеры, полиграфия высокого качества
-  </Card>
-  <Card title="Детальные иллюстрации" icon="image">
-    Сложные композиции с множеством элементов
-  </Card>
-  <Card title="Брендинг" icon="building">
-    Визуальные материалы для брендов
-  </Card>
-</CardGroup>
-
-## Примеры запросов
-
-### Генерация изображения в высоком разрешении
-
-<CodeGroup>
-```typescript TypeScript
-const response = await fetch('https://polza.ai/api/v1/media', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    model: 'google/gemini-3.1-flash-image-preview',
-    input: {
-      prompt: 'Фотореалистичный портрет бизнесмена в современном офисе, профессиональное студийное освещение',
-      aspect_ratio: '1:1',
-      image_resolution: '2K',
-      output_format: 'png'
-    }
-  })
-});
-
-const result = await response.json();
-console.log(result);
-```
-
-```python Python
-import requests
-
-response = requests.post(
-    'https://polza.ai/api/v1/media',
-    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
-    json={
-        'model': 'google/gemini-3.1-flash-image-preview',
-        'input': {
-            'prompt': 'Фотореалистичный портрет бизнесмена в современном офисе, профессиональное студийное освещение',
-            'aspect_ratio': '1:1',
-            'image_resolution': '2K',
-            'output_format': 'png'
-        }
-    }
-)
-
-print(response.json())
-```
-
-```bash cURL
-curl -X POST "https://polza.ai/api/v1/media" \
-  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "google/gemini-3.1-flash-image-preview",
-    "input": {
-      "prompt": "Фотореалистичный портрет бизнесмена в современном офисе, профессиональное студийное освещение",
-      "aspect_ratio": "1:1",
-      "image_resolution": "2K",
-      "output_format": "png"
-    }
-  }'
-```
-</CodeGroup>
-
-### Редактирование с референсным изображением
+### Редактирование с референс-изображением
 
 <CodeGroup>
 ```typescript TypeScript
@@ -138,9 +40,6 @@ const response = await fetch('https://polza.ai/api/v1/media', {
     }
   })
 });
-
-const result = await response.json();
-console.log(result);
 ```
 
 ```python Python
@@ -160,8 +59,6 @@ response = requests.post(
         }
     }
 )
-
-print(response.json())
 ```
 
 ```bash cURL
@@ -171,7 +68,7 @@ curl -X POST "https://polza.ai/api/v1/media" \
   -d '{
     "model": "google/gemini-3.1-flash-image-preview",
     "input": {
-      "prompt": "Добавь текст '\''SALE 50%'\'' крупными буквами в центре",
+      "prompt": "Добавь текст SALE 50% крупными буквами в центре",
       "image_resolution": "4K",
       "images": [
         { "type": "url", "data": "https://example.com/banner.jpg" }
@@ -181,63 +78,67 @@ curl -X POST "https://polza.ai/api/v1/media" \
 ```
 </CodeGroup>
 
-## Параметры
+## Ответ
 
-| Параметр | Тип | Обязательный | Описание |
-|----------|-----|--------------|----------|
-| `model` | string | Да | ID модели: `google/gemini-3.1-flash-image-preview` |
-| `prompt` | string | Да | Текстовое описание желаемого изображения (до 20 000 символов) |
-| `aspect_ratio` | string | Нет | Соотношение сторон: `1:1`, `2:3`, `3:2`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9` |
-| `image_resolution` | string | Нет | Разрешение: `1K`, `2K`, `4K` |
-| `output_format` | string | Нет | Формат вывода: `png`, `jpeg` |
-| `images` | array | Нет | Массив референс-изображений для редактирования (до 8 шт.) |
+API возвращает объект с ID задачи:
 
-## Пример запроса (cURL)
-
-```bash
-curl -X POST "https://polza.ai/api/v1/media" \
-  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "google/gemini-3.1-flash-image-preview",
-    "input": {
-      "prompt": "Описание изображения",
-      "aspect_ratio": "1:1",
-      "image_resolution": "2K",
-      "images": []
-    },
-    "async": true
-  }'
+```json
+{
+  "id": "aig_abc123",
+  "object": "media.generation",
+  "status": "pending",
+  "created": 1703001244,
+  "model": "google/gemini-3.1-flash-image-preview"
+}
 ```
 
-## Сравнение с базовой версией
+Опросите статус через `GET /v1/media/{id}`:
 
-| Функция | Nano Banana | Nano Banana 2 |
-|---------|-------------|----------------|
-| Максимальное разрешение | Стандартное | До 4K |
-| Точность текста | Базовая | Улучшенная |
-| Авто aspect ratio | Нет | Да |
-| Детализация | Стандартная | Повышенная |
+```bash
+curl "https://polza.ai/api/v1/media/aig_abc123" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>"
+```
 
-## Советы и лучшие практики
+### Статусы
+
+| Статус | Описание |
+|--------|----------|
+| `pending` | В очереди |
+| `processing` | Генерация выполняется |
+| `completed` | Готово, URL результата в поле `output.url` |
+| `failed` | Ошибка, описание в поле `error` |
+
+<Note>
+Результаты хранятся **7 дней**. Для постоянного хранения используйте [Storage API](/api-reference/storage/upload) с политикой `PERMANENT`.
+</Note>
+
+## Советы
 
 <AccordionGroup>
-  <Accordion title="Используйте 4K для печати" icon="print">
-    Для печатной продукции выбирайте `image_resolution: "4K"` для максимального качества.
+  <Accordion title="4K для печати" icon="print">
+    Для полиграфии и баннеров выбирайте `image_resolution: "4K"` — это максимальное качество модели.
   </Accordion>
-
+  <Accordion title="Точный рендеринг текста" icon="font">
+    Nano Banana 2 хорошо рендерит текст на изображениях. Указывайте шрифт, размер и расположение в промпте.
+  </Accordion>
   <Accordion title="Детализируйте освещение" icon="lightbulb">
-    Модель отлично обрабатывает сложные световые схемы — описывайте их подробно.
+    Модель отлично обрабатывает сложные световые схемы — описывайте их подробно: студийный свет, боковое освещение, время суток.
   </Accordion>
 </AccordionGroup>
 
-## Следующие шаги
+## Смотрите также
 
 <CardGroup cols={2}>
-  <Card title="Nano Banana Pro" icon="star" href="/gaidy/nanobanano-pro">
-    Продвинутая версия с теми же возможностями
+  <Card title="Попробовать в Playground" icon="play" href="/dashboard/playground">
+    Тестируйте модель прямо в браузере без написания кода
   </Card>
-  <Card title="API Reference" icon="code" href="/api-reference/media/create">
-    Полная документация Media API
+  <Card title="Статус и результат генерации" icon="clock" href="/api-reference/media/status">
+    GET /v1/media/\{id\} — проверка статуса задачи
+  </Card>
+  <Card title="Nano Banana" icon="image" href="/gaidy/nanobanano">
+    Базовая версия модели
+  </Card>
+  <Card title="Nano Banana Pro" icon="star" href="/gaidy/nanobanano-pro">
+    Продвинутая версия с расширенными возможностями
   </Card>
 </CardGroup>

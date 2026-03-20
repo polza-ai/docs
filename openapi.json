@@ -418,34 +418,6 @@
         ]
       }
     },
-    "/v1/balance": {
-      "get": {
-        "operationId": "AiController_getUserBalance[1]",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          },
-          "401": {
-            "description": "Ошибка авторизации. Проверьте ключ доступа"
-          },
-          "403": {
-            "description": "Ошибка доступа. Проверьте права доступа ключа"
-          },
-          "500": {
-            "description": "Ошибка сервера. Обратитесь к поставщику услуг"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Ai"
-        ]
-      }
-    },
     "/v1/chat/completions": {
       "post": {
         "operationId": "ChatController_createChatCompletion[1]",
@@ -1374,6 +1346,201 @@
           "History"
         ]
       }
+    },
+    "/v2/plugins": {
+      "get": {
+        "operationId": "PluginsController_getPlugins[1]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PluginListPresenter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка авторизации. Проверьте ключ доступа"
+          },
+          "403": {
+            "description": "Ошибка доступа. Проверьте права доступа ключа"
+          },
+          "500": {
+            "description": "Ошибка сервера. Обратитесь к поставщику услуг"
+          }
+        },
+        "summary": "Получить список доступных плагинов",
+        "tags": [
+          "Плагины"
+        ]
+      }
+    },
+    "/v1/balance": {
+      "get": {
+        "operationId": "V1LegacyController_getUserBalance[1]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "V1Legacy"
+        ]
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "operationId": "V1LegacyController_generateImage[1]",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "V1Legacy"
+        ]
+      }
+    },
+    "/v1/videos/generations": {
+      "post": {
+        "operationId": "V1LegacyController_generateVideo[1]",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "V1Legacy"
+        ]
+      }
+    },
+    "/v1/videos/extend": {
+      "post": {
+        "operationId": "V1LegacyController_extendVideo[1]",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "V1Legacy"
+        ]
+      }
+    },
+    "/v1/upscale/generations": {
+      "post": {
+        "operationId": "V1LegacyController_generateUpscale[1]",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "V1Legacy"
+        ]
+      }
+    },
+    "/v1/media/nanobanano-2": {
+      "post": {
+        "operationId": "MediaController_nanobanano2",
+        "summary": "Nano Banana 2 — генерация изображений",
+        "tags": [
+          "Медиа"
+        ],
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "model",
+                  "input"
+                ],
+                "properties": {
+                  "model": {
+                    "type": "string",
+                    "enum": [
+                      "google/gemini-3.1-flash-image-preview"
+                    ],
+                    "description": "ID модели",
+                    "example": "google/gemini-3.1-flash-image-preview"
+                  },
+                  "input": {
+                    "$ref": "#/components/schemas/NanoBanana2InputDto"
+                  },
+                  "provider": {
+                    "$ref": "#/components/schemas/ProviderDto"
+                  },
+                  "async": {
+                    "type": "boolean",
+                    "description": "Асинхронный режим генерации. При true возвращается taskId для опроса статуса",
+                    "example": false,
+                    "default": false
+                  },
+                  "user": {
+                    "type": "string",
+                    "description": "Уникальный идентификатор конечного пользователя",
+                    "example": "user-123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "label": "cURL",
+            "source": "curl --request POST \\\n  --url https://polza.ai/api/v1/media \\\n  --header 'Authorization: Bearer <POLZA_AI_API_KEY>' \\\n  --header 'Content-Type: application/json' \\\n  --data '{\n    \"model\": \"google/gemini-3.1-flash-image-preview\",\n    \"input\": {\n      \"prompt\": \"Фотореалистичный портрет бизнесмена в современном офисе\",\n      \"aspect_ratio\": \"1:1\",\n      \"image_resolution\": \"2K\",\n      \"output_format\": \"png\"\n    }\n  }'"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nresponse = requests.post(\n    'https://polza.ai/api/v1/media',\n    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},\n    json={\n        'model': 'google/gemini-3.1-flash-image-preview',\n        'input': {\n            'prompt': 'Фотореалистичный портрет бизнесмена в современном офисе',\n            'aspect_ratio': '1:1',\n            'image_resolution': '2K',\n            'output_format': 'png'\n        }\n    }\n)\nprint(response.json())"
+          },
+          {
+            "lang": "javascript",
+            "label": "TypeScript",
+            "source": "const response = await fetch('https://polza.ai/api/v1/media', {\n  method: 'POST',\n  headers: {\n    'Authorization': 'Bearer <POLZA_AI_API_KEY>',\n    'Content-Type': 'application/json'\n  },\n  body: JSON.stringify({\n    model: 'google/gemini-3.1-flash-image-preview',\n    input: {\n      prompt: 'Фотореалистичный портрет бизнесмена в современном офисе',\n      aspect_ratio: '1:1',\n      image_resolution: '2K',\n      output_format: 'png'\n    }\n  })\n});\nconst result = await response.json();"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaStatusPresenter"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Ошибка авторизации. Проверьте ключ доступа"
+          },
+          "403": {
+            "description": "Ошибка доступа. Проверьте права доступа ключа"
+          },
+          "500": {
+            "description": "Ошибка сервера. Обратитесь к поставщику услуг"
+          }
+        }
+      }
     }
   },
   "info": {
@@ -1821,7 +1988,8 @@
             "enum": [
               "auto",
               "concise",
-              "detailed"
+              "detailed",
+              "none"
             ],
             "example": "auto"
           },
@@ -1976,10 +2144,63 @@
             "description": "Уникальный идентификатор конечного пользователя для отслеживания и предотвращения злоупотреблений",
             "example": "user-123"
           },
+          "stop": {
+            "description": "Последовательности, при которых модель прекращает генерацию",
+            "example": [
+              "\n"
+            ],
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "seed": {
+            "type": "number",
+            "description": "Seed для детерминированной генерации (best-effort)",
+            "example": 42
+          },
+          "n": {
+            "type": "number",
+            "description": "Количество вариантов ответа (1-10)",
+            "example": 1,
+            "minimum": 1,
+            "maximum": 10
+          },
           "stream": {
             "type": "boolean",
             "description": "Включить потоковую передачу ответа",
             "example": false
+          },
+          "logprobs": {
+            "type": "boolean",
+            "description": "Возвращать log probabilities для output токенов",
+            "example": false
+          },
+          "top_logprobs": {
+            "type": "number",
+            "description": "Количество наиболее вероятных токенов для возврата (0-20). Требует logprobs: true",
+            "example": 5,
+            "minimum": 0,
+            "maximum": 20
+          },
+          "logit_bias": {
+            "type": "object",
+            "description": "Смещение вероятностей токенов по их ID (-100 до 100)",
+            "example": {
+              "50256": -100
+            }
+          },
+          "parallel_tool_calls": {
+            "type": "boolean",
+            "description": "Разрешить параллельный вызов нескольких tools",
+            "example": true
           },
           "image_config": {
             "type": "object",
@@ -2133,6 +2354,13 @@
                 "type": "number",
                 "description": "Unix timestamp истечения"
               }
+            }
+          },
+          "annotations": {
+            "type": "array",
+            "description": "Аннотации (ссылки на источники от web search)",
+            "items": {
+              "type": "object"
             }
           }
         },
@@ -2342,6 +2570,16 @@
           }
         }
       },
+      "ServerToolUsePresenter": {
+        "type": "object",
+        "properties": {
+          "web_search_requests": {
+            "type": "number",
+            "description": "Количество вызовов веб-поиска",
+            "example": 1
+          }
+        }
+      },
       "UsagePresenter": {
         "type": "object",
         "properties": {
@@ -2378,6 +2616,15 @@
               }
             ]
           },
+          "server_tool_use": {
+            "description": "Использование серверных инструментов (web search)",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServerToolUsePresenter"
+              }
+            ]
+          },
           "cost_rub": {
             "type": "object",
             "description": "Стоимость запроса в рублях (списано с баланса клиента)",
@@ -2389,6 +2636,33 @@
             "description": "Стоимость запроса в рублях (alias для cost_rub)",
             "example": 0.04131306,
             "nullable": true
+          },
+          "plugins": {
+            "type": "object",
+            "description": "Детализация серверных плагинов",
+            "example": {
+              "masker": {
+                "operations": [
+                  {
+                    "operation": "mask",
+                    "latency_ms": 15,
+                    "cost_rub": 0.001
+                  },
+                  {
+                    "operation": "unmask",
+                    "latency_ms": 8,
+                    "cost_rub": 0
+                  }
+                ],
+                "total_cost_rub": 0.001
+              }
+            },
+            "nullable": true
+          },
+          "plugin_post_process_error": {
+            "type": "boolean",
+            "description": "Ошибка post-process плагинов (ответ возвращён в замаскированном виде)",
+            "example": true
           }
         },
         "required": [
@@ -2426,6 +2700,11 @@
             "items": {
               "$ref": "#/components/schemas/ChoicePresenter"
             }
+          },
+          "system_fingerprint": {
+            "type": "string",
+            "description": "System fingerprint от провайдера",
+            "example": "fp_29330a9688"
           },
           "usage": {
             "description": "Информация об использовании токенов",
@@ -2809,6 +3088,15 @@
               }
             ]
           },
+          "server_tool_use": {
+            "description": "Использование серверных инструментов (web search)",
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServerToolUsePresenter"
+              }
+            ]
+          },
           "cost_rub": {
             "type": "object",
             "description": "Стоимость запроса в рублях (списано с баланса клиента)",
@@ -2820,6 +3108,33 @@
             "description": "Стоимость запроса в рублях (alias для cost_rub)",
             "example": 0.04131306,
             "nullable": true
+          },
+          "plugins": {
+            "type": "object",
+            "description": "Детализация серверных плагинов",
+            "example": {
+              "masker": {
+                "operations": [
+                  {
+                    "operation": "mask",
+                    "latency_ms": 15,
+                    "cost_rub": 0.001
+                  },
+                  {
+                    "operation": "unmask",
+                    "latency_ms": 8,
+                    "cost_rub": 0
+                  }
+                ],
+                "total_cost_rub": 0.001
+              }
+            },
+            "nullable": true
+          },
+          "plugin_post_process_error": {
+            "type": "boolean",
+            "description": "Ошибка post-process плагинов (ответ возвращён в замаскированном виде)",
+            "example": true
           }
         },
         "required": [
@@ -3511,13 +3826,26 @@
             "type": "number",
             "description": "Всего страниц",
             "example": 15
+          },
+          "availableProviders": {
+            "description": "Доступные провайдеры для фильтрации",
+            "example": [
+              "anthropic",
+              "google",
+              "openai"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
           "page",
           "limit",
           "total",
-          "totalPages"
+          "totalPages",
+          "availableProviders"
         ]
       },
       "ModelsCatalogPresenter": {
@@ -3815,6 +4143,449 @@
           "usage"
         ]
       },
+      "MediaFileDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "url",
+              "base64"
+            ],
+            "description": "Тип данных: url или base64",
+            "example": "url"
+          },
+          "data": {
+            "type": "string",
+            "description": "URL или base64 данные изображения/видео",
+            "example": "https://example.com/image.png"
+          }
+        },
+        "required": [
+          "type",
+          "data"
+        ]
+      },
+      "FontInputDto": {
+        "type": "object",
+        "properties": {
+          "font_url": {
+            "type": "string",
+            "description": "URL файла шрифта",
+            "example": "https://example.com/fonts/custom-font.ttf"
+          },
+          "text": {
+            "type": "string",
+            "description": "Текст для рендеринга",
+            "example": "Hello World"
+          }
+        },
+        "required": [
+          "font_url",
+          "text"
+        ]
+      },
+      "ImageInputDto": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Текстовое описание",
+            "example": "Космический корабль в стиле киберпанк"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "description": "Соотношение сторон",
+            "example": "16:9",
+            "enum": [
+              "1:1",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:3",
+              "4:5",
+              "5:4",
+              "9:16",
+              "16:9",
+              "21:9",
+              "auto"
+            ]
+          },
+          "images": {
+            "description": "Медиа файлы для обработки",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaFileDto"
+            }
+          },
+          "callBackUrl": {
+            "type": "string",
+            "description": "URL для callback уведомлений"
+          },
+          "seed": {
+            "type": "number",
+            "description": "Зерно генерации для воспроизводимости",
+            "example": 42
+          },
+          "watermark": {
+            "type": "string",
+            "description": "Текст водяного знака",
+            "example": "MyBrand"
+          },
+          "image_resolution": {
+            "type": "string",
+            "description": "Разрешение изображения",
+            "enum": [
+              "1K",
+              "2K",
+              "4K"
+            ],
+            "example": "2K"
+          },
+          "quality": {
+            "type": "string",
+            "description": "Качество",
+            "enum": [
+              "basic",
+              "medium",
+              "high"
+            ],
+            "example": "high"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Формат выходного изображения (jpg автоматически преобразуется в jpeg)",
+            "enum": [
+              "png",
+              "jpeg",
+              "webp"
+            ],
+            "example": "png"
+          },
+          "max_images": {
+            "type": "number",
+            "description": "Количество изображений",
+            "example": 1,
+            "minimum": 1,
+            "maximum": 6
+          },
+          "isEnhance": {
+            "type": "boolean",
+            "description": "Улучшить промпт для более качественного результата (GPT-Image-1)",
+            "example": false
+          },
+          "guidance_scale": {
+            "type": "number",
+            "description": "Масштаб управления генерацией (CFG scale)",
+            "example": 2.5
+          },
+          "strength": {
+            "type": "number",
+            "description": "Сила трансформации для image-to-image (0-1)",
+            "example": 0.8
+          },
+          "enable_safety_checker": {
+            "type": "boolean",
+            "description": "Включить проверку безопасности",
+            "example": true
+          },
+          "upscale_factor": {
+            "type": "string",
+            "description": "Коэффициент увеличения (для upscale моделей)",
+            "enum": [
+              "1",
+              "2",
+              "4",
+              "8"
+            ],
+            "example": "2"
+          },
+          "font_inputs": {
+            "description": "Входные шрифты для рендеринга текста (только Sourceful Riverflow V2 Fast/Pro, макс. 2)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FontInputDto"
+            }
+          },
+          "super_resolution_references": {
+            "description": "URL высококачественных референсов для super resolution (только Sourceful Riverflow, макс. 4)",
+            "example": [
+              "https://example.com/reference1.jpg"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      },
+      "VideoInputDto": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Текстовое описание",
+            "example": "Космический корабль в стиле киберпанк"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "description": "Соотношение сторон",
+            "example": "16:9",
+            "enum": [
+              "1:1",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:3",
+              "4:5",
+              "5:4",
+              "9:16",
+              "16:9",
+              "21:9",
+              "auto"
+            ]
+          },
+          "images": {
+            "description": "Медиа файлы для обработки",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaFileDto"
+            }
+          },
+          "callBackUrl": {
+            "type": "string",
+            "description": "URL для callback уведомлений"
+          },
+          "seed": {
+            "type": "number",
+            "description": "Зерно генерации для воспроизводимости",
+            "example": 42
+          },
+          "watermark": {
+            "type": "string",
+            "description": "Текст водяного знака",
+            "example": "MyBrand"
+          },
+          "duration": {
+            "type": "string",
+            "description": "Длительность видео",
+            "enum": [
+              "10s",
+              "15s"
+            ],
+            "example": "10s"
+          },
+          "resolution": {
+            "type": "string",
+            "description": "Разрешение видео",
+            "enum": [
+              "480p",
+              "580p",
+              "720p",
+              "1080p"
+            ],
+            "example": "720p"
+          },
+          "videos": {
+            "description": "Видео файлы для обработки",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaFileDto"
+            }
+          },
+          "multi_shots": {
+            "type": "boolean",
+            "description": "Режим мульти-шотов (Wan 2.6, Kling 3.0)"
+          },
+          "sound": {
+            "type": "boolean",
+            "description": "Генерация звука (Kling 2.6, Kling 3.0)"
+          },
+          "mode": {
+            "type": "string",
+            "description": "Режим генерации (std/pro для Kling 3.0, 720p/1080p для Motion Control)"
+          },
+          "character_orientation": {
+            "type": "string",
+            "description": "Ориентация персонажа (Kling 2.6 Motion Control)",
+            "enum": [
+              "image",
+              "video"
+            ]
+          },
+          "upscale_factor": {
+            "type": "string",
+            "description": "Коэффициент увеличения (для video upscale моделей)",
+            "enum": [
+              "1",
+              "2",
+              "4"
+            ],
+            "example": "2"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      },
+      "AudioInputDto": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Текст для синтеза речи",
+            "example": "Привет, как дела?",
+            "maxLength": 5000
+          },
+          "text": {
+            "type": "string",
+            "description": "Текст для синтеза (алиас для prompt, имеет приоритет)",
+            "example": "Привет, как дела?",
+            "maxLength": 5000
+          },
+          "voice": {
+            "type": "string",
+            "description": "Голос для синтеза",
+            "example": "Rachel"
+          },
+          "stability": {
+            "type": "number",
+            "description": "Стабильность голоса (0-1)",
+            "example": 0.5
+          },
+          "similarity_boost": {
+            "type": "number",
+            "description": "Усиление схожести (0-1)",
+            "example": 0.75
+          },
+          "style": {
+            "type": "number",
+            "description": "Экспрессия стиля (0-1)",
+            "example": 0
+          },
+          "speed": {
+            "type": "number",
+            "description": "Скорость речи (0.7-1.2)",
+            "example": 1
+          },
+          "timestamps": {
+            "type": "boolean",
+            "description": "Включить временные метки слов",
+            "example": false
+          },
+          "previous_text": {
+            "type": "string",
+            "description": "Предшествующий текст для контекста (до 5000 символов)",
+            "maxLength": 5000
+          },
+          "next_text": {
+            "type": "string",
+            "description": "Последующий текст для контекста (до 5000 символов)",
+            "maxLength": 5000
+          },
+          "language_code": {
+            "type": "string",
+            "description": "Код языка ISO 639-1 (только для Turbo 2.5)",
+            "example": "ru"
+          },
+          "callBackUrl": {
+            "type": "string",
+            "description": "URL для callback уведомлений"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      },
+      "MusicInputDto": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Описание трека или текст песни (lyrics в custom mode). В обычном режиме — до 500 символов, в custom mode — до 5000",
+            "example": "Спокойная инструментальная музыка для медитации",
+            "maxLength": 5000
+          },
+          "customMode": {
+            "type": "boolean",
+            "description": "Режим расширенной настройки (требует style и title)",
+            "example": true
+          },
+          "instrumental": {
+            "type": "boolean",
+            "description": "Инструментальная музыка без вокала",
+            "example": false
+          },
+          "style": {
+            "type": "string",
+            "description": "Жанр/стиль музыки (обязателен в custom mode)",
+            "example": "Pop, Electronic",
+            "maxLength": 1000
+          },
+          "title": {
+            "type": "string",
+            "description": "Название трека (обязателен в custom mode)",
+            "example": "Peaceful Meditation",
+            "maxLength": 80
+          },
+          "negativeTags": {
+            "type": "string",
+            "description": "Стили для исключения из генерации",
+            "example": "Heavy Metal, Screamo"
+          },
+          "vocalGender": {
+            "type": "string",
+            "description": "Пол вокалиста",
+            "enum": [
+              "m",
+              "f"
+            ],
+            "example": "f"
+          },
+          "styleWeight": {
+            "type": "number",
+            "description": "Сила следования стилю (0-1)",
+            "example": 0.65
+          },
+          "weirdnessConstraint": {
+            "type": "number",
+            "description": "Уровень экспериментальности (0-1)",
+            "example": 0.3
+          },
+          "audioWeight": {
+            "type": "number",
+            "description": "Баланс аудиофункций (0-1)",
+            "example": 0.5
+          },
+          "personaId": {
+            "type": "string",
+            "description": "ID персоны для применения стиля"
+          },
+          "version": {
+            "type": "string",
+            "description": "Версия модели Suno",
+            "enum": [
+              "V5",
+              "V4_5ALL",
+              "V4_5PLUS",
+              "V4_5",
+              "V4",
+              "V3_5"
+            ],
+            "example": "V5"
+          },
+          "callBackUrl": {
+            "type": "string",
+            "description": "URL для callback уведомлений"
+          }
+        },
+        "required": [
+          "prompt"
+        ]
+      },
       "MediaRequestDto": {
         "type": "object",
         "properties": {
@@ -3827,13 +4598,36 @@
             "description": "Входные параметры генерации",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/ImageInputDto"
+                "title": "Изображение",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ImageInputDto"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/VideoInputDto"
+                "title": "Видео",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/VideoInputDto"
+                  }
+                ]
               },
               {
-                "$ref": "#/components/schemas/AudioInputDto"
+                "title": "Аудио (TTS)",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AudioInputDto"
+                  }
+                ]
+              },
+              {
+                "title": "Музыка",
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/MusicInputDto"
+                  }
+                ]
               }
             ]
           },
@@ -3974,6 +4768,9 @@
               },
               {
                 "$ref": "#/components/schemas/MediaVideoDataPresenter"
+              },
+              {
+                "$ref": "#/components/schemas/MediaMusicDataPresenter"
               }
             ]
           },
@@ -4173,6 +4970,33 @@
             ],
             "example": "vivid",
             "default": "vivid"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Формат выходного изображения (для gpt-image-1)",
+            "enum": [
+              "png",
+              "jpeg",
+              "webp"
+            ],
+            "example": "png"
+          },
+          "background": {
+            "type": "string",
+            "description": "Фон изображения: transparent, opaque или auto (для gpt-image-1)",
+            "enum": [
+              "transparent",
+              "opaque",
+              "auto"
+            ],
+            "example": "auto"
+          },
+          "output_compression": {
+            "type": "number",
+            "description": "Степень сжатия выходного изображения (0-100, для gpt-image-1)",
+            "example": 75,
+            "minimum": 0,
+            "maximum": 100
           },
           "user": {
             "type": "string",
@@ -4709,6 +5533,17 @@
             "type": "string",
             "description": "Дата создания"
           },
+          "userId": {
+            "type": "object",
+            "description": "ID пользователя, создавшего запрос",
+            "example": "uuid",
+            "nullable": true
+          },
+          "apiKeyId": {
+            "type": "string",
+            "description": "ID API ключа",
+            "example": "key_123"
+          },
           "apiKeyName": {
             "type": "string",
             "description": "Имя API ключа",
@@ -5039,6 +5874,143 @@
           "failedAttemptsCount"
         ]
       },
+      "PluginParameterPresenter": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Название параметра",
+            "example": "enabled"
+          },
+          "type": {
+            "type": "string",
+            "description": "Тип параметра",
+            "example": "boolean"
+          },
+          "default": {
+            "type": "object",
+            "description": "Значение по умолчанию",
+            "example": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание параметра"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Обязательный параметр"
+          },
+          "values": {
+            "description": "Допустимые значения (для enum)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "description"
+        ]
+      },
+      "PluginPricingPresenter": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Тип тарификации",
+            "example": "per_operation"
+          },
+          "cost_rub": {
+            "type": "number",
+            "description": "Стоимость в рублях",
+            "example": 10
+          },
+          "description": {
+            "type": "string",
+            "description": "Описание тарификации"
+          }
+        },
+        "required": [
+          "type",
+          "cost_rub",
+          "description"
+        ]
+      },
+      "PublicPluginPresenter": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID плагина",
+            "example": "masker"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "Название плагина",
+            "example": "PII Masking"
+          },
+          "short_description": {
+            "type": "string",
+            "description": "Краткое описание"
+          },
+          "description": {
+            "type": "string",
+            "description": "Полное описание"
+          },
+          "parameters": {
+            "description": "Параметры плагина",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PluginParameterPresenter"
+            }
+          },
+          "pricing": {
+            "description": "Тарификация",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PluginPricingPresenter"
+              }
+            ]
+          },
+          "tags": {
+            "description": "Теги",
+            "example": [
+              "privacy",
+              "security"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "display_name",
+          "short_description",
+          "description",
+          "parameters",
+          "pricing",
+          "tags"
+        ]
+      },
+      "PluginListPresenter": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "description": "Список плагинов",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicPluginPresenter"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
       "GenerationUsagePresenter": {
         "type": "object",
         "properties": {
@@ -5224,6 +6196,65 @@
           "isByok",
           "createdAt"
         ]
+      },
+      "NanoBanana2InputDto": {
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Текстовое описание желаемого изображения (до 20 000 символов)",
+            "maxLength": 20000,
+            "example": "Фотореалистичный портрет бизнесмена в современном офисе, профессиональное студийное освещение"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "description": "Соотношение сторон",
+            "example": "1:1",
+            "enum": [
+              "auto",
+              "1:1",
+              "2:3",
+              "3:2",
+              "3:4",
+              "4:3",
+              "4:5",
+              "5:4",
+              "9:16",
+              "16:9",
+              "21:9"
+            ]
+          },
+          "image_resolution": {
+            "type": "string",
+            "description": "Разрешение изображения",
+            "enum": [
+              "1K",
+              "2K",
+              "4K"
+            ],
+            "example": "2K"
+          },
+          "output_format": {
+            "type": "string",
+            "description": "Формат выходного изображения",
+            "enum": [
+              "png",
+              "jpeg"
+            ],
+            "example": "png"
+          },
+          "images": {
+            "type": "array",
+            "description": "Референс-изображения для редактирования (до 8 шт.)",
+            "maxItems": 8,
+            "items": {
+              "$ref": "#/components/schemas/MediaFileDto"
+            }
+          }
+        }
       }
     }
   }
