@@ -1,91 +1,161 @@
 ---
-title: Suno Music
-description: Генерация музыки, звуков, текстов и операции над треками через Suno
+title: Suno Music Generate
+description: Генерация музыки с моделью Suno
 icon: music
 ---
 
-Полный набор инструментов для работы с музыкой через Suno — генерация треков, звуков, текстов песен, продление, разделение на стемы и многое другое.
+Генерация музыки от Suno — вокальные и инструментальные треки из текстового описания. Поддерживает версии V3.5–V5, custom mode с текстом песни и настройкой стиля. Стоимость: 15 ₽ за генерацию.
 
 <Note>
 Полная документация API: [Генерация медиа](/api-reference/media/create)
 </Note>
 
-## Модели
+## Обзор
+
+| Характеристика | Значение |
+|----------------|----------|
+| ID модели | `suno/generate` |
+| Эндпоинт | `/api/v1/media` |
+| Max prompt | 5 000 символов |
+| Max style | 1 000 символов |
+| Max title | 80 символов |
+| Версии | V5 (по умолчанию), V4_5ALL, V4_5PLUS, V4_5, V4, V3_5 |
+| Стоимость | 15 ₽ за запрос |
+
+## Возможности
 
 <CardGroup cols={2}>
-  <Card title="suno/generate" icon="wand-magic-sparkles">
-    Генерация музыки из текста (вокальные и инструментальные треки). Стоимость: 15 ₽
+  <Card title="Text-to-Music" icon="wand-magic-sparkles">
+    Создание музыки по текстовому описанию
   </Card>
-  <Card title="suno/sounds" icon="volume-high">
-    Фоновые звуки и ambient-музыка с поддержкой loop, BPM и тональности. Стоимость: 3 ₽
+  <Card title="Custom Mode" icon="sliders">
+    Написание текста песни, выбор стиля и названия трека
   </Card>
-  <Card title="suno/lyrics" icon="pen">
-    Генерация текста песни (2-3 варианта с секциями [Verse], [Chorus], [Bridge]). Стоимость: 6 ₽
+  <Card title="Инструментал" icon="guitar">
+    Генерация музыки без вокала
   </Card>
-  <Card title="suno/style-boost" icon="sparkles">
-    Улучшение описания стиля музыки для лучших результатов генерации. Стоимость: 6 ₽
-  </Card>
-  <Card title="suno/add-instrumental" icon="guitar">
-    Добавление аккомпанемента к загруженному аудио. Стоимость: 15 ₽
-  </Card>
-  <Card title="suno/add-vocals" icon="microphone">
-    Добавление вокала к загруженному аудио. Стоимость: 15 ₽
-  </Card>
-  <Card title="suno/upload-cover" icon="record-vinyl">
-    Создание кавер-версии загруженного аудио в новом стиле. Стоимость: 15 ₽
-  </Card>
-  <Card title="suno/upload-extend" icon="forward">
-    Продление загруженного аудио от указанной секунды. Стоимость: 15 ₽
+  <Card title="Выбор версии" icon="code-branch">
+    6 версий модели от V3.5 до V5
   </Card>
 </CardGroup>
 
-## Операции над генерацией
-
-Для модели `suno/generate` доступны операции через `POST /api/v1/media/:id/operations`:
-
-| Операция | Описание | Стоимость |
-|----------|----------|-----------|
-| `extend` | Продление трека от указанной секунды | 15 ₽ |
-| `wav` | Конвертация в WAV | 1 ₽ |
-| `vocal_removal` | Разделение на вокал и инструментал (2 или 12 стемов) | 12 ₽ |
-| `mp4` | Создание музыкального видео | 3 ₽ |
-| `midi` | Конвертация в MIDI (после vocal_removal) | Бесплатно |
-| `persona` | Создание персоны на основе стиля трека | Бесплатно |
-
-## Версии модели
-
-| Версия | Описание |
-|--------|----------|
-| **V5.5** (по умолчанию) | Кастомные модели, персонализация под ваш вкус |
-| V5 | Аутентичный вокал, лучшее качество звука |
-| V4.5 ALL | Качественный голосовой синтез, быстрая генерация |
-| V4.5+ | Лучшее качество звука с богатым вокалом |
-| V4.5 | Качественный вокал, умные промпты |
-| V4 | Улучшенное качество вокала |
-| V3.5 | Базовая модель |
-
 ## Примеры запросов
 
-### Генерация музыки
+### Простой запрос
 
 <CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'suno/generate',
+    input: {
+      prompt: 'Энергичный электронный трек для тренировки с драйвовым битом'
+    }
+  })
+});
+
+const result = await response.json();
+console.log('ID генерации:', result.id);
+
+// Проверка статуса
+const status = await fetch(`https://polza.ai/api/v1/media/${result.id}`, {
+  headers: { 'Authorization': 'Bearer <POLZA_AI_API_KEY>' }
+});
+console.log(await status.json());
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/media',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'model': 'suno/generate',
+        'input': {
+            'prompt': 'Энергичный электронный трек для тренировки с драйвовым битом'
+        }
+    }
+)
+
+result = response.json()
+generation_id = result['id']
+print(f'ID генерации: {generation_id}')
+
+# Проверка статуса
+status = requests.get(
+    f'https://polza.ai/api/v1/media/{generation_id}',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'}
+)
+print(status.json())
+```
+
 ```bash cURL
+# Создание запроса на генерацию музыки
 curl -X POST "https://polza.ai/api/v1/media" \
   -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "suno/generate",
     "input": {
-      "prompt": "Энергичный электронный трек для тренировки с драйвовым битом",
-      "version": "V5_5"
+      "prompt": "Энергичный электронный трек для тренировки с драйвовым битом"
     }
   }'
+
+# Проверка статуса генерации
+curl "https://polza.ai/api/v1/media/{id}" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>"
 ```
 </CodeGroup>
 
-### Custom Mode (текст + стиль)
+### Custom Mode (текст песни + стиль)
 
 <CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'suno/generate',
+    input: {
+      prompt: '[Verse]\nГород спит, а мы не спим\nОгни мерцают в тишине\n\n[Chorus]\nМы летим, мы летим\nНад ночным городом во сне',
+      style: 'Pop, Synth-pop, Dream pop',
+      title: 'Ночной город'
+    }
+  })
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/media',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'model': 'suno/generate',
+        'input': {
+            'prompt': '[Verse]\nГород спит, а мы не спим\nОгни мерцают в тишине\n\n[Chorus]\nМы летим, мы летим\nНад ночным городом во сне',
+            'style': 'Pop, Synth-pop, Dream pop',
+            'title': 'Ночной город'
+        }
+    }
+)
+
+print(response.json())
+```
+
 ```bash cURL
 curl -X POST "https://polza.ai/api/v1/media" \
   -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
@@ -95,125 +165,99 @@ curl -X POST "https://polza.ai/api/v1/media" \
     "input": {
       "prompt": "[Verse]\nГород спит, а мы не спим\nОгни мерцают в тишине\n\n[Chorus]\nМы летим, мы летим\nНад ночным городом во сне",
       "style": "Pop, Synth-pop, Dream pop",
-      "title": "Ночной город",
-      "customMode": true
+      "title": "Ночной город"
     }
   }'
 ```
 </CodeGroup>
 
-### Генерация звуков
+### Инструментальный трек
 
 <CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'suno/generate',
+    input: {
+      prompt: 'Спокойная фортепианная мелодия для учёбы и концентрации',
+      style: 'Ambient, Piano, Lo-fi',
+      title: 'Focus Time'
+    }
+  })
+});
+
+const result = await response.json();
+console.log(result);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/media',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'model': 'suno/generate',
+        'input': {
+            'prompt': 'Спокойная фортепианная мелодия для учёбы и концентрации',
+            'style': 'Ambient, Piano, Lo-fi',
+            'title': 'Focus Time'
+        }
+    }
+)
+
+print(response.json())
+```
+
 ```bash cURL
 curl -X POST "https://polza.ai/api/v1/media" \
   -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "suno/sounds",
+    "model": "suno/generate",
     "input": {
-      "prompt": "Спокойный ambient loop для медитации",
-      "soundLoop": true,
-      "soundTempo": 80,
-      "soundKey": "Am"
+      "prompt": "Спокойная фортепианная мелодия для учёбы и концентрации",
+      "style": "Ambient, Piano, Lo-fi",
+      "title": "Focus Time"
     }
   }'
 ```
 </CodeGroup>
 
-### Генерация текста песни
-
-<CodeGroup>
-```bash cURL
-curl -X POST "https://polza.ai/api/v1/media" \
-  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "suno/lyrics",
-    "input": {
-      "prompt": "Романтическая баллада о ночном городе"
-    }
-  }'
-```
-</CodeGroup>
-
-### Продление трека (операция)
-
-<CodeGroup>
-```bash cURL
-# Сначала создайте генерацию и получите ID
-# Затем используйте audioId из результата генерации
-
-curl -X POST "https://polza.ai/api/v1/media/{generation_id}/operations" \
-  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "operation": "extend",
-    "params": {
-      "audioId": "audio-id-from-generation",
-      "prompt": "Продолжение с нарастающим темпом",
-      "continueAt": 120
-    }
-  }'
-```
-</CodeGroup>
-
-### Разделение на вокал и инструментал
-
-<CodeGroup>
-```bash cURL
-curl -X POST "https://polza.ai/api/v1/media/{generation_id}/operations" \
-  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "operation": "vocal_removal",
-    "params": {
-      "audioId": "audio-id-from-generation",
-      "type": "separate_vocal"
-    }
-  }'
-```
-</CodeGroup>
-
-### Upload & Cover
-
-<CodeGroup>
-```bash cURL
-# 1. Загрузите аудио через Storage API
-# 2. Используйте URL для кавер-генерации
-
-curl -X POST "https://polza.ai/api/v1/media" \
-  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "suno/upload-cover",
-    "input": {
-      "uploadUrl": "https://s3.polza.ai/f/.../audio.mp3",
-      "prompt": "Сделать в стиле джаза",
-      "customMode": false,
-      "instrumental": false,
-      "model": "V5_5"
-    }
-  }'
-```
-</CodeGroup>
-
-## Параметры suno/generate
+## Параметры
 
 | Параметр | Обязательный | Описание |
 |----------|--------------|----------|
-| `prompt` | Да | Описание трека или текст песни (до 5 000 символов в custom mode, до 500 в обычном) |
-| `style` | Нет | Жанр/стиль музыки (до 1 000 символов). Обязателен в custom mode |
-| `title` | Нет | Название трека (до 80 символов). Обязателен в custom mode |
-| `version` | Нет | Версия модели: `V5_5` (по умолчанию), `V5`, `V4_5ALL`, `V4_5PLUS`, `V4_5`, `V4`, `V3_5` |
-| `customMode` | Нет | Расширенный режим (требует style и title) |
-| `instrumental` | Нет | Инструментальная музыка без вокала |
-| `negativeTags` | Нет | Стили для исключения |
-| `vocalGender` | Нет | Пол вокалиста: `m` или `f` |
-| `styleWeight` | Нет | Сила следования стилю (0–1) |
-| `weirdnessConstraint` | Нет | Уровень экспериментальности (0–1) |
-| `audioWeight` | Нет | Баланс аудиофункций (0–1) |
-| `personaId` | Нет | ID персоны для применения стиля |
+| `model` | Да | `suno/generate` |
+| `prompt` | Да | Описание трека или текст песни (до 5 000 символов). В custom mode используется как lyrics — поддерживает теги `[Verse]`, `[Chorus]`, `[Bridge]` и др. |
+| `style` | Нет | Жанр/стиль музыки (до 1 000 символов). Обязателен при использовании custom mode. Пример: `Pop, Electronic, Upbeat` |
+| `title` | Нет | Название трека (до 80 символов). Обязателен при использовании custom mode |
+| `version` | Нет | Версия модели: `V5` (по умолчанию), `V4_5ALL`, `V4_5PLUS`, `V4_5`, `V4`, `V3_5` |
+
+## Советы и лучшие практики
+
+<AccordionGroup>
+  <Accordion title="Простой режим vs Custom Mode" icon="sliders">
+    В простом режиме достаточно передать `prompt` с описанием желаемой музыки — Suno сам сгенерирует текст и подберёт стиль. В custom mode вы контролируете текст песни (`prompt`), стиль (`style`) и название (`title`).
+  </Accordion>
+
+  <Accordion title="Как писать промпты" icon="pen">
+    Описывайте настроение, жанр и инструменты: «Меланхоличная акустическая баллада с гитарой и скрипкой». Для custom mode используйте структурные теги: `[Verse]`, `[Chorus]`, `[Bridge]`, `[Outro]`.
+  </Accordion>
+
+  <Accordion title="Выбор версии модели" icon="code-branch">
+    V5 — последняя и наиболее качественная версия, используется по умолчанию. Более ранние версии (V4, V3.5) могут давать другой звук — экспериментируйте при необходимости.
+  </Accordion>
+
+  <Accordion title="Указание стиля" icon="music">
+    Перечисляйте стили через запятую: `Rock, Alternative, Energetic`. Можно комбинировать жанры с настроением и темпом.
+  </Accordion>
+</AccordionGroup>
 
 ## Асинхронная генерация
 
@@ -232,3 +276,14 @@ curl -X POST "https://polza.ai/api/v1/media" \
     Когда статус `completed`, в ответе будут URL аудиофайла, обложка, название и длительность трека
   </Step>
 </Steps>
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Статус генерации" icon="spinner" href="/api-reference/media/status">
+    Проверка статуса генерации медиа
+  </Card>
+  <Card title="Операции над медиа" icon="gears" href="/api-reference/media/operations">
+    Дополнительные операции над результатами
+  </Card>
+</CardGroup>
