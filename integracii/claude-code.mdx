@@ -1,0 +1,202 @@
+---
+title: Claude Code
+description: Подключение Claude Code к Polza.AI — полноценный AI-ассистент для разработчиков с отслеживанием расходов
+icon: terminal
+---
+
+Claude Code — официальный CLI-инструмент от Anthropic для работы с кодом прямо из терминала. Он умеет читать и редактировать файлы, запускать команды, работать с git и решать сложные задачи в несколько шагов.
+
+## Требования
+
+- macOS, Linux или Windows (WSL)
+- Node.js 18 или новее
+- API-ключ [polza.ai](https://polza.ai/dashboard/api-keys)
+
+## Установка Claude Code
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Или через официальный установщик:
+
+```bash
+# macOS / Linux / WSL
+curl -fsSL https://claude.ai/install.sh | bash
+```
+
+## Подключение к Polza.AI
+
+Claude Code использует стандартный Anthropic API. Достаточно указать URL Polza в качестве базового адреса.
+
+<Steps>
+  <Step title="Откройте профиль оболочки">
+    ```bash
+    nano ~/.zshrc   # zsh (macOS по умолчанию)
+    # или
+    nano ~/.bashrc  # bash
+    ```
+  </Step>
+
+  <Step title="Добавьте переменные окружения">
+    ```bash
+    export ANTHROPIC_BASE_URL="https://polza.ai/api"
+    export ANTHROPIC_AUTH_TOKEN="ваш-api-ключ"
+    export ANTHROPIC_API_KEY=""  # Важно: оставьте пустым
+    ```
+
+    Замените `ваш-api-ключ` на ключ из [личного кабинета](https://polza.ai/dashboard/api-keys).
+  </Step>
+
+  <Step title="Перезапустите терминал">
+    ```bash
+    source ~/.zshrc
+    ```
+  </Step>
+
+  <Step title="Запустите Claude Code">
+    ```bash
+    cd /path/to/your/project
+    claude
+    ```
+
+    <Frame>
+      <img src="/images/claude-code/welcome-screen.png" alt="Приветственный экран Claude Code с подключённым Polza.AI" />
+    </Frame>
+  </Step>
+</Steps>
+
+<Note>
+Переменная `ANTHROPIC_API_KEY=""` должна быть явно пустой строкой. Если она не установлена, Claude Code попытается подключиться к серверам Anthropic напрямую.
+</Note>
+
+## Настройка моделей
+
+По умолчанию Claude Code использует семейство моделей Claude. Вы можете переключить любую роль на любую модель из каталога Polza.AI:
+
+```bash
+export ANTHROPIC_DEFAULT_SONNET_MODEL="anthropic/claude-sonnet-4-6"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="anthropic/claude-opus-4-6"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="anthropic/claude-haiku-4-5"
+export CLAUDE_CODE_SUBAGENT_MODEL="anthropic/claude-sonnet-4-6"
+```
+
+| Переменная | Применяется для |
+|------------|----------------|
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | Основные задачи (код, анализ) |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL` | Сложные и ресурсоёмкие задачи |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | Быстрые операции и автодополнение |
+| `CLAUDE_CODE_SUBAGENT_MODEL` | Субагенты внутри сессии |
+
+Полный список доступных моделей — в [каталоге](https://polza.ai/models).
+
+## Настройка через settings.json
+
+Альтернативно настройте подключение через файл `~/.claude/settings.json` или `.claude/settings.local.json` в папке проекта:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://polza.ai/api",
+    "ANTHROPIC_AUTH_TOKEN": "ваш-api-ключ",
+    "ANTHROPIC_API_KEY": ""
+  }
+}
+```
+
+<Warning>
+Не добавляйте `settings.local.json` с API-ключом в git-репозиторий. Добавьте файл в `.gitignore`.
+</Warning>
+
+## Статус-бар с расходами сессии
+
+Polza.AI предоставляет скрипт для отображения в нижней строке Claude Code стоимости текущей сессии, количества токенов, текущей модели и баланса — в реальном времени.
+
+<Frame>
+  <img src="/images/claude-code/statusline.png" alt="Статус-бар Claude Code: модель, стоимость сессии, токены и баланс" />
+</Frame>
+
+### Установка
+
+Скачайте скрипт и сделайте его исполняемым:
+
+```bash
+curl -fsSL https://cdn.polza.ai/scripts/claude-statusline.sh -o ~/.local/bin/claude-statusline.sh
+chmod +x ~/.local/bin/claude-statusline.sh
+```
+
+### Подключение
+
+Добавьте в `~/.claude/settings.json`:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "/path/to/claude-statusline.sh"
+  }
+}
+```
+
+Замените путь на фактическое расположение скрипта.
+
+### Что показывает статус-бар
+
+| Элемент | Пример | Описание |
+|---------|--------|----------|
+| Название сервиса | `polza.ai` | Всегда отображается |
+| Модель | `z-ai/glm-5-turbo` | Текущая модель сессии |
+| Стоимость | `₽2.86` | Суммарные расходы за сессию |
+| Токены | `47.8k tok` | Входные + выходные токены |
+| Кэш | `(cache: 24.2k)` | Токены из кэша (если есть) |
+| Баланс | `баланс: ₽9993` | Текущий баланс аккаунта |
+
+Баланс обновляется не чаще раза в минуту. Стоимость — после каждого завершённого запроса.
+
+## Проверка подключения
+
+После запуска выполните команду `/status` внутри сессии:
+
+```
+> /status
+Auth token: ANTHROPIC_AUTH_TOKEN
+Anthropic base URL: https://polza.ai/api
+```
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Ошибка аутентификации (401)">
+    - Убедитесь что `ANTHROPIC_AUTH_TOKEN` содержит ваш ключ Polza
+    - Проверьте что `ANTHROPIC_API_KEY` явно установлен в пустую строку (`""`)
+    - Если ранее выполняли вход через Anthropic — выполните `/logout` внутри Claude Code
+  </Accordion>
+
+  <Accordion title="Claude Code не видит переменные окружения">
+    - Перезапустите терминал после изменения профиля оболочки
+    - Проверьте переменные: `echo $ANTHROPIC_BASE_URL`
+    - Или задайте параметры в `~/.claude/settings.json` через секцию `env`
+  </Accordion>
+
+  <Accordion title="Статус-бар показывает ₽0.00">
+    - Проверьте что `ANTHROPIC_BASE_URL` и `ANTHROPIC_AUTH_TOKEN` передаются скрипту
+    - Стоимость обновляется только после завершения запроса — в процессе генерации показывается предыдущее значение
+    - Проверьте что в папке проекта нет `.claude/settings.json` с другим статус-скриптом
+  </Accordion>
+
+  <Accordion title="Ошибка модели (model not found)">
+    - Убедитесь что модель доступна в [каталоге Polza](https://polza.ai/models)
+    - Проверьте правильность написания ID модели (например, `anthropic/claude-sonnet-4-6`)
+  </Accordion>
+</AccordionGroup>
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Каталог моделей" icon="microchip" href="/gaidy/models">
+    Выберите подходящую модель под задачу
+  </Card>
+  <Card title="Управление балансом" icon="wallet" href="/gaidy/getting-started#пополнение-баланса">
+    Пополните баланс и настройте уведомления
+  </Card>
+</CardGroup>
