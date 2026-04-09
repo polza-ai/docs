@@ -1,0 +1,192 @@
+---
+title: Kilo Code (VS Code / PyCharm)
+description: Интеграция Polza.ai с Kilo Code — AI-ассистент для VS Code и PyCharm
+icon: k
+---
+
+Kilo Code — open source AI-ассистент с поддержкой автономного выполнения задач: генерации кода, рефакторинга, отладки и написания тестов.
+
+## Требования
+
+- VS Code или PyCharm (Community / Professional)
+- Расширение / плагин Kilo Code
+- API-ключ [polza.ai](https://polza.ai/dashboard)
+
+<Tabs>
+  <Tab title="VS Code">
+
+## Установка Kilo Code
+
+1. **Откройте Extensions**
+   Нажмите на иконку Extensions в боковой панели или используйте `Ctrl+Shift+X` (Windows/Linux) или `Cmd+Shift+X` (macOS).
+
+2. **Найдите Kilo Code**
+   Введите `Kilo Code` в поиске расширений.
+
+   ![Установка Kilo Code из VS Code Marketplace](../images/kilo-code/kilocode-install.png)
+
+3. **Установите расширение**
+   Нажмите **Install** на расширении "Kilo Code: AI Coding Agent, Copilot, and Autocomplete".
+
+4. **Откройте Kilo Code**
+   После установки нажмите на иконку Kilo Code в боковой панели.
+
+## Настройка подключения к Polza.ai
+
+1. **Откройте настройки Kilo Code**
+   Нажмите на иконку шестерёнки в панели Kilo Code — откроется **Kilo Settings**.
+
+2. **Перейдите во вкладку Providers**
+   В левом меню настроек выберите **Providers**.
+
+   ![Вкладка Providers в настройках Kilo Code](../images/kilo-code/kilocode-providers.png)
+
+3. **Подключите Custom provider**
+   Прокрутите список вниз до раздела **Custom provider** и нажмите **Connect**.
+
+4. **Заполните настройки подключения**
+
+   - **Provider ID:** `polza`
+   - **Display name:** `Polza.ai`
+   - **Base URL:** `https://polza.ai/api/v1`
+   - **API key:** Ваш ключ с [polza.ai/dashboard](https://polza.ai/dashboard)
+   - **Models:** Например, `moonshotai/kimi-k2.5`
+
+   <Note>
+     После ввода Base URL список моделей подгрузится автоматически. Если этого не произошло — введите Model ID вручную.
+   </Note>
+
+   ![Настройки подключения Polza.ai в Kilo Code](../images/kilo-code/kilocode-connection-settings.png)
+
+## Возможности
+
+- **Автономные задачи** — Kilo Code самостоятельно выполняет многошаговые задачи: создаёт файлы, запускает команды в терминале, исправляет ошибки
+- **Написание кода** — генерация кода по описанию на естественном языке
+- **Рефакторинг** — улучшение и оптимизация существующего кода
+- **Отладка** — поиск и исправление ошибок
+- **Автоматизация браузера** — взаимодействие с веб-страницами без участия пользователя
+- **Inline autocomplete** — подсказки прямо в редакторе во время набора кода
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Ошибка аутентификации">
+    - Проверьте правильность API-ключа
+    - Убедитесь в наличии средств на балансе
+    - Проверьте Base URL: `https://polza.ai/api/v1`
+  </Accordion>
+  <Accordion title="Модель не найдена">
+    - Проверьте правильность Model ID
+    - Актуальный список: [polza.ai/models](https://polza.ai/models)
+    - Попробуйте ввести Base URL повторно — список моделей подгрузится заново
+  </Accordion>
+  <Accordion title="Медленные ответы">
+    - Используйте более быстрые модели (Sonnet вместо Opus)
+    - Уменьшите размер контекста
+    - Проверьте интернет-соединение
+  </Accordion>
+  <Accordion title="Расширение не появляется">
+    - Перезагрузите VS Code
+    - Проверьте что расширение включено в Extensions
+    - Откройте через Command Palette: `Ctrl+Shift+P` → "Kilo Code: Open In New Tab"
+  </Accordion>
+</AccordionGroup>
+
+  </Tab>
+  <Tab title="PyCharm">
+
+## Установка Kilo Code
+
+1. **Откройте настройки PyCharm**
+   Перейдите в **File → Settings** (Windows/Linux) или **PyCharm → Settings** (macOS), либо используйте `Ctrl+Alt+S` / `Cmd+,`.
+
+2. **Перейдите в раздел Plugins**
+   В левом меню выберите **Plugins**, затем откройте вкладку **Marketplace**.
+
+3. **Найдите Kilo Code**
+   В строке поиска введите `Kilo Code`.
+
+   ![Поиск плагина Kilo Code в Marketplace PyCharm](../images/kilo-code/kilocode-pycharm-marketplace.png)
+
+4. **Установите плагин**
+   Нажмите **Install** рядом с плагином "Kilo Code" и дождитесь завершения установки.
+
+5. **Примените изменения**
+   Нажмите **OK** и перезапустите PyCharm если потребуется.
+
+## Настройка подключения к Polza.ai
+
+1. **Откройте панель Kilo Code**
+   После установки иконка Kilo Code появится на правой боковой панели PyCharm. Нажмите на неё.
+
+2. **Откройте настройки расширения**
+   В панели Kilo Code нажмите на иконку настроек (**Settings**).
+
+3. **Создайте Configuration Profile**
+   В разделе **Providers** нажмите **+** рядом с полем **Configuration Profile**. Введите название, например `Polza.ai`.
+
+4. **Заполните настройки подключения**
+
+   - **API Provider:** выберите `OpenAI Compatible`
+   - **Base URL:** `https://polza.ai/api/v1`
+   - **API Key:** Ваш ключ с [polza.ai/dashboard](https://polza.ai/dashboard)
+   - **Model:** выберите из списка или введите вручную, например `moonshotai/kimi-k2.5`
+
+   <Note>
+     После ввода Base URL список моделей подгрузится автоматически.
+   </Note>
+
+   ![Настройки провайдера Polza.ai в Kilo Code для PyCharm](../images/kilo-code/kilocode-pycharm-provider-settings.png)
+
+5. **Сохраните настройки**
+   Нажмите **Save**.
+
+## Возможности
+
+- **Автономные задачи** — Kilo Code самостоятельно выполняет многошаговые задачи: создаёт файлы, запускает команды, исправляет ошибки
+- **Написание кода** — генерация кода по описанию на естественном языке
+- **Рефакторинг** — улучшение и оптимизация существующего кода
+- **Отладка** — поиск и исправление ошибок
+- **Написание тестов** — автоматическая генерация unit-тестов
+- **Inline autocomplete** — подсказки прямо в редакторе во время набора кода
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Ошибка аутентификации">
+    - Проверьте правильность API-ключа
+    - Убедитесь в наличии средств на балансе
+    - Проверьте Base URL: `https://polza.ai/api/v1`
+  </Accordion>
+  <Accordion title="Модель не найдена">
+    - Проверьте правильность Model ID
+    - Актуальный список: [polza.ai/models](https://polza.ai/models)
+    - Попробуйте ввести Base URL повторно — список моделей подгрузится заново
+  </Accordion>
+  <Accordion title="Медленные ответы">
+    - Используйте более быстрые модели (Sonnet вместо Opus)
+    - Уменьшите размер контекста
+    - Проверьте интернет-соединение
+  </Accordion>
+  <Accordion title="Плагин не появляется">
+    - Перезапустите PyCharm после установки
+    - Проверьте что плагин включён в **Settings → Plugins → Installed**
+  </Accordion>
+</AccordionGroup>
+
+  </Tab>
+</Tabs>
+
+## Рекомендуемые модели для кодинга
+
+| Модель | ID | SWE-bench | Особенности |
+|---|---|---|---|
+| Claude Opus 4.6 | `anthropic/claude-opus-4-6` | 80.8% | Лучшая для сложных и длинных задач |
+| Claude Sonnet 4.6 | `anthropic/claude-sonnet-4-6` | 79.6% | Оптимальный баланс цены и качества |
+| Gemini 3.1 Pro | `google/gemini-3-1-pro` | 80.6% | Конкурент Claude по цене |
+| Kimi K2.5 | `moonshotai/kimi-k2.5` | 76.8% | Открытая модель, сильна во фронтенде |
+| DeepSeek V3 | `deepseek/deepseek-v3` | 72–74% | Самая экономичная из топовых |
+
+<Note>
+  Актуальный список всех моделей: [polza.ai/models](https://polza.ai/models)
+</Note>
