@@ -1,0 +1,377 @@
+---
+title: OAuth PKCE
+description: Авторизация пользователей и получение API-ключей через OAuth 2.0 PKCE flow
+icon: key
+---
+
+OAuth PKCE позволяет сторонним приложениям получать API-ключи от имени пользователей Polza.ai — без ручного создания ключей. Пользователь авторизует приложение через consent screen, выбирает организацию, scopes и лимиты расходов, после чего приложение получает готовый API-ключ.
+
+<Note>
+Если вы просто хотите использовать API напрямую — создайте ключ в [личном кабинете](https://polza.ai/dashboard/api-keys). OAuth PKCE нужен разработчикам сторонних приложений, которые запрашивают доступ у пользователей.
+</Note>
+
+## Как это работает
+
+<Steps>
+  <Step title="Генерация PKCE">
+    Приложение генерирует пару `code_verifier` + `code_challenge` (SHA-256).
+  </Step>
+
+  <Step title="Перенаправление на авторизацию">
+    Приложение перенаправляет пользователя на `https://polza.ai/api/auth/authorize` с параметрами.
+  </Step>
+
+  <Step title="Consent screen">
+    Пользователь видит экран подтверждения — выбирает организацию, разрешённые данные и лимит расходов.
+  </Step>
+
+  <Step title="Callback с кодом">
+    После подтверждения пользователь перенаправляется обратно на `callback_url` с параметром `code`.
+  </Step>
+
+  <Step title="Обмен кода на API-ключ">
+    Приложение обменивает `code` + `code_verifier` на API-ключ через `POST /api/auth/token`.
+  </Step>
+</Steps>
+
+## Шаг 1: Генерация PKCE
+
+Сгенерируйте случайный `code_verifier` (43-128 символов, `[A-Za-z0-9\-._~]`) и вычислите `code_challenge` как `BASE64URL(SHA256(code_verifier))`.
+
+<CodeGroup>
+```typescript TypeScript
+import { randomBytes, createHash } from 'crypto';
+
+// Генерация code_verifier (43-128 символов)
+const codeVerifier = randomBytes(32).toString('base64url');
+
+// Вычисление code_challenge (S256)
+const codeChallenge = createHash('sha256')
+  .update(codeVerifier)
+  .digest('base64url');
+```
+
+```python Python
+import secrets
+import hashlib
+import base64
+
+# Генерация code_verifier (43-128 символов)
+code_verifier = secrets.token_urlsafe(32)
+
+# Вычисление code_challenge (S256)
+digest = hashlib.sha256(code_verifier.encode()).digest()
+code_challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode()
+```
+
+```bash bash
+# Генерация code_verifier
+CODE_VERIFIER=$(openssl rand -base64 32 | tr -d '=' | tr '+/' '-_')
+
+# Вычисление code_challenge (S256)
+CODE_CHALLENGE=$(echo -n "$CODE_VERIFIER" | openssl dgst -sha256 -binary | openssl base64 | tr -d '=' | tr '+/' '-_')
+```
+</CodeGroup>
+
+<Warning>
+Сохраните `code_verifier` — он понадобится на шаге обмена кода. Никогда не передавайте его в URL или в открытом виде.
+</Warning>
+
+## Шаг 2: Перенаправление на авторизацию
+
+Перенаправьте пользователя на эндпоинт авторизации с необходимыми параметрами:
+
+| Параметр | Обязательный | Описание |
+|----------|:---:|----------|
+| `response_type` | да | Всегда `code` |
+| `callback_url` | да | URL для редиректа после авторизации (HTTPS, исключение: localhost) |
+| `code_challenge` | да | `BASE64URL(SHA256(code_verifier))`, 43-128 символов |
+| `code_challenge_method` | да | Всегда `S256` |
+| `state` | нет | Произвольная строка для CSRF-защиты (возвращается без изменений) |
+| `app_name` | нет | Название приложения (отображается на consent screen) |
+
+<CodeGroup>
+```typescript TypeScript
+const params = new URLSearchParams({
+  response_type: 'code',
+  callback_url: 'https://example.com/callback',
+  code_challenge: codeChallenge,
+  code_challenge_method: 'S256',
+  state: 'случайная-строка-для-csrf',
+  app_name: 'My App',
+});
+
+// Перенаправляем пользователя
+window.location.href = `https://polza.ai/api/auth/authorize?${params}`;
+```
+
+```python Python
+from urllib.parse import urlencode
+
+params = urlencode({
+    "response_type": "code",
+    "callback_url": "https://example.com/callback",
+    "code_challenge": code_challenge,
+    "code_challenge_method": "S256",
+    "state": "случайная-строка-для-csrf",
+    "app_name": "My App",
+})
+
+authorize_url = f"https://polza.ai/api/auth/authorize?{params}"
+# Перенаправьте пользователя на authorize_url
+```
+
+```bash bash
+# URL для перенаправления пользователя
+echo "https://polza.ai/api/auth/authorize?\
+response_type=code&\
+callback_url=https://example.com/callback&\
+code_challenge=$CODE_CHALLENGE&\
+code_challenge_method=S256&\
+state=random-csrf-string&\
+app_name=My+App"
+```
+</CodeGroup>
+
+## Шаг 3: Обработка callback
+
+После авторизации пользователь будет перенаправлен на ваш `callback_url` с параметрами:
+
+- **При успехе:** `?code=<код_авторизации>&state=<ваш_state>`
+- **При отказе:** `?error=access_denied&state=<ваш_state>`
+
+<CodeGroup>
+```typescript TypeScript
+// На вашей callback-странице
+const url = new URL(window.location.href);
+const code = url.searchParams.get('code');
+const state = url.searchParams.get('state');
+const error = url.searchParams.get('error');
+
+if (error) {
+  console.error('Пользователь отклонил авторизацию:', error);
+} else if (code) {
+  // Проверьте state для защиты от CSRF
+  // Переходите к шагу 4 — обмен кода на ключ
+}
+```
+
+```python Python
+from urllib.parse import urlparse, parse_qs
+
+# На вашей callback-странице
+parsed = urlparse(callback_request_url)
+params = parse_qs(parsed.query)
+
+if "error" in params:
+    print(f"Пользователь отклонил авторизацию: {params['error'][0]}")
+elif "code" in params:
+    code = params["code"][0]
+    state = params.get("state", [None])[0]
+    # Проверьте state, затем переходите к обмену кода
+```
+</CodeGroup>
+
+## Шаг 4: Обмен кода на API-ключ
+
+Обменяйте код авторизации на API-ключ, отправив `code_verifier` для подтверждения PKCE:
+
+<CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/auth/token', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    grant_type: 'authorization_code',
+    code: code,
+    code_verifier: codeVerifier,
+    callback_url: 'https://example.com/callback',
+  }),
+});
+
+const { key, user_id } = await response.json();
+// key = "pza_..." — готовый API-ключ
+// user_id = "usr_..." — ID пользователя
+```
+
+```python Python
+import requests
+
+response = requests.post("https://polza.ai/api/auth/token", json={
+    "grant_type": "authorization_code",
+    "code": code,
+    "code_verifier": code_verifier,
+    "callback_url": "https://example.com/callback",
+})
+
+data = response.json()
+api_key = data["key"]      # "pza_..." — готовый API-ключ
+user_id = data["user_id"]  # "usr_..." — ID пользователя
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/auth/token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grant_type": "authorization_code",
+    "code": "полученный-код",
+    "code_verifier": "ваш-code-verifier",
+    "callback_url": "https://example.com/callback"
+  }'
+```
+</CodeGroup>
+
+Ответ:
+
+```json
+{
+  "key": "pza_abc123...",
+  "user_id": "usr_123"
+}
+```
+
+<Note>
+Параметр `callback_url` в запросе должен точно совпадать с тем, что был указан при авторизации.
+</Note>
+
+## Шаг 5: Использование API-ключа
+
+Полученный ключ работает как обычный API-ключ Polza.ai:
+
+<CodeGroup>
+```typescript TypeScript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  baseURL: 'https://polza.ai/api/v1',
+  apiKey: key, // ключ, полученный через OAuth
+});
+
+const completion = await openai.chat.completions.create({
+  model: 'openai/gpt-4o',
+  messages: [{ role: 'user', content: 'Привет!' }],
+});
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://polza.ai/api/v1",
+    api_key=api_key,  # ключ, полученный через OAuth
+)
+
+completion = client.chat.completions.create(
+    model="openai/gpt-4o",
+    messages=[{"role": "user", "content": "Привет!"}],
+)
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer pza_abc123..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o",
+    "messages": [{"role": "user", "content": "Привет!"}]
+  }'
+```
+</CodeGroup>
+
+## Данные пользователя
+
+Получите информацию о пользователе, авторизовавшем ключ, через эндпоинт `GET /api/auth/userinfo`:
+
+```bash
+curl -H "Authorization: Bearer pza_abc123..." \
+  "https://polza.ai/api/auth/userinfo"
+```
+
+Ответ зависит от scopes, разрешённых пользователем:
+
+```json
+{
+  "id": "usr_123",
+  "name": "Иван Иванов",
+  "email": "ivan@mail.ru"
+}
+```
+
+### Доступные scopes
+
+| Scope | Описание | Обязательный |
+|-------|----------|:---:|
+| `user:id` | ID пользователя | да (всегда включён) |
+| `user:name` | Имя пользователя | нет |
+| `user:email` | Email пользователя | нет |
+
+Пользователь выбирает scopes на consent screen. Scope `user:id` включается автоматически.
+
+## Лимиты расходов
+
+На consent screen пользователь может установить лимит расходов для OAuth-ключа:
+
+| Период | Описание |
+|--------|----------|
+| `day` | Дневной лимит |
+| `week` | Недельный лимит |
+| `month` | Месячный лимит |
+| `total` | Общий лимит (без сброса) |
+
+Сумма указывается в рублях. При достижении лимита запросы через этот ключ будут отклоняться с ошибкой `402`.
+
+## Повторная авторизация
+
+<Note>
+Если пользователь повторно авторизует то же приложение для той же организации, существующий API-ключ **ротируется** — генерируется новый секрет, обновляются scopes и лимиты. Дубликат ключа не создаётся. Старый секрет перестаёт работать.
+</Note>
+
+## Безопасность
+
+<Warning>
+Используйте параметр `state` для защиты от CSRF-атак. Генерируйте случайное значение перед началом flow и проверяйте его в callback.
+</Warning>
+
+- **Только S256** — метод `plain` не поддерживается
+- **HTTPS обязателен** для `callback_url` (исключение: `localhost` и `127.0.0.1` для локальной разработки)
+- **Код авторизации** действителен 5 минут и может быть использован только один раз
+- **code_verifier** проверяется с защитой от timing-атак
+- **Rate limit** на эндпоинт `/api/auth/token`: 5 запросов в минуту
+
+## Ошибки
+
+### В redirect (callback_url)
+
+| Параметр | Значение | Описание |
+|----------|----------|----------|
+| `error` | `access_denied` | Пользователь отклонил авторизацию |
+
+### При обмене кода (`POST /api/auth/token`)
+
+| HTTP | Сообщение | Причина |
+|:---:|-----------|---------|
+| 400 | Невалидный код авторизации | Код не найден |
+| 400 | Код авторизации уже использован | Повторная попытка обмена |
+| 400 | Код авторизации истёк | Прошло более 5 минут |
+| 400 | callback_url не совпадает | URL не совпадает с указанным при авторизации |
+| 400 | Невалидный code_verifier | PKCE-проверка не пройдена |
+| 429 | Too Many Requests | Превышен rate limit (5 запросов/мин) |
+
+### При авторизации (`GET /api/auth/authorize`)
+
+| HTTP | Сообщение | Причина |
+|:---:|-----------|---------|
+| 400 | Невалидный callback_url | Некорректный URL или отсутствует HTTPS |
+| 400 | Поддерживается только метод S256 | Указан метод, отличный от S256 |
+| 400 | Невалидный code_challenge | Не соответствует формату Base64url (43-128 символов) |
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="API Справочник" icon="code" href="/api-reference/chat/completions">
+    Полная документация эндпоинтов
+  </Card>
+  <Card title="Каталог моделей" icon="microchip" href="/gaidy/models">
+    Выберите модель для вашего приложения
+  </Card>
+</CardGroup>

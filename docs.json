@@ -53,7 +53,8 @@
               "gaidy/web-search",
               "osobennosti/reasoning-tokens",
               "osobennosti/caching",
-              "osobennosti/usage"
+              "osobennosti/usage",
+              "gaidy/oauth-pkce"
             ]
           },
           {
