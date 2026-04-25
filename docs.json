@@ -54,7 +54,8 @@
               "osobennosti/reasoning-tokens",
               "osobennosti/caching",
               "osobennosti/usage",
-              "gaidy/oauth-pkce"
+              "gaidy/oauth-pkce",
+              "gaidy/mcp"
             ]
           },
           {
