@@ -93,6 +93,7 @@
                   "gaidy/qwen-image",
                   "gaidy/gpt-5-image-mini",
                   "gaidy/gpt-5-image",
+                  "gaidy/gpt-5-4-image-2",
                   "gaidy/nanobanano-pro",
                   "gaidy/nanobanano-2",
                   "gaidy/nanobanano"
@@ -121,10 +122,14 @@
               "integracii/claude-code",
               "integracii/cline",
               "integracii/kilo-code",
+              "integracii/dify",
+              "integracii/polza-ide",
+              "integracii/proxy",
               "integracii/roo-code",
               "integracii/n8n",
               "integracii/opencode",
-              "integracii/openclaw"
+              "integracii/openclaw",
+              "integracii/qwen-code"
             ]
           }
         ]
