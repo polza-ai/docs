@@ -1,0 +1,65 @@
+---
+title: "OpenAI GPT-5.4 Image 2"
+description: "Генерация и редактирование изображений с моделью OpenAI GPT-5.4 Image 2"
+icon: "image"
+---
+
+Модель генерации и редактирования изображений от OpenAI. Поддерживает 11 соотношений сторон, генерацию до 4 изображений за запрос, а также редактирование по референсному изображению.
+
+Полная документация API: [Генерация медиа](/docs/api-reference/media/create)
+
+## Обзор
+
+| Характеристика | Значение |
+| --- | --- |
+| ID модели | `openai/gpt-5.4-image-2` |
+| Контекст | 272 000 токенов |
+| Max prompt | 5 000 символов |
+| aspect\_ratio | auto, 1:1, 5:4, 9:16, 21:9, 16:9, 4:3, 3:2, 4:5, 3:4, 2:3 |
+| n | 1–4 изображения за запрос |
+
+## Параметры
+
+| Параметр | Обязательный | Описание |
+| --- | --- | --- |
+| `model` | Да | `openai/gpt-5.4-image-2` |
+| `prompt` | Да | Текстовое описание, до 5 000 символов |
+| `aspect_ratio` | Нет | Соотношение сторон: `auto`, `1:1`, `5:4`, `9:16`, `21:9`, `16:9`, `4:3`, `3:2`, `4:5`, `3:4`, `2:3`. По умолчанию `auto` |
+| `n` | Нет | Количество изображений: 1–4. По умолчанию 1 |
+| `images` | Нет | URL референсного изображения для редактирования |
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-5.4-image-2",
+    "input": {
+      "prompt": "Описание изображения",
+      "aspect_ratio": "1:1",
+      "n": 1
+    },
+    "async": true
+  }'
+```
+
+## Редактирование с референсным изображением
+
+Передайте URL исходного изображения в поле `images`, чтобы использовать его как референс для редактирования.
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-5.4-image-2",
+    "input": {
+      "prompt": "Измени фон на закат над морем",
+      "aspect_ratio": "1:1",
+      "images": ["https://example.com/your-image.jpg"]
+    },
+    "async": true
+  }'
+```
