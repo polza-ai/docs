@@ -121,6 +121,7 @@
             "pages": [
               "integracii/claude-code",
               "integracii/cline",
+              "integracii/hermes-agent",
               "integracii/kilo-code",
               "integracii/dify",
               "integracii/polza-ide",
