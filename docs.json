@@ -55,7 +55,8 @@
               "osobennosti/caching",
               "osobennosti/usage",
               "gaidy/oauth-pkce",
-              "gaidy/mcp"
+              "gaidy/mcp",
+              "osobennosti/aliases"
             ]
           },
           {

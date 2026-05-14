@@ -80,6 +80,41 @@ completion = client.chat.completions.create(
 | `audio` | number | Макс. цена за аудио (RUB за миллион токенов) |
 | `request` | number | Макс. цена за запрос (RUB) |
 
+### Alias в строке `model`
+
+Если ваш клиент не поддерживает дополнительные поля в body (например, некоторые OpenAI-совместимые SDK), часть routing-настроек можно передать прямо в строке `model` через `@`-синтаксис:
+
+```text
+<model>@<key>=<value>&<key>=<value>
+```
+
+Поддерживаемые alias-параметры:
+
+| Alias | Что делает |
+|---|---|
+| `provider` | Выбирает конкретного провайдера (`provider.only`) |
+| `reasoning_effort` | Управляет глубиной reasoning (`low` / `medium` / `high` и др.) |
+| `allow_fallbacks` | Разрешает или запрещает fallback (`true` / `false`) |
+
+Примеры:
+
+```text
+anthropic/claude-opus-4-6@provider=Amazon Bedrock
+minimax/minimax-m2.5@reasoning_effort=high
+minimax/minimax-m2.5@allow_fallbacks=false
+minimax/minimax-m2.5@provider=DeepInfra&reasoning_effort=high&allow_fallbacks=false
+```
+
+<Note>
+  Alias-формат работает только для `/v1/chat/completions`, `/v1/responses` и `/v1/messages`. Embeddings, audio и media не поддерживаются.
+</Note>
+
+<Warning>
+  Если один и тот же параметр задан и в alias, и в body (например, `reasoning_effort` в строке model и `reasoning.effort` в теле запроса), API вернёт `400`. Для сложного routing (`order`, `ignore`, `max_price`) используйте обычный body-контракт.
+</Warning>
+
+Подробнее: [Алиасы параметров в model](/osobennosti/aliases)
+
 ## Примеры
 
 ### Приоритет провайдеров
@@ -282,6 +317,9 @@ curl -X POST "https://polza.ai/api/v1/chat/completions" \
 <CardGroup cols={2}>
   <Card title="Каталог моделей" icon="microchip" href="/gaidy/models">
     Полный список доступных моделей
+  </Card>
+  <Card title="Алиасы параметров" icon="at" href="/osobennosti/aliases">
+    Передача provider и reasoning_effort прямо в строке model
   </Card>
   <Card title="Статистика" icon="chart-line" href="/osobennosti/usage">
     Мониторинг использования и затрат
