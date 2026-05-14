@@ -1,0 +1,241 @@
+---
+title: Алиасы параметров
+description: Как передавать provider, reasoning_effort и allow_fallbacks прямо в строке model
+icon: microchip
+---
+
+Если ваш клиент не умеет отправлять дополнительные поля в body, часть routing- и reasoning-настроек можно передать прямо в строке `model`.
+
+<Info>
+  Alias-формат поддерживается только для chat-style API: `/v1/chat/completions`, `/v1/responses` и `/v1/messages`.
+</Info>
+
+## Что это даёт
+
+С помощью alias-формата можно:
+
+- выбрать конкретного провайдера через `provider`
+- задать глубину reasoning через `reasoning_effort`
+- включить или отключить fallback через `allow_fallbacks`
+
+Если в `model` нет символа `@`, запрос обрабатывается как обычно.
+
+## Поддерживаемые эндпоинты
+
+| Эндпоинт | Поддержка |
+|---|---|
+| `/v1/chat/completions` | ✅ |
+| `/v1/responses` | ✅ |
+| `/v1/messages` | ✅ |
+| Embeddings | ❌ |
+| Audio | ❌ |
+| Media | ❌ |
+
+## Формат alias-строки
+
+```text
+<model>@<key>=<value>&<key>=<value>
+```
+
+Примеры:
+
+```text
+minimax/minimax-m2.5@reasoning_effort=high
+minimax/minimax-m2.5@allow_fallbacks=false
+anthropic/claude-opus-4-6@provider=Amazon Bedrock
+minimax/minimax-m2.5@provider=DeepInfra&reasoning_effort=high&allow_fallbacks=false
+```
+
+<Note>
+  В ответах API возвращается canonical model без alias-суффикса. Например, если вы отправили `minimax/minimax-m2.5@reasoning_effort=high`, в ответе придёт `minimax/minimax-m2.5`.
+</Note>
+
+## Поддерживаемые alias-параметры
+
+| Alias | Во что маппится | Что делает |
+|---|---|---|
+| `provider` | `provider.only = [value]` | Выбирает конкретный provider routing path |
+| `reasoning_effort` | `reasoning.effort = value` | Управляет глубиной reasoning |
+| `allow_fallbacks` | `provider.allow_fallbacks = boolean` | Разрешает или запрещает fallback на другие провайдеры |
+
+### provider
+
+`provider` работает так же, как обычное поле `provider.only` — передавайте тот же идентификатор, который у вас уже работает в `provider.only`.
+
+```text
+anthropic/claude-opus-4-6@provider=Amazon Bedrock
+```
+
+### reasoning_effort
+
+Маппится в canonical-поле `reasoning.effort`. Поддерживаемые значения:
+
+- `max`
+- `xhigh`
+- `high`
+- `medium`
+- `low`
+- `minimal`
+- `none`
+
+<Warning>
+  Конкретная модель или провайдер могут поддерживать только часть значений. Например, Yandex AI Studio поддерживает только `low`, `medium` и `high`.
+</Warning>
+
+```text
+minimax/minimax-m2.5@reasoning_effort=high
+```
+
+### allow_fallbacks
+
+Допустимы только значения `true` и `false`.
+
+```text
+minimax/minimax-m2.5@allow_fallbacks=false
+```
+
+## Примеры запросов
+
+<CodeGroup>
+```bash Chat Completions
+curl -X POST https://polza.ai/api/v2/chat/completions \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "minimax/minimax-m2.5@reasoning_effort=high",
+    "messages": [
+      { "role": "user", "content": "Ответь одним словом: да" }
+    ]
+  }'
+```
+
+```bash Responses API
+curl -X POST https://polza.ai/api/v2/responses \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "minimax/minimax-m2.5@provider=DeepInfra",
+    "input": "Ответь одним словом: ок"
+  }'
+```
+
+```bash Anthropic Messages API
+curl -X POST https://polza.ai/api/v2/messages \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "anthropic/claude-opus-4-6@allow_fallbacks=false",
+    "messages": [
+      { "role": "user", "content": "Ответь одним словом: ок" }
+    ]
+  }'
+```
+</CodeGroup>
+
+## Эквивалент в обычном body
+
+Alias-формат — это сокращённая запись стандартных body-полей. Следующие запросы эквивалентны:
+
+<CodeGroup>
+```json Через alias
+{
+  "model": "minimax/minimax-m2.5@reasoning_effort=high",
+  "messages": [{ "role": "user", "content": "Привет" }]
+}
+```
+
+```json Через body
+{
+  "model": "minimax/minimax-m2.5",
+  "messages": [{ "role": "user", "content": "Привет" }],
+  "reasoning": {
+    "effort": "high"
+  }
+}
+```
+</CodeGroup>
+
+<CodeGroup>
+```json Через alias
+{
+  "model": "minimax/minimax-m2.5@provider=DeepInfra&allow_fallbacks=false",
+  "messages": [{ "role": "user", "content": "Привет" }]
+}
+```
+
+```json Через body
+{
+  "model": "minimax/minimax-m2.5",
+  "messages": [{ "role": "user", "content": "Привет" }],
+  "provider": {
+    "only": ["DeepInfra"],
+    "allow_fallbacks": false
+  }
+}
+```
+</CodeGroup>
+
+## Конфликты alias и body
+
+Если одно и то же поведение задано и через alias, и через обычные поля body, API вернёт `400`.
+
+Конфликтами считаются:
+
+- `provider=...` в `model` и любой объект `provider` в body
+- `reasoning_effort=...` в `model` и `reasoning.effort` в body
+- `allow_fallbacks=...` в `model` и `provider.allow_fallbacks` в body
+
+<Warning>
+  Если вам нужна сложная routing-настройка (`order`, `ignore`, `max_price` и другие поля `provider`), используйте обычный body-контракт, а не alias-формат.
+</Warning>
+
+Пример конфликта, который вернёт `400`:
+
+```json
+{
+  "model": "minimax/minimax-m2.5@reasoning_effort=high",
+  "messages": [{ "role": "user", "content": "Привет" }],
+  "reasoning": {
+    "effort": "low"
+  }
+}
+```
+
+## Ошибки валидации
+
+API вернёт `400`, если:
+
+- используется неизвестный alias-ключ
+- ключ повторяется несколько раз
+- значение пустое
+- строка alias имеет неправильный формат
+- alias конфликтует с body
+
+Невалидные примеры:
+
+```text
+openai/gpt-4.1@
+openai/gpt-4.1@provider
+openai/gpt-4.1@provider=
+openai/gpt-4.1@provider=google=foo
+openai/gpt-4.1@provider=google&provider=openai
+openai/gpt-4.1@foo=bar
+```
+
+## Ограничения
+
+- Поддерживаются только `provider`, `reasoning_effort` и `allow_fallbacks`
+- Provider-specific параметры через alias не поддерживаются
+- Percent-encoding и дополнительные escape-механизмы не поддерживаются
+- Alias-формат не распространяется на embeddings, audio и media
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Выбор провайдера" icon="server" href="/osobennosti/provider-selection">
+    Полный список параметров routing через body-контракт
+  </Card>
+  <Card title="Reasoning" icon="brain" href="/osobennosti/reasoning">
+    Подробнее о параметре reasoning и его значениях
+  </Card>
+</CardGroup>
