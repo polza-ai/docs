@@ -1,0 +1,126 @@
+---
+title: Codex CLI
+description: Подключение OpenAI Codex CLI к Polza.ai
+icon: c
+---
+
+OpenAI Codex CLI — терминальный AI-агент для написания кода. Он работает прямо в вашем терминале, читает и редактирует файлы, запускает команды и помогает с задачами любой сложности.
+
+Polza.ai поддерживает Responses API, поэтому Codex CLI подключается напрямую — без промежуточных прокси и дополнительных зависимостей.
+
+![Codex CLI, подключённый к Polza.ai](../images/codex/codex.png)
+
+## Требования
+
+- [Node.js](https://nodejs.org/) 22+
+- API-ключ Polza.ai — получите на [polza.ai/dashboard](https://polza.ai/dashboard)
+
+## Установка
+
+<CodeGroup>
+```bash
+npm i -g @openai/codex
+```
+</CodeGroup>
+
+## Настройка
+
+<Steps>
+
+### Создайте файл конфигурации
+
+<Tabs>
+  <Tab title="macOS / Linux">
+    ```bash
+    mkdir -p ~/.codex
+    nano ~/.codex/config.toml
+    ```
+  </Tab>
+  <Tab title="Windows">
+    ```powershell
+    mkdir "$env:USERPROFILE\.codex" -Force
+    notepad "$env:USERPROFILE\.codex\config.toml"
+    ```
+  </Tab>
+</Tabs>
+
+### Вставьте конфигурацию провайдера
+
+<CodeGroup>
+```toml config.toml
+model = "google/gemini-2.5-flash-lite-preview-09-2025"
+model_provider = "polza"
+
+[model_providers.polza]
+name = "Polza.ai"
+base_url = "https://polza.ai/api/v1/"
+env_key = "POLZA_API_KEY"
+wire_api = "responses"
+```
+</CodeGroup>
+
+### Откройте терминал, установите API-ключ и запустите Codex
+
+Откройте терминал (Terminal на macOS/Linux, PowerShell на Windows), задайте переменную окружения с вашим API-ключом и запустите Codex:
+
+<Tabs>
+  <Tab title="macOS / Linux">
+    ```bash
+    export POLZA_API_KEY="ваш-ключ"
+    codex "ваш запрос"
+    ```
+
+    Чтобы сохранить ключ на постоянной основе, добавьте строку `export POLZA_API_KEY="ваш-ключ"` в `~/.bashrc` или `~/.zshrc`.
+  </Tab>
+  <Tab title="Windows">
+    ```powershell
+    $env:POLZA_API_KEY = "ваш-ключ"
+    codex "ваш запрос"
+    ```
+
+    Для сохранения на постоянной основе:
+
+    ```powershell
+    [System.Environment]::SetEnvironmentVariable("POLZA_API_KEY", "ваш-ключ", "User")
+    ```
+
+    Или через GUI: `Win + R` → `sysdm.cpl` → вкладка **Дополнительно** → **Переменные среды** → **Создать**.
+  </Tab>
+</Tabs>
+
+</Steps>
+
+## Рекомендуемые модели
+
+| Модель | ID | Особенности |
+|---|---|---|
+| GPT-5.5 | `openai/gpt-5.5` | Флагман OpenAI — сильнейший reasoning и генерация кода |
+| Claude Sonnet 4.6 | `anthropic/claude-sonnet-4.6` | Лучший баланс цены и качества для повседневных задач |
+| Gemini 3.5 Flash | `google/gemini-3.5-flash` | Быстрая и умная — идеальна для рефакторинга и code review |
+| Qwen 3.7 Max | `qwen/qwen3.7-max` | Топ для сложной логики и работы с большими кодобазами |
+| Kimi K2.6 | `moonshotai/kimi-k2.6` | Сильна во фронтенде, вёрстке и UI-компонентах |
+| Qwen 3.6 Flash | `qwen/qwen3.6-flash` | Экономичная и быстрая — хороша для скриптов и автоматизации |
+| Gemini 3.1 Flash Lite | `google/gemini-3.1-flash-lite` | Самая дешёвая — подходит для простых правок и автодополнения |
+| GLM-5.1 | `z-ai/glm-5.1` | Универсальная open-source модель для разнообразных задач |
+
+Актуальный список моделей: [polza.ai/models](https://polza.ai/models)
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Model provider not found">
+    Идентификатор в поле `model_provider` не совпадает с именем секции `[model_providers.<id>]` в `config.toml`. Убедитесь, что они идентичны — например, `model_provider = "polza"` и `[model_providers.polza]`.
+  </Accordion>
+  <Accordion title="stream disconnected before completion">
+    Модель отвечает несколько раз подряд, затем появляется ошибка. Убедитесь, что в конфигурации указано `wire_api = "responses"`, а `base_url` заканчивается на `/v1/`.
+  </Accordion>
+  <Accordion title="API-ключ не найден">
+    Codex читает ключ из переменной окружения, указанной в `env_key`. Убедитесь, что переменная `POLZA_API_KEY` задана в текущей сессии терминала.
+  </Accordion>
+</AccordionGroup>
+
+## Ссылки
+
+- [Qwen Code CLI + Polza.ai](/integracii/qwen-code)
+- [Claude Code + Polza.ai](/integracii/claude-code)
+- [Polza.ai API Reference](/api-reference/responses/create)

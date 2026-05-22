@@ -73,8 +73,6 @@
                   "gaidy/kling-2-6-motion-control",
                   "gaidy/wan-2-6",
                   "gaidy/wan-2-5",
-                  "gaidy/sora-2-pro",
-                  "gaidy/sora-2",
                   "gaidy/kling-2-5-turbo",
                   "gaidy/veo-3-1"
                 ]
@@ -123,6 +121,7 @@
             "pages": [
               "integracii/claude-code",
               "integracii/cline",
+              "integracii/codex",
               "integracii/hermes-agent",
               "integracii/kilo-code",
               "integracii/dify",
