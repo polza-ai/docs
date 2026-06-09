@@ -1,0 +1,168 @@
+---
+title: Gemini Omni Video
+description: Генерация видео с моделью Gemini Omni Video от Google
+icon: video
+---
+
+Gemini Omni Video — мультимодальная модель генерации видео от Google DeepMind. Поддерживает text-to-video, image-to-video (анимация изображения) и video-to-video (редактирование существующего ролика), разрешения 720p / 1080p / 4K, длительность 4 / 6 / 8 / 10 сек.
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика       | Значение                                    |
+|----------------------|---------------------------------------------|
+| ID модели            | `gemini-omni-video`                         |
+| prompt               | Текстовое описание желаемого видео          |
+| aspect_ratio         | `16:9`, `9:16`                              |
+| resolution           | `720p`, `1080p`, `4k`                       |
+| duration             | `4`, `6`, `8`, `10` (секунды)               |
+| images               | Массив референсных изображений (image-to-video) |
+| videos               | Массив исходных видео (video-to-video)      |
+| async                | `true` (асинхронная генерация)              |
+
+## Режимы работы
+
+<Tabs>
+  <Tab title="Text-to-Video">
+    Только текстовый промпт — модель генерирует ролик с нуля.
+
+    ```json
+    {
+      "model": "gemini-omni-video",
+      "input": {
+        "prompt": "человек скачет на лошади по степи",
+        "aspect_ratio": "16:9",
+        "resolution": "1080p",
+        "duration": "6"
+      },
+      "async": true
+    }
+    ```
+  </Tab>
+  <Tab title="Image-to-Video">
+    Анимация статичного изображения. Промпт описывает, что должно произойти.
+
+    ```json
+    {
+      "model": "gemini-omni-video",
+      "input": {
+        "prompt": "Анимируй логотип: лёгкое вращение и мягкое свечение",
+        "aspect_ratio": "9:16",
+        "resolution": "720p",
+        "duration": "6",
+        "images": [
+          {
+            "type": "url",
+            "data": "https://example.com/example.png"
+          }
+        ]
+      },
+      "async": true
+    }
+    ```
+  </Tab>
+  <Tab title="Video-to-Video">
+    Редактирование существующего видео — например, добавление динамики, смена стиля или доработка движения.
+
+    ```json
+    {
+      "model": "gemini-omni-video",
+      "input": {
+        "prompt": "Добавь динамичности в видео",
+        "aspect_ratio": "16:9",
+        "resolution": "1080p",
+        "duration": "6",
+        "videos": [
+          {
+            "type": "url",
+            "data": "https://example.com/example.mp4"
+          }
+        ]
+      },
+      "async": true
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Параметры
+
+| Параметр        | Тип    | Обязательный | Описание                                                                |
+|-----------------|--------|--------------|-------------------------------------------------------------------------|
+| `model`         | string | Да           | `gemini-omni-video`                                                     |
+| `prompt`        | string | Да           | Текстовое описание желаемого видео                                      |
+| `aspect_ratio`  | string | Нет          | `16:9`, `9:16`                                                          |
+| `resolution`    | string | Нет          | `720p`, `1080p`, `4k`                                                   |
+| `duration`      | string | Нет          | `4`, `6`, `8`, `10` (секунды)                                           |
+| `images`        | array  | Нет          | Референсные изображения для image-to-video: `[{ "type": "url", "data": "..." }]` |
+| `videos`        | array  | Нет          | Исходные видео для video-to-video: `[{ "type": "url", "data": "..." }]` |
+| `async`         | bool   | Нет          | Запустить генерацию асинхронно. По умолчанию `true`                     |
+
+<Note>
+Параметр `async: true` — обязателен для всех запросов: генерация видео возвращает `id` сразу, а готовый ролик приходит позже.
+</Note>
+
+## Пример запроса (cURL)
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gemini-omni-video",
+    "input": {
+      "prompt": "человек скачет на лошади по степи",
+      "aspect_ratio": "16:9",
+      "resolution": "1080p",
+      "duration": "6"
+    },
+    "async": true
+  }'
+```
+
+## Асинхронная генерация
+
+Генерация видео — асинхронный процесс. После отправки запроса вы получите `id`, который нужно использовать для проверки статуса:
+
+<Steps>
+  <Step title="Отправка запроса">
+    POST на `/api/v1/media` возвращает `id` генерации
+  </Step>
+  <Step title="Проверка статуса">
+    GET на `/api/v1/media/{id}` возвращает текущий статус
+  </Step>
+  <Step title="Получение результата">
+    Когда статус `completed`, в ответе будет URL готового видео
+  </Step>
+</Steps>
+
+## Советы и лучшие практики
+
+<AccordionGroup>
+  <Accordion title="Описывайте движение" icon="arrows-rotate">
+    В промпте явно указывайте, что должно двигаться: «камера приближается», «объект вращается», «человек бежит». Без этого модель может выдать статичную сцену.
+  </Accordion>
+  <Accordion title="Следите за duration и разрешением" icon="gauge-high">
+    Большие значения `duration` (8–10 сек) и `4k` заметно увеличивают время и стоимость генерации. Для тестов используйте `720p` + `duration: 4`.
+  </Accordion>
+  <Accordion title="Передавайте файлы по URL" icon="link">
+    `images[]` и `videos[]` принимают публичные URL в формате `{ "type": "url", "data": "https://..." }`. Для приватных файлов сначала загрузите их через `/v1/storage/upload` (см. [Хранилище файлов](/api-reference/storage/upload)).
+  </Accordion>
+  <Accordion title="video-to-video — для доработок" icon="wand-magic-sparkles">
+    Если нужно не генерировать с нуля, а подправить существующий ролик (добавить эффект, изменить темп, сменить стиль) — используйте режим video-to-video через `videos[]`.
+  </Accordion>
+</AccordionGroup>
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Статус генерации" icon="spinner" href="/api-reference/media/status">
+    Проверка статуса генерации медиа
+  </Card>
+  <Card title="Хранилище файлов" icon="database" href="/api-reference/storage/upload">
+    Загрузка изображений и видео
+  </Card>
+</CardGroup>
