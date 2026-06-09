@@ -66,14 +66,15 @@
                 "group": "Видео",
                 "icon": "video",
                 "pages": [
+                  "gaidy/gemini-omni-video",
                   "gaidy/seedance-1-5-pro",
                   "gaidy/seedance-2",
                   "gaidy/kling-3",
                   "gaidy/kling-3-motion-control",
                   "gaidy/kling-2-6-motion-control",
+                  "gaidy/kling-2-5-turbo",
                   "gaidy/wan-2-6",
                   "gaidy/wan-2-5",
-                  "gaidy/kling-2-5-turbo",
                   "gaidy/veo-3-1"
                 ]
               },
@@ -88,15 +89,15 @@
                   "gaidy/seedream-3",
                   "gaidy/flux-2-pro",
                   "gaidy/flux-2-flex",
-                  "gaidy/gpt-image-1-5",
                   "gaidy/grok-imagine",
                   "gaidy/qwen-image",
+                  "gaidy/gpt-image-1-5",
                   "gaidy/gpt-5-image-mini",
                   "gaidy/gpt-5-image",
                   "gaidy/gpt-5-4-image-2",
+                  "gaidy/nanobanano",
                   "gaidy/nanobanano-pro",
-                  "gaidy/nanobanano-2",
-                  "gaidy/nanobanano"
+                  "gaidy/nanobanano-2"
                 ]
               },
               {
