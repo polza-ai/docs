@@ -4,7 +4,7 @@ description: Генерация видео с моделью Kling 3.0
 icon: video
 ---
 
-Модель генерации видео Kling 3.0. Длительность 3–15 сек, режимы std и pro, опциональный звук.
+Модель генерации видео Kling 3.0. Длительность 3–15 сек, режимы std, pro, 4K, опциональный звук.
 
 <Note>
 Полная документация API: [Генерация медиа](/api-reference/media/create)
@@ -19,7 +19,7 @@ icon: video
 | aspect_ratio | 16:9, 9:16, 1:1 (игнорируется при start frame) |
 | duration | 3–15 сек (обязательный) |
 | images | 0–2 (start/end frame или start frame для multi-shot) |
-| mode | std, pro. По умолчанию std |
+| mode | std, pro, 4K. По умолчанию std |
 | sound | true / false. При multi_shots обязательно true |
 
 ## Параметры
@@ -31,7 +31,7 @@ icon: video
 | `aspect_ratio` | Нет | 16:9, 9:16, 1:1. По умолчанию 1:1 |
 | `duration` | Да | 3–15 секунд |
 | `images` | Нет | 0–2 |
-| `mode` | Да | std или pro. По умолчанию std |
+| `mode` | Да | std, pro, 4K. По умолчанию std |
 | `sound` | Да | true/false. По умолчанию false |
 
 ## Пример запроса (cURL)
