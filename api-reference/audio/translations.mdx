@@ -1,13 +1,20 @@
-﻿---
+---
 title: POST Audio Translations
 description: Перевод аудио на английский язык
 icon: language
 openapi: POST /v1/audio/translations
 ---
 
+<Info>
+Этот эндпоинт совместим с OpenAI SDK и подходит для быстрой миграции существующего кода.
+Если вы разрабатываете новый софт — рекомендуем использовать [Media API](/api-reference/media/create), который предоставляет единый интерфейс для всех медиа-операций.
+</Info>
+
 ## О переводе аудио
 
-Эндпоинт транскрибирует аудио на любом языке и переводит результат на английский.
+Эндпоинт транскрибирует аудио на любом языке и переводит результат на английский. Результат всегда на английском, независимо от языка исходного аудио.
+
+В отличие от [Audio Transcriptions](/api-reference/audio/transcriptions), здесь **не** передаются: `language`, `temperature`, `timestamp_granularities`, `chunking_strategy`, `include`, `stream`, диаризация и `prompt` — модель сама определяет язык и сегментирует аудио.
 
 ## Доступные модели
 
@@ -15,22 +22,26 @@ openapi: POST /v1/audio/translations
 |--------|-----|----------|
 | Whisper 1 | `openai/whisper-1` | Классическая модель OpenAI (по умолчанию) |
 | GPT-4o Transcribe | `openai/gpt-4o-transcribe` | Улучшенная версия |
+| GPT-4o Mini Transcribe | `openai/gpt-4o-mini-transcribe` | Быстрая/дешёвая версия |
+
+> Модель `gpt-4o-transcribe-diarize` для translations **не применима** — диаризация работает только в transcriptions.
 
 ## Параметры запроса
 
 | Параметр | Тип | Обязательный | Описание |
 |----------|-----|--------------|----------|
-| `file` | string | Да | Аудиофайл в формате base64 или URL |
-| `model` | string | Нет | Модель перевода (по умолчанию openai/whisper-1) |
-| `temperature` | number | Нет | Температура (0-1) |
-| `response_format` | string | Нет | Формат ответа: json, text, srt, vtt, verbose_json |
-| `prompt` | string | Нет | Подсказка для модели |
-| `stream` | boolean | Нет | Потоковый режим |
+| `file` | string | Да | Аудиофайл: base64 (`data:audio/mp3;base64,...`) или URL |
+| `model` | string | Нет | Модель перевода (по умолчанию `openai/whisper-1`) |
+| `response_format` | enum | Нет | `json` (по умолчанию), `text`, `srt`, `verbose_json`, `vtt` |
 | `user` | string | Нет | Идентификатор конечного пользователя |
 
-## Поддерживаемые форматы
+## Поддерживаемые форматы файлов
 
-MP3, WAV, M4A, FLAC, OGG, WebM
+MP3, WAV, M4A, FLAC, OGG, WebM.
+
+<Note>
+Лимит размера тела — около 15 МБ. На больших файлах возможен 502. Для больших аудио разбивайте файл на части.
+</Note>
 
 ## Пример
 
@@ -48,10 +59,17 @@ curl -X POST "https://polza.ai/api/v1/audio/translations" \
 
 ```json
 {
-  "text": "Hello, this is a test recording for checking transcription."
+  "text": "Hello, this is a test recording for checking transcription.",
+  "language": "en",
+  "duration": 5.32,
+  "model": "whisper-1",
+  "usage": { "durationSeconds": 5.32, "cost_rub": 0.15, "cost": 0.15 }
 }
 ```
 
-<Note>
-В отличие от [Audio Transcriptions](/api-reference/audio/transcriptions), этот эндпоинт всегда возвращает текст на английском языке, независимо от языка исходного аудио.
-</Note>
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `text` | string | Результат на английском (для `srt`/`vtt` — готовые субтитры) |
+| `language` | string | Код языка (для translations всегда `en` или пусто) |
+| `duration` | number | Длительность аудио в секундах |
+| `usage` | object | Использование: `durationSeconds`, `cost_rub`, `cost` |

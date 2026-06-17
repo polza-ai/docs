@@ -1,4 +1,4 @@
-﻿---
+---
 title: POST Audio Transcriptions
 description: Транскрибация аудио в текст (Speech-to-Text)
 icon: microphone
@@ -14,50 +14,75 @@ openapi: POST /v1/audio/transcriptions
 
 | Модель | ID | Описание |
 |--------|-----|----------|
-| Whisper 1 | `openai/whisper-1` | Классическая модель OpenAI (по умолчанию) |
-| GPT-4o Transcribe | `openai/gpt-4o-transcribe` | Улучшенная транскрибация |
-| GPT-4o Mini Transcribe | `openai/gpt-4o-mini-transcribe` | Быстрая версия |
+| Whisper 1 | `openai/whisper-1` | Классическая модель OpenAI (по умолчанию). Поддерживает `verbose_json`, `srt`, `vtt`, пословные/посегментные таймстампы |
+| Whisper Large V3 | `openai/whisper-large-v3` | Улучшенная multilingual-модель OpenAI. Форматы: `json`, `text`, `verbose_json` |
+| Whisper Large V3 Turbo | `openai/whisper-large-v3-turbo` | Ускоренная версия Large V3. Форматы: `json`, `text`, `verbose_json` |
+| GPT-4o Transcribe | `openai/gpt-4o-transcribe` | Высокое качество. Форматы: `json`, `text`. Поддерживает `include: ["logprobs"]` |
+| GPT-4o Mini Transcribe | `openai/gpt-4o-mini-transcribe` | Быстрая/дешёвая. Форматы: `json`, `text`. Поддерживает `include: ["logprobs"]` |
+| GPT-4o Transcribe Diarize | `openai/gpt-4o-transcribe-diarize` | Диаризация — разделение по спикерам. Формат: `diarized_json` |
+| Google Chirp 3 | `google/chirp-3` | STT от Google. Форматы: `json`, `text` |
+| Qwen3 ASR Flash | `qwen/qwen3-asr-flash-2026-02-10` | Быстрая multilingual-модель от Qwen. Форматы: `json`, `text` |
+| Voxtral Mini Transcribe | `mistralai/voxtral-mini-transcribe` | STT от Mistral AI. Форматы: `json`, `text` |
+| Parakeet TDT 0.6B v3 | `nvidia/parakeet-tdt-0.6b-v3` | Лёгкая и быстрая модель от NVIDIA. Форматы: `json`, `text` |
+| ElevenLabs STT | `elevenlabs/speech-to-text` | STT от ElevenLabs. Поддерживает диаризацию через `diarized_json` |
+
+> Тарификация STT — посекундная (`per_second`), по длительности аудио.
 
 ## Параметры запроса
 
 | Параметр | Тип | Обязательный | Описание |
 |----------|-----|--------------|----------|
-| `file` | string | Да | Аудиофайл в формате base64 или URL |
-| `model` | string | Нет | Модель транскрибации (по умолчанию openai/whisper-1) |
-| `language` | string | Нет | Код языка ISO-639-1 (например, "ru") |
-| `temperature` | number | Нет | Температура (0-1, по умолчанию 0) |
-| `response_format` | string | Нет | Формат ответа (по умолчанию json) |
-| `prompt` | string | Нет | Подсказка для модели |
-| `timestamp_granularities` | array | Нет | Детализация: "word", "segment" |
-| `stream` | boolean | Нет | Потоковый режим |
+| `file` | string | Да | Аудиофайл: base64 (`data:audio/mp3;base64,...`) или URL |
+| `model` | string | Нет | Модель транскрибации (по умолчанию `openai/whisper-1`) |
+| `language` | string | Нет | ISO-639-1: `auto` (по умолчанию), `ru`, `en`, `de`, `fr`, `es`, `it`, `pt`, `pl`, `uk`, `nl`, `sv`, `da`, `fi`, `cs`, `sk`, `ro`, `bg`, `hr`, `el`, `tr`, `ar`, `hi`, `zh`, `ja`, `ko`, `id` |
+| `temperature` | number | Нет | Температура (0–1, по умолчанию 0). В основном для `whisper-1` |
+| `response_format` | enum | Нет | `json` (по умолчанию), `text`, `srt`, `verbose_json`, `vtt`, `diarized_json` |
+| `prompt` | string | Нет | Контекст транскрипции, до ~2048 символов. **Не** поддерживается для `gpt-4o-transcribe-diarize` |
+| `timestamp_granularities` | string[] | Нет | `word`, `segment` (можно оба). Только `whisper-1` + `verbose_json` |
+| `chunking_strategy` | `'auto'` \| object | Нет | Стратегия разбивки. **Обязателен** для `gpt-4o-transcribe-diarize` при аудио > 30 сек |
+| `include` | string[] | Нет | `logprobs`. Только `gpt-4o-transcribe` и `gpt-4o-mini-transcribe` |
+| `known_speaker_names` | string[] | Нет | Имена известных спикеров, до 4. Только для диаризации |
+| `known_speaker_references` | string[] | Нет | Аудио-референсы спикеров (data-URL). Только для диаризации |
+| `stream` | boolean | Нет | Стриминг ответа. **Не** поддерживается для `whisper-1` |
 | `user` | string | Нет | Идентификатор конечного пользователя |
 
-### Продвинутые параметры
+### Допустимые `response_format` по моделям
 
-| Параметр | Тип | Описание |
-|----------|-----|----------|
-| `chunking_strategy` | object | Стратегия разбивки (для gpt-4o-transcribe) |
-| `include` | array | Дополнительные данные: "logprobs" |
-| `known_speaker_names` | array | Имена известных спикеров (макс. 4, для diarized_json) |
-| `known_speaker_references` | array | Аудио-примеры голосов спикеров (data URLs) |
+- `openai/whisper-1` → `json`, `text`, `srt`, `verbose_json`, `vtt`
+- `openai/gpt-4o-transcribe`, `openai/gpt-4o-mini-transcribe` → `json`, `text`
+- `openai/gpt-4o-transcribe-diarize` → `json`, `text`, `diarized_json`
+- `elevenlabs/speech-to-text` → стандартный набор + `diarized_json`
 
-### Форматы ответа
+### Объект `chunking_strategy` типа `server_vad`
 
-| Формат | Описание |
-|--------|----------|
-| `json` | Простой JSON с текстом (по умолчанию) |
-| `text` | Только текст |
-| `srt` | Формат субтитров SRT |
-| `vtt` | Формат субтитров WebVTT |
-| `verbose_json` | Подробный JSON с сегментами и таймкодами |
-| `diarized_json` | JSON с разметкой спикеров |
+| Поле | Тип | Диапазон | Назначение |
+|------|-----|----------|------------|
+| `type` | `'server_vad'` | — | обязателен |
+| `prefix_padding_ms` | number | ≥ 0 | паддинг перед сегментом, мс |
+| `silence_duration_ms` | number | ≥ 0 | длительность тишины для разрыва, мс |
+| `threshold` | number | 0–1 | порог громкости (VAD) |
 
-## Поддерживаемые форматы
+Либо строкой: `"chunking_strategy": "auto"`.
 
-MP3, WAV, M4A, FLAC, OGG, WebM
+## Диаризация (gpt-4o-transcribe-diarize)
+
+Модель `gpt-4o-transcribe-diarize` возвращает разбивку по спикерам. Используйте `response_format: "diarized_json"`.
+
+<Warning>
+При аудио длительностью **более 30 секунд** параметр `chunking_strategy` обязателен. Без него запрос вернёт ошибку 400.
+</Warning>
+
+Опционально можно заранее «обучить» диаризатор на конкретные голоса:
+
+- `known_speaker_names` — массив имён, **до 4**. Имена используются как метки спикеров.
+- `known_speaker_references` — массив data-URL с короткими аудио-примерами тех же спикеров.
+
+## Поддерживаемые форматы файлов
+
+MP3, WAV, M4A, FLAC, OGG, WebM.
 
 <Note>
-Максимальный размер файла — 25 MB. Для больших файлов рекомендуется разбивать на части.
+Лимит размера тела — около 15 МБ. На больших файлах возможен 502. Для больших аудио разбивайте файл на части.
 </Note>
 
 ## Примеры
@@ -119,42 +144,99 @@ console.log(data.text);
 ```
 </CodeGroup>
 
+### Пример с диаризацией
+
+```bash
+curl -X POST "https://polza.ai/api/v1/audio/transcriptions" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-4o-transcribe-diarize",
+    "file": "BASE64_ENCODED_AUDIO",
+    "response_format": "diarized_json",
+    "chunking_strategy": "auto",
+    "known_speaker_names": ["agent", "client"]
+  }'
+```
+
 ## Ответ (200)
+
+### response_format: json (по умолчанию)
 
 ```json
 {
-  "text": "Привет, это тестовая запись для проверки транскрибации.",
+  "text": "Привет! Это тестовое сообщение.",
   "language": "ru",
-  "duration": 5.32,
+  "duration": 10.5,
+  "model": "whisper-1",
+  "usage": { "durationSeconds": 10.5, "cost": 0.11, "cost_rub": 0.11 }
+}
+```
+
+### response_format: verbose_json (только whisper-1)
+
+```json
+{
+  "text": "Привет, мир!",
+  "language": "ru",
+  "duration": 5.5,
+  "model": "whisper-1",
   "segments": [
     {
       "id": 0,
+      "seek": 0,
       "start": 0.0,
-      "end": 2.5,
-      "text": "Привет, это тестовая запись"
-    },
-    {
-      "id": 1,
-      "start": 2.5,
-      "end": 5.32,
-      "text": "для проверки транскрибации."
+      "end": 5.5,
+      "text": "Привет, мир!",
+      "tokens": [1, 2, 3],
+      "temperature": 0,
+      "avg_logprob": -0.5,
+      "compression_ratio": 1.2,
+      "no_speech_prob": 0.01
     }
   ],
-  "usage": {
-    "durationSeconds": 5.32,
-    "cost_rub": 0.15,
-    "cost": 0.15
-  }
+  "words": [
+    { "word": "Привет", "start": 0.0, "end": 0.5 }
+  ],
+  "usage": { "durationSeconds": 5.5, "cost": 0.06, "cost_rub": 0.06 }
 }
 ```
+
+Поле `words` появляется, только если указан `timestamp_granularities: ["word"]`.
+
+### response_format: diarized_json (gpt-4o-transcribe-diarize)
+
+```json
+{
+  "task": "transcribe",
+  "duration": 27.4,
+  "text": "agent: Привет!\nclient: Здравствуйте!",
+  "segments": [
+    {
+      "id": "seg_001",
+      "start": 0.0,
+      "end": 4.7,
+      "text": "Привет, как дела?",
+      "speaker": "agent",
+      "type": "transcript.text.segment"
+    }
+  ],
+  "model": "gpt-4o-transcribe-diarize",
+  "usage": { "durationSeconds": 27, "cost": 0.27, "cost_rub": 0.27 }
+}
+```
+
+### response_format: text / srt / vtt
+
+Поле `text` содержит результат — plain text либо готовые субтитры в формате SRT/VTT. Поля `segments`/`words` отсутствуют.
 
 ## Поля ответа
 
 | Поле | Описание |
 |------|----------|
-| `text` | Полный транскрибированный текст |
-| `language` | Определённый язык |
+| `text` | Полный транскрибированный текст (для `diarized_json` — со спикерами) |
+| `language` | Определённый язык (ISO-639-1) |
 | `duration` | Длительность аудио в секундах |
-| `segments` | Сегменты с таймкодами (для verbose_json) |
-| `words` | Слова с таймкодами (при timestamp_granularities: ["word"]) |
-| `usage` | Использование: durationSeconds, cost_rub, cost |
+| `segments` | Сегменты с таймкодами (для `verbose_json` и `diarized_json`) |
+| `words` | Слова с таймкодами (при `timestamp_granularities: ["word"]`) |
+| `usage` | Использование: `durationSeconds`, `cost_rub`, `cost` |

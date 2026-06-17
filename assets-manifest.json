@@ -1,0 +1,369 @@
+{
+  "bucket": "polza-docs",
+  "endpoint": "https://storage.yandexcloud.net",
+  "items": {
+    "0896ea91ac7a54497cbaee05170378ce122e8039814721c49442c89ed8c7ffa4": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/dify.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/0896ea91ac7a54497cbaee05170378ce122e8039814721c49442c89ed8c7ffa4.png",
+      "s3_key": "polza-docs/images/0896ea91ac7a54497cbaee05170378ce122e8039814721c49442c89ed8c7ffa4.png",
+      "sha256": "0896ea91ac7a54497cbaee05170378ce122e8039814721c49442c89ed8c7ffa4",
+      "size": 156410,
+      "source_path": "images/dify/02-providers.png",
+      "uploaded_at": "2026-06-17T16:43:41+00:00"
+    },
+    "0d970037cf627f54e305818107645d77d81dfa9305678a154f6ac4151b3666e0": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/n8n.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/0d970037cf627f54e305818107645d77d81dfa9305678a154f6ac4151b3666e0.png",
+      "s3_key": "polza-docs/images/0d970037cf627f54e305818107645d77d81dfa9305678a154f6ac4151b3666e0.png",
+      "sha256": "0d970037cf627f54e305818107645d77d81dfa9305678a154f6ac4151b3666e0",
+      "size": 1027434,
+      "source_path": "images/n8n/n8n-model-settings.png",
+      "uploaded_at": "2026-06-17T16:43:45+00:00"
+    },
+    "1b1526ce5968b69f5c6b3c1cf4a3bc516625d4de5d79b88a0b6aca54fa854ab0": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/dify.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/1b1526ce5968b69f5c6b3c1cf4a3bc516625d4de5d79b88a0b6aca54fa854ab0.png",
+      "s3_key": "polza-docs/images/1b1526ce5968b69f5c6b3c1cf4a3bc516625d4de5d79b88a0b6aca54fa854ab0.png",
+      "sha256": "1b1526ce5968b69f5c6b3c1cf4a3bc516625d4de5d79b88a0b6aca54fa854ab0",
+      "size": 213480,
+      "source_path": "images/dify/04-create-agent.png",
+      "uploaded_at": "2026-06-17T16:43:42+00:00"
+    },
+    "2423bf9f438e0ee326e750c576fe389faa295a9ba318d9f59453f958c37134f1": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/hermes-agent.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/2423bf9f438e0ee326e750c576fe389faa295a9ba318d9f59453f958c37134f1.png",
+      "s3_key": "polza-docs/images/2423bf9f438e0ee326e750c576fe389faa295a9ba318d9f59453f958c37134f1.png",
+      "sha256": "2423bf9f438e0ee326e750c576fe389faa295a9ba318d9f59453f958c37134f1",
+      "size": 82198,
+      "source_path": "images/hermes-agent/setup.png",
+      "uploaded_at": "2026-06-17T16:43:42+00:00"
+    },
+    "24b342873b265b1fb531286026178b1716bf183f3ef564b20f12d8494a143262": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/claude-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/24b342873b265b1fb531286026178b1716bf183f3ef564b20f12d8494a143262.png",
+      "s3_key": "polza-docs/images/24b342873b265b1fb531286026178b1716bf183f3ef564b20f12d8494a143262.png",
+      "sha256": "24b342873b265b1fb531286026178b1716bf183f3ef564b20f12d8494a143262",
+      "size": 670233,
+      "source_path": "images/claude-code/welcome-screen.png",
+      "uploaded_at": "2026-06-17T16:43:39+00:00"
+    },
+    "2cfbbb9815051c9f8ccc50727cb3f3c360ceaea7e70e1c16592b63a87d0897d8": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/proxy.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/2cfbbb9815051c9f8ccc50727cb3f3c360ceaea7e70e1c16592b63a87d0897d8.png",
+      "s3_key": "polza-docs/images/2cfbbb9815051c9f8ccc50727cb3f3c360ceaea7e70e1c16592b63a87d0897d8.png",
+      "sha256": "2cfbbb9815051c9f8ccc50727cb3f3c360ceaea7e70e1c16592b63a87d0897d8",
+      "size": 32076,
+      "source_path": "images/polza-ai-proxy.png",
+      "uploaded_at": "2026-06-17T16:43:46+00:00"
+    },
+    "3baeeb205d449e441c3b293810a35f2ac7a4623ca09d8613a6a2f53a42a0439c": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/codex.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/3baeeb205d449e441c3b293810a35f2ac7a4623ca09d8613a6a2f53a42a0439c.png",
+      "s3_key": "polza-docs/images/3baeeb205d449e441c3b293810a35f2ac7a4623ca09d8613a6a2f53a42a0439c.png",
+      "sha256": "3baeeb205d449e441c3b293810a35f2ac7a4623ca09d8613a6a2f53a42a0439c",
+      "size": 64384,
+      "source_path": "images/codex/codex.png",
+      "uploaded_at": "2026-06-17T16:43:41+00:00"
+    },
+    "47510d314b9001820dec096c8880b224e31fdb7e1c73a31fec8adaaf9d98b710": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/kilo-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/47510d314b9001820dec096c8880b224e31fdb7e1c73a31fec8adaaf9d98b710.png",
+      "s3_key": "polza-docs/images/47510d314b9001820dec096c8880b224e31fdb7e1c73a31fec8adaaf9d98b710.png",
+      "sha256": "47510d314b9001820dec096c8880b224e31fdb7e1c73a31fec8adaaf9d98b710",
+      "size": 144147,
+      "source_path": "images/kilo-code/kilocode-providers.png",
+      "uploaded_at": "2026-06-17T16:43:43+00:00"
+    },
+    "4aaa31662ea804fd5e59581964abbc315694420aa8efdb2fe71388f70399a604": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/dify.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/4aaa31662ea804fd5e59581964abbc315694420aa8efdb2fe71388f70399a604.png",
+      "s3_key": "polza-docs/images/4aaa31662ea804fd5e59581964abbc315694420aa8efdb2fe71388f70399a604.png",
+      "sha256": "4aaa31662ea804fd5e59581964abbc315694420aa8efdb2fe71388f70399a604",
+      "size": 184540,
+      "source_path": "images/dify/05-workflow.png",
+      "uploaded_at": "2026-06-17T16:43:42+00:00"
+    },
+    "5083deaff9ed72fb9ba613333e77071916861be6d0dcde90cf5b3a79e4c0cb82": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/kilo-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/5083deaff9ed72fb9ba613333e77071916861be6d0dcde90cf5b3a79e4c0cb82.png",
+      "s3_key": "polza-docs/images/5083deaff9ed72fb9ba613333e77071916861be6d0dcde90cf5b3a79e4c0cb82.png",
+      "sha256": "5083deaff9ed72fb9ba613333e77071916861be6d0dcde90cf5b3a79e4c0cb82",
+      "size": 268347,
+      "source_path": "images/kilo-code/kilocode-install.png",
+      "uploaded_at": "2026-06-17T16:43:43+00:00"
+    },
+    "5277671798866a286b1c12a4228dce81d78ba702a3802b0bd8f62a27b3418475": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/hermes-agent.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/5277671798866a286b1c12a4228dce81d78ba702a3802b0bd8f62a27b3418475.png",
+      "s3_key": "polza-docs/images/5277671798866a286b1c12a4228dce81d78ba702a3802b0bd8f62a27b3418475.png",
+      "sha256": "5277671798866a286b1c12a4228dce81d78ba702a3802b0bd8f62a27b3418475",
+      "size": 46549,
+      "source_path": "images/hermes-agent/chat.png",
+      "uploaded_at": "2026-06-17T16:43:43+00:00"
+    },
+    "5593a925c0adb1789628ffa68d0ae2540d5412a961996bc9116ab2d81d271eb2": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/n8n.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/5593a925c0adb1789628ffa68d0ae2540d5412a961996bc9116ab2d81d271eb2.png",
+      "s3_key": "polza-docs/images/5593a925c0adb1789628ffa68d0ae2540d5412a961996bc9116ab2d81d271eb2.png",
+      "sha256": "5593a925c0adb1789628ffa68d0ae2540d5412a961996bc9116ab2d81d271eb2",
+      "size": 1118593,
+      "source_path": "images/n8n/n8n-workflow-chat.png",
+      "uploaded_at": "2026-06-17T16:43:45+00:00"
+    },
+    "59a27848e0d810628012246b36bdc308f4f5e203c769f3317bb9ff315faf5d7b": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/pycharm.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/59a27848e0d810628012246b36bdc308f4f5e203c769f3317bb9ff315faf5d7b.png",
+      "s3_key": "polza-docs/images/59a27848e0d810628012246b36bdc308f4f5e203c769f3317bb9ff315faf5d7b.png",
+      "sha256": "59a27848e0d810628012246b36bdc308f4f5e203c769f3317bb9ff315faf5d7b",
+      "size": 415601,
+      "source_path": "images/pycharm/proxyai-install.png",
+      "uploaded_at": "2026-06-17T16:43:47+00:00"
+    },
+    "62910dad0b76e18c340bd5c246b0ae5e93f2d6a01a04041f3da1901a46b3bd91": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/kilo-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/62910dad0b76e18c340bd5c246b0ae5e93f2d6a01a04041f3da1901a46b3bd91.png",
+      "s3_key": "polza-docs/images/62910dad0b76e18c340bd5c246b0ae5e93f2d6a01a04041f3da1901a46b3bd91.png",
+      "sha256": "62910dad0b76e18c340bd5c246b0ae5e93f2d6a01a04041f3da1901a46b3bd91",
+      "size": 120561,
+      "source_path": "images/kilo-code/kilocode-connection-settings.png",
+      "uploaded_at": "2026-06-17T16:43:43+00:00"
+    },
+    "74dbec2bcd8c9f74c419a53e4d26b878d34d257ccc7b4cb0ca17c1d6e82bfb22": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/polza-ide.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/74dbec2bcd8c9f74c419a53e4d26b878d34d257ccc7b4cb0ca17c1d6e82bfb22.png",
+      "s3_key": "polza-docs/images/74dbec2bcd8c9f74c419a53e4d26b878d34d257ccc7b4cb0ca17c1d6e82bfb22.png",
+      "sha256": "74dbec2bcd8c9f74c419a53e4d26b878d34d257ccc7b4cb0ca17c1d6e82bfb22",
+      "size": 64925,
+      "source_path": "images/polza-ide/overview.png",
+      "uploaded_at": "2026-06-17T16:43:45+00:00"
+    },
+    "7a0ebbf62a0f7f7d21890edec5c4af753bdb7dd9d2c6b8ba5e71576c88031a6d": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/dify.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/7a0ebbf62a0f7f7d21890edec5c4af753bdb7dd9d2c6b8ba5e71576c88031a6d.png",
+      "s3_key": "polza-docs/images/7a0ebbf62a0f7f7d21890edec5c4af753bdb7dd9d2c6b8ba5e71576c88031a6d.png",
+      "sha256": "7a0ebbf62a0f7f7d21890edec5c4af753bdb7dd9d2c6b8ba5e71576c88031a6d",
+      "size": 191972,
+      "source_path": "images/dify/06-preview.png",
+      "uploaded_at": "2026-06-17T16:43:42+00:00"
+    },
+    "8bf25f9a19950b071fc065e6c9989a0b1e708dcc7178b531fe3d8a88584c0e33": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/opencode.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/8bf25f9a19950b071fc065e6c9989a0b1e708dcc7178b531fe3d8a88584c0e33.png",
+      "s3_key": "polza-docs/images/8bf25f9a19950b071fc065e6c9989a0b1e708dcc7178b531fe3d8a88584c0e33.png",
+      "sha256": "8bf25f9a19950b071fc065e6c9989a0b1e708dcc7178b531fe3d8a88584c0e33",
+      "size": 559185,
+      "source_path": "images/opencode.png",
+      "uploaded_at": "2026-06-17T16:43:45+00:00"
+    },
+    "8ea8bb9289d62e37f7a89e1473d2ee4d9d2fbb833325ed5d35c6222e338775f0": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/polza-ide.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/8ea8bb9289d62e37f7a89e1473d2ee4d9d2fbb833325ed5d35c6222e338775f0.png",
+      "s3_key": "polza-docs/images/8ea8bb9289d62e37f7a89e1473d2ee4d9d2fbb833325ed5d35c6222e338775f0.png",
+      "sha256": "8ea8bb9289d62e37f7a89e1473d2ee4d9d2fbb833325ed5d35c6222e338775f0",
+      "size": 29375,
+      "source_path": "images/polza-ide/model-button.png",
+      "uploaded_at": "2026-06-17T16:43:46+00:00"
+    },
+    "91cabcc97093e9f85a0acad0d885ee581851c2770050ee84df04239856af6bde": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/roo-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/91cabcc97093e9f85a0acad0d885ee581851c2770050ee84df04239856af6bde.png",
+      "s3_key": "polza-docs/images/91cabcc97093e9f85a0acad0d885ee581851c2770050ee84df04239856af6bde.png",
+      "sha256": "91cabcc97093e9f85a0acad0d885ee581851c2770050ee84df04239856af6bde",
+      "size": 1488226,
+      "source_path": "images/roo-code/roo-code-install.png",
+      "uploaded_at": "2026-06-17T16:43:48+00:00"
+    },
+    "9303c925e8aec285377317ccfcca742971aa9d91ef497ded546ad8db320f728a": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/n8n.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/9303c925e8aec285377317ccfcca742971aa9d91ef497ded546ad8db320f728a.png",
+      "s3_key": "polza-docs/images/9303c925e8aec285377317ccfcca742971aa9d91ef497ded546ad8db320f728a.png",
+      "sha256": "9303c925e8aec285377317ccfcca742971aa9d91ef497ded546ad8db320f728a",
+      "size": 1084027,
+      "source_path": "images/n8n/n8n-search-openai.png",
+      "uploaded_at": "2026-06-17T16:43:44+00:00"
+    },
+    "a297e43374b4f86029216cd46c2337890589db27c095212f4cc94ee51fa0339e": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/polza-ide.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/a297e43374b4f86029216cd46c2337890589db27c095212f4cc94ee51fa0339e.png",
+      "s3_key": "polza-docs/images/a297e43374b4f86029216cd46c2337890589db27c095212f4cc94ee51fa0339e.png",
+      "sha256": "a297e43374b4f86029216cd46c2337890589db27c095212f4cc94ee51fa0339e",
+      "size": 55455,
+      "source_path": "images/polza-ide/auth-screen.png",
+      "uploaded_at": "2026-06-17T16:43:46+00:00"
+    },
+    "a3af08fce96e193a746047a0d46d9134bd13f58aee3835dd4edf69ac39f8548b": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/kilo-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/a3af08fce96e193a746047a0d46d9134bd13f58aee3835dd4edf69ac39f8548b.png",
+      "s3_key": "polza-docs/images/a3af08fce96e193a746047a0d46d9134bd13f58aee3835dd4edf69ac39f8548b.png",
+      "sha256": "a3af08fce96e193a746047a0d46d9134bd13f58aee3835dd4edf69ac39f8548b",
+      "size": 256598,
+      "source_path": "images/kilo-code/kilocode-pycharm-provider-settings.png",
+      "uploaded_at": "2026-06-17T16:43:44+00:00"
+    },
+    "b040bfb3c1de4786fefe9ed2c386c8f7b13f3cec79a4637a864a033314bb2d30": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/qwen-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/b040bfb3c1de4786fefe9ed2c386c8f7b13f3cec79a4637a864a033314bb2d30.png",
+      "s3_key": "polza-docs/images/b040bfb3c1de4786fefe9ed2c386c8f7b13f3cec79a4637a864a033314bb2d30.png",
+      "sha256": "b040bfb3c1de4786fefe9ed2c386c8f7b13f3cec79a4637a864a033314bb2d30",
+      "size": 56564,
+      "source_path": "images/qwen-code/statusline.png",
+      "uploaded_at": "2026-06-17T16:43:47+00:00"
+    },
+    "b9eb26c783a66918e1fec92a494a5cd7b1d15d6936e60b8d83a76e8656bc0d2c": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/cline.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/b9eb26c783a66918e1fec92a494a5cd7b1d15d6936e60b8d83a76e8656bc0d2c.png",
+      "s3_key": "polza-docs/images/b9eb26c783a66918e1fec92a494a5cd7b1d15d6936e60b8d83a76e8656bc0d2c.png",
+      "sha256": "b9eb26c783a66918e1fec92a494a5cd7b1d15d6936e60b8d83a76e8656bc0d2c",
+      "size": 1946930,
+      "source_path": "images/cline/cline-provider-settings.png",
+      "uploaded_at": "2026-06-17T16:43:41+00:00"
+    },
+    "bebd3311c50cf9411b4e8e8cb775ac7020b258072b18019632fa031dcb2a7571": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/claude-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/bebd3311c50cf9411b4e8e8cb775ac7020b258072b18019632fa031dcb2a7571.png",
+      "s3_key": "polza-docs/images/bebd3311c50cf9411b4e8e8cb775ac7020b258072b18019632fa031dcb2a7571.png",
+      "sha256": "bebd3311c50cf9411b4e8e8cb775ac7020b258072b18019632fa031dcb2a7571",
+      "size": 701323,
+      "source_path": "images/claude-code/statusline.png",
+      "uploaded_at": "2026-06-17T16:43:40+00:00"
+    },
+    "cf4f40fb7de0db0940be22cdaf495982cf649d249e1dfc7e4a1db99d58fd5ce6": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/kilo-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/cf4f40fb7de0db0940be22cdaf495982cf649d249e1dfc7e4a1db99d58fd5ce6.png",
+      "s3_key": "polza-docs/images/cf4f40fb7de0db0940be22cdaf495982cf649d249e1dfc7e4a1db99d58fd5ce6.png",
+      "sha256": "cf4f40fb7de0db0940be22cdaf495982cf649d249e1dfc7e4a1db99d58fd5ce6",
+      "size": 162584,
+      "source_path": "images/kilo-code/kilocode-pycharm-marketplace.png",
+      "uploaded_at": "2026-06-17T16:43:43+00:00"
+    },
+    "d6787089fec75c0564b48e0b942cc7935a676be614882b1025459f95af1aab15": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/roo-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/d6787089fec75c0564b48e0b942cc7935a676be614882b1025459f95af1aab15.png",
+      "s3_key": "polza-docs/images/d6787089fec75c0564b48e0b942cc7935a676be614882b1025459f95af1aab15.png",
+      "sha256": "d6787089fec75c0564b48e0b942cc7935a676be614882b1025459f95af1aab15",
+      "size": 1401187,
+      "source_path": "images/roo-code/roo-code-provider-settings.png",
+      "uploaded_at": "2026-06-17T16:43:48+00:00"
+    },
+    "d77db8089d62949e42807e4d791bf9759b84f311b1ce8740ea414c3e002bca69": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/polza-ide.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/d77db8089d62949e42807e4d791bf9759b84f311b1ce8740ea414c3e002bca69.png",
+      "s3_key": "polza-docs/images/d77db8089d62949e42807e4d791bf9759b84f311b1ce8740ea414c3e002bca69.png",
+      "sha256": "d77db8089d62949e42807e4d791bf9759b84f311b1ce8740ea414c3e002bca69",
+      "size": 45948,
+      "source_path": "images/polza-ide/chat-response.png",
+      "uploaded_at": "2026-06-17T16:43:46+00:00"
+    },
+    "dc41352566d80799835b8e9972f82cd415e54f452e135f3395644e839886443c": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/polza-ide.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/dc41352566d80799835b8e9972f82cd415e54f452e135f3395644e839886443c.png",
+      "s3_key": "polza-docs/images/dc41352566d80799835b8e9972f82cd415e54f452e135f3395644e839886443c.png",
+      "sha256": "dc41352566d80799835b8e9972f82cd415e54f452e135f3395644e839886443c",
+      "size": 78064,
+      "source_path": "images/polza-ide/model-settings.png",
+      "uploaded_at": "2026-06-17T16:43:46+00:00"
+    },
+    "ddfd22b1ee6df0c73cd577fedddb408f1142ff26c91d773c3e48f598aed08b91": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/n8n.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/ddfd22b1ee6df0c73cd577fedddb408f1142ff26c91d773c3e48f598aed08b91.png",
+      "s3_key": "polza-docs/images/ddfd22b1ee6df0c73cd577fedddb408f1142ff26c91d773c3e48f598aed08b91.png",
+      "sha256": "ddfd22b1ee6df0c73cd577fedddb408f1142ff26c91d773c3e48f598aed08b91",
+      "size": 1060130,
+      "source_path": "images/n8n/n8n-credentials.png",
+      "uploaded_at": "2026-06-17T16:43:45+00:00"
+    },
+    "e08808d75b565ce1af6a3a47c90cba6b863cf4f0a851a1c1bd3ba8ec6c4f174c": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/dify.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/e08808d75b565ce1af6a3a47c90cba6b863cf4f0a851a1c1bd3ba8ec6c4f174c.png",
+      "s3_key": "polza-docs/images/e08808d75b565ce1af6a3a47c90cba6b863cf4f0a851a1c1bd3ba8ec6c4f174c.png",
+      "sha256": "e08808d75b565ce1af6a3a47c90cba6b863cf4f0a851a1c1bd3ba8ec6c4f174c",
+      "size": 97923,
+      "source_path": "images/dify/01-main.png",
+      "uploaded_at": "2026-06-17T16:43:41+00:00"
+    },
+    "e341662ec319916f5eb5461db6e44e75915d05f96eb277cbab71a7eea248c4af": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/hermes-agent.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/e341662ec319916f5eb5461db6e44e75915d05f96eb277cbab71a7eea248c4af.png",
+      "s3_key": "polza-docs/images/e341662ec319916f5eb5461db6e44e75915d05f96eb277cbab71a7eea248c4af.png",
+      "sha256": "e341662ec319916f5eb5461db6e44e75915d05f96eb277cbab71a7eea248c4af",
+      "size": 1584321,
+      "source_path": "images/hermes-agent/dashboard.png",
+      "uploaded_at": "2026-06-17T16:43:43+00:00"
+    },
+    "ef2a0f4953ac4502c869cf3caa627dfdd6e6cb64f1031c423bbeba96032be4cf": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/pycharm.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/ef2a0f4953ac4502c869cf3caa627dfdd6e6cb64f1031c423bbeba96032be4cf.png",
+      "s3_key": "polza-docs/images/ef2a0f4953ac4502c869cf3caa627dfdd6e6cb64f1031c423bbeba96032be4cf.png",
+      "sha256": "ef2a0f4953ac4502c869cf3caa627dfdd6e6cb64f1031c423bbeba96032be4cf",
+      "size": 491718,
+      "source_path": "images/pycharm/proxyai-toolwindow.png",
+      "uploaded_at": "2026-06-17T16:43:47+00:00"
+    },
+    "f1672565fd2906e4b3a48a41259486d411f4724c454a199b785d183d7406f142": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/cline.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/f1672565fd2906e4b3a48a41259486d411f4724c454a199b785d183d7406f142.png",
+      "s3_key": "polza-docs/images/f1672565fd2906e4b3a48a41259486d411f4724c454a199b785d183d7406f142.png",
+      "sha256": "f1672565fd2906e4b3a48a41259486d411f4724c454a199b785d183d7406f142",
+      "size": 1810850,
+      "source_path": "images/cline/cline-install.png",
+      "uploaded_at": "2026-06-17T16:43:40+00:00"
+    },
+    "f4d4410fb4252088871d2db3d9d5070f104b825c692b9dd733319e1941e4e6cd": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/qwen-code.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/f4d4410fb4252088871d2db3d9d5070f104b825c692b9dd733319e1941e4e6cd.png",
+      "s3_key": "polza-docs/images/f4d4410fb4252088871d2db3d9d5070f104b825c692b9dd733319e1941e4e6cd.png",
+      "sha256": "f4d4410fb4252088871d2db3d9d5070f104b825c692b9dd733319e1941e4e6cd",
+      "size": 55742,
+      "source_path": "images/qwen-code/welcome-screen.png",
+      "uploaded_at": "2026-06-17T16:43:47+00:00"
+    },
+    "fd0312c0f881b3367f9d28f6ec6ee145b00344e495e5c5c394be7e7219bd8fe2": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/dify.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/fd0312c0f881b3367f9d28f6ec6ee145b00344e495e5c5c394be7e7219bd8fe2.png",
+      "s3_key": "polza-docs/images/fd0312c0f881b3367f9d28f6ec6ee145b00344e495e5c5c394be7e7219bd8fe2.png",
+      "sha256": "fd0312c0f881b3367f9d28f6ec6ee145b00344e495e5c5c394be7e7219bd8fe2",
+      "size": 93267,
+      "source_path": "images/dify/03-add-model.png",
+      "uploaded_at": "2026-06-17T16:43:41+00:00"
+    }
+  },
+  "key_prefix": "polza-docs/images",
+  "public_base": "https://storage.yandexcloud.net/polza-docs",
+  "version": 1
+}

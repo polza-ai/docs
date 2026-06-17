@@ -112,7 +112,8 @@
                 "group": "Музыка",
                 "icon": "music",
                 "pages": [
-                  "gaidy/suno-music"
+                  "gaidy/suno-music",
+                  "gaidy/google-lyria-3"
                 ]
               }
             ]
@@ -122,7 +123,6 @@
             "pages": [
               "integracii/claude-code",
               "integracii/cline",
-              "integracii/codex",
               "integracii/hermes-agent",
               "integracii/kilo-code",
               "integracii/dify",

@@ -1,4 +1,4 @@
-﻿---
+---
 title: ElevenLabs TTS Multilingual
 description: Многоязычный синтез речи с ElevenLabs TTS Multilingual
 icon: volume-high
@@ -7,7 +7,7 @@ icon: volume-high
 Многоязычная модель синтеза речи (text-to-speech) от ElevenLabs. Текст до 5000 символов, те же голоса и параметры, что и у Turbo, с поддержкой множества языков.
 
 <Note>
-Полная документация API: [Генерация медиа](/api-reference/media/create)
+Рекомендуем использовать dedicated-эндпоинт [Audio Speech](/api-reference/audio/speech) — там доступен полный диапазон `speed` и согласованный набор ElevenLabs-параметров.
 </Note>
 
 ## Обзор
@@ -16,46 +16,45 @@ icon: volume-high
 |----------------|----------|
 | ID модели | `elevenlabs/text-to-speech-multilingual-v2` |
 | Max prompt | 5 000 символов |
-| voice | Rachel, Aria, Roger, Sarah и др. (по умолчанию Rachel) |
-| speed | 0.7–1.2, по умолчанию 1 |
+| voice | `voice_id` из аккаунта ElevenLabs (например `pNInz6obpgDQGcFmaJgB`) или имя пресета (`Rachel`, `Aria`, `Roger`, `Sarah`...) |
+| speed | 0.25–4.0 на `/v1/audio/speech` (по умолчанию 1.0), 0.7–1.2 на `/api/v1/media` |
 | stability, similarity_boost, style | 0–1 |
-| timestamps | true / false |
-| language_code | ru, en, de, fr, es, it, pt, pl, uk и др. (ISO 639-1) |
+| timestamps | true / false — посимвольный alignment в ответе |
+| language_code | ru, en, de, fr, es, it, pt, pl, uk и др. (ISO 639-1). **Не** поддерживается Multilingual v2 (только Turbo v2.5) |
 
 ## Параметры
 
 | Параметр | Обязательный | Описание |
 |----------|---------------|----------|
 | `model` | Да | `elevenlabs/text-to-speech-multilingual-v2` |
-| `prompt` | Да | Текст для синтеза речи, до 5000 символов |
-| `voice` | Нет | Голос. По умолчанию Rachel |
-| `speed` | Нет | 0.7–1.2. По умолчанию 1 |
+| `input` | Да | Текст для синтеза речи, до 5000 символов |
+| `voice` | Нет | Голос. По умолчанию `Rachel`. Стандартный OpenAI-голос будет отклонён с ошибкой 400 |
+| `speed` | Нет | 0.25–4.0 (на dedicated-эндпоинте) или 0.7–1.2 (на `/api/v1/media`). По умолчанию 1 |
 | `stability` | Нет | Стабильность голоса 0–1 |
 | `similarity_boost` | Нет | Усиление схожести 0–1 |
 | `style` | Нет | Экспрессия стиля 0–1 |
-| `timestamps` | Нет | true/false — временные метки слов |
+| `timestamps` | Нет | true/false — добавляет `alignment` с посимвольными таймингами |
 | `previous_text` | Нет | Предшествующий текст, до 5000 символов |
 | `next_text` | Нет | Последующий текст, до 5000 символов |
-| `language_code` | Нет | Код языка ISO 639-1 |
 
 ## Пример запроса (cURL)
 
 ```bash
-curl -X POST "https://polza.ai/api/v1/media" \
+curl -X POST "https://polza.ai/api/v1/audio/speech" \
   -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "model": "elevenlabs/text-to-speech-multilingual-v2",
-    "input": {
-      "prompt": "Текст для синтеза речи",
-      "voice": "Rachel",
-      "speed": 1,
-      "stability": 0.5,
-      "similarity_boost": 0.75,
-      "style": 0,
-      "timestamps": "false",
-      "language_code": "ru"
-    },
-    "async": true
+    "input": "Текст для синтеза речи",
+    "voice": "Rachel",
+    "speed": 1,
+    "stability": 0.5,
+    "similarity_boost": 0.75,
+    "style": 0,
+    "timestamps": false
   }'
 ```
+
+<Note>
+Аудио возвращается как **base64-строка** в поле `audio` (не бинарный поток). Декодируйте и сохраняйте с расширением по `contentType` (например, `audio/mpeg` → `.mp3`).
+</Note>

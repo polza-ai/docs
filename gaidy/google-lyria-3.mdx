@@ -1,0 +1,294 @@
+---
+title: Google Lyria 3
+description: Генерация музыки с моделями Google Lyria 3 (Pro и Clip)
+icon: music
+---
+
+Генерация музыки от Google — две модели: **Lyria 3 Pro** (полноценный трек) и **Lyria 3 Clip** (короткий клип). Принимают текстовое описание и опциональные изображения-референсы. Стоимость фиксированная за генерацию (flat pricing), не зависит от длины трека.
+
+<Warning>
+Lyria — **не** Suno-модель. Все Suno-специфичные параметры (`customMode`, `instrumental`, `style`, `title`, `vocalGender`, `styleWeight`, `weirdnessConstraint`, `audioWeight`, `personaId`, `version`, `soundLoop`, `soundTempo`, `soundKey`, `grabLyrics`, `uploadUrlList`, `negativeTags`) отклоняются с ошибкой 400.
+</Warning>
+
+<Note>
+Полная документация API: [Генерация медиа](/api-reference/media/create)
+</Note>
+
+## Обзор
+
+| Характеристика | Pro | Clip |
+|----------------|-----|------|
+| ID модели | `google/lyria-3-pro-preview` | `google/lyria-3-clip-preview` |
+| Эндпоинт | `POST /api/v1/media` | `POST /api/v1/media` |
+| Формат результата | MP3 | MP3 |
+| Стоимость клиенту | **8 ₽ / трек** (фикс.) | **4 ₽ / трек** (фикс.) |
+| Себестоимость | $0.08 | $0.04 |
+| Max prompt | 5 000 символов | 5 000 символов |
+| Изображения-референсы | опционально | опционально |
+| Async | ✅ | ✅ |
+
+> Цена **фиксированная за генерацию** (flat pricing), не зависит от длины — как у Suno.
+
+## Возможности
+
+<CardGroup cols={2}>
+  <Card title="Text-to-Music" icon="wand-magic-sparkles">
+    Создание трека по текстовому описанию
+  </Card>
+  <Card title="Изображения-референсы" icon="image">
+    Опционально: до нескольких картинок-референсов стиля
+  </Card>
+  <Card title="Фикс-цена" icon="ruble-sign">
+    8 ₽ за Pro-трек, 4 ₽ за Clip — независимо от длины
+  </Card>
+  <Card title="Async-режим" icon="clock">
+    Для длинных генераций — синхронный или асинхронный через `taskId`
+  </Card>
+</CardGroup>
+
+## Примеры запросов
+
+### Простой запрос (синхронный)
+
+<CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'google/lyria-3-pro-preview',
+    input: {
+      prompt: 'Спокойная инструментальная музыка для медитации, мягкое пиано'
+    },
+    async: false
+  })
+});
+
+const result = await response.json();
+console.log('ID генерации:', result.id);
+console.log('Трек:', result.data[0].url);
+console.log('Длительность:', result.data[0].duration);
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/media',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'model': 'google/lyria-3-pro-preview',
+        'input': {
+            'prompt': 'Спокойная инструментальная музыка для медитации, мягкое пиано'
+        },
+        'async': False
+    }
+)
+
+result = response.json()
+print('ID генерации:', result['id'])
+print('Трек:', result['data'][0]['url'])
+print('Длительность:', result['data'][0]['duration'])
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "google/lyria-3-pro-preview",
+    "input": {
+      "prompt": "Спокойная инструментальная музыка для медитации, мягкое пиано"
+    },
+    "async": false
+  }'
+```
+</CodeGroup>
+
+### С изображениями-референсами
+
+<CodeGroup>
+```typescript TypeScript
+const response = await fetch('https://polza.ai/api/v1/media', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <POLZA_AI_API_KEY>',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'google/lyria-3-clip-preview',
+    input: {
+      prompt: 'Энергичный электронный трек в стиле synthwave, драйвовый бит',
+      images: [
+        { type: 'url', data: 'https://example.com/reference-1.jpg' },
+        { type: 'url', data: 'https://example.com/reference-2.jpg' }
+      ]
+    }
+  })
+});
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://polza.ai/api/v1/media',
+    headers={'Authorization': 'Bearer <POLZA_AI_API_KEY>'},
+    json={
+        'model': 'google/lyria-3-clip-preview',
+        'input': {
+            'prompt': 'Энергичный электронный трек в стиле synthwave, драйвовый бит',
+            'images': [
+                {'type': 'url', 'data': 'https://example.com/reference-1.jpg'},
+                {'type': 'url', 'data': 'https://example.com/reference-2.jpg'}
+            ]
+        }
+    }
+)
+```
+
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "google/lyria-3-clip-preview",
+    "input": {
+      "prompt": "Энергичный электронный трек в стиле synthwave, драйвовый бит",
+      "images": [
+        {"type": "url", "data": "https://example.com/reference-1.jpg"},
+        {"type": "url", "data": "https://example.com/reference-2.jpg"}
+      ]
+    }
+  }'
+```
+</CodeGroup>
+
+## Параметры
+
+| Параметр | Тип | Обязательный | Описание |
+|----------|-----|--------------|----------|
+| `model` | string | Да | `google/lyria-3-pro-preview` или `google/lyria-3-clip-preview` |
+| `input.prompt` | string | Да | Описание трека, до 5000 символов |
+| `input.images` | array | Нет | Изображения-референсы (URL или base64) |
+| `callBackUrl` | string | Нет | URL для callback по завершении генерации |
+| `async` | boolean | Нет | Асинхронный режим (по умолчанию `false`) |
+
+### Параметры, которые **отклоняются** для Lyria
+
+Lyria — не Suno-модель, поэтому следующие параметры вернут ошибку 400:
+
+- `uploadUrlList`
+- `customMode`, `instrumental`
+- `style`, `title`
+- `negativeTags`, `vocalGender`
+- `styleWeight`, `weirdnessConstraint`, `audioWeight`
+- `personaId`, `version`
+- `soundLoop`, `soundTempo`, `soundKey`
+- `grabLyrics`
+
+> Для этих параметров используйте Suno-модели (`suno/generate`, `suno/mashup`, `suno/sounds`) — они принимают полный набор Suno-параметров.
+
+## Советы и лучшие практики
+
+<AccordionGroup>
+  <Accordion title="Pro vs Clip" icon="sliders">
+    **Pro** — полноценный трек (8 ₽). **Clip** — короткий клип (4 ₽). Clip дешевле, но короче. Если нужна длинная композиция с развитием — берите Pro.
+  </Accordion>
+
+  <Accordion title="Как писать промпты" icon="pen">
+    Описывайте жанр, настроение, инструменты и темп: «Меланхоличная акустическая баллада с гитарой и скрипкой, медленный темп». Lyria хорошо работает с конкретными стилевыми указаниями.
+  </Accordion>
+
+  <Accordion title="Изображения-референсы" icon="image">
+    Используйте 1–2 изображения, чтобы задать визуальный стиль трека. Это работает как настроенческий якорь для модели.
+  </Accordion>
+
+  <Accordion title="Async для длинных треков" icon="clock">
+    Pro-треки генерируются дольше. Используйте `async: true` и опрашивайте статус через `GET /v1/media/{id}`, чтобы не держать HTTP-соединение.
+  </Accordion>
+</AccordionGroup>
+
+## Асинхронная генерация
+
+Генерация музыки — асинхронный процесс. После отправки запроса с `async: true` вы получите `id`, который нужно использовать для проверки статуса:
+
+<Steps>
+  <Step title="Отправка запроса">
+    `POST /api/v1/media` с `"async": true` возвращает `id` генерации и `status: "pending"`
+  </Step>
+
+  <Step title="Проверка статуса">
+    `GET /v1/media/{id}` возвращает текущий статус: `pending`, `processing`, `completed`, `failed`, `cancelled`
+  </Step>
+
+  <Step title="Получение результата">
+    Когда статус `completed`, в ответе будут URL аудиофайла, обложка, название и длительность трека
+  </Step>
+</Steps>
+
+## Схема ответа
+
+### Синхронный успех (`async: false`)
+
+```json
+{
+  "id": "gen_581761234567890123",
+  "object": "media.generation",
+  "status": "completed",
+  "created": 1703001234,
+  "completed_at": 1703001244,
+  "model": "google/lyria-3-pro-preview",
+  "data": [
+    {
+      "url": "https://storage.polza.ai/tracks/abc.mp3",
+      "thumbnail_url": "https://storage.polza.ai/covers/abc.jpeg",
+      "title": "Peaceful Meditation",
+      "duration": 198.44
+    }
+  ],
+  "usage": { "output_units": 1, "cost": 8, "cost_rub": 8 }
+}
+```
+
+### В процессе генерации
+
+```json
+{
+  "id": "gen_581761234567890123",
+  "object": "media.generation",
+  "status": "pending",
+  "created": 1703001234,
+  "model": "google/lyria-3-pro-preview"
+}
+```
+
+### Ошибка
+
+```json
+{
+  "id": "gen_581761234567890123",
+  "object": "media.generation",
+  "status": "failed",
+  "created": 1703001234,
+  "model": "google/lyria-3-pro-preview",
+  "error": { "code": "<код>", "message": "<человекочитаемое описание>" }
+}
+```
+
+> Возможные значения `status`: `pending`, `processing`, `completed`, `failed`, `cancelled`.
+> `cost`/`cost_rub` — фиксированные: **8 ₽** для Pro, **4 ₽** для Clip.
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Статус генерации" icon="spinner" href="/api-reference/media/status">
+    Проверка статуса генерации медиа
+  </Card>
+  <Card title="Suno Music" icon="music" href="/gaidy/suno-music">
+    Альтернативный движок с вокалом, custom mode и расширенными параметрами
+  </Card>
+</CardGroup>

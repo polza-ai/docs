@@ -1,4 +1,4 @@
-﻿---
+---
 title: Часто задаваемые вопросы
 description: Ответы на популярные вопросы о Polza.ai
 icon: circle-question
@@ -41,8 +41,10 @@ icon: circle-question
     Мы реализуем спецификацию OpenAI для `/chat/completions`, а также дополнительные эндпоинты:
     - `/api/v1/images/generations` — генерация изображений
     - `/api/v1/videos/generations` — генерация видео
-    - `/api/v1/audio/transcriptions` — распознавание речи
-    - `/api/v1/audio/speech` — синтез речи
+    - `/api/v1/audio/transcriptions` — распознавание речи (STT)
+    - `/api/v1/audio/translations` — перевод аудио на английский
+    - `/api/v1/audio/speech` — синтез речи (TTS)
+    - `/api/v1/media` — генерация музыки (Suno, Google Lyria 3) и расширенные медиа-операции
     - `/api/v1/embeddings` — эмбеддинги
     - `/api/v1/models` — список моделей
     - `/api/v1/balance` — баланс аккаунта
@@ -54,6 +56,14 @@ icon: circle-question
 
   <Accordion title="Как работает потоковая передача?">
     Используется Server-Sent Events (SSE). Добавьте параметр `stream: true` в запрос для получения ответа по частям.
+  </Accordion>
+
+  <Accordion title="Можно ли генерировать музыку?">
+    Да, через эндпоинт `/api/v1/media`. Доступны два движка: [Suno](/gaidy/suno-music) — вокальные и инструментальные треки с расширенными параметрами (custom mode, vocal gender, tempo, key), и [Google Lyria 3](/gaidy/google-lyria-3) — Pro (8 ₽/трек) и Clip (4 ₽/трек) с фиксированной ценой.
+  </Accordion>
+
+  <Accordion title="Можно ли распознавать речь с разделением по спикерам?">
+    Да, используйте модель `openai/gpt-4o-transcribe-diarize` с `response_format: "diarized_json"`. При аудио длиннее 30 секунд обязателен параметр `chunking_strategy`. Подробнее — в [документации transcriptions](/api-reference/audio/transcriptions#диаризация-gpt-4o-transcribe-diarize).
   </Accordion>
 </AccordionGroup>
 
@@ -104,7 +114,3 @@ icon: circle-question
     - [Страница поддержки](/glavnoe/support)
   </Accordion>
 </AccordionGroup>
-
----
-
-\* Meta признана экстремистской организацией и запрещена в Российской Федерации.
