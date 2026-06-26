@@ -29,9 +29,6 @@ openapi: POST /v1/audio/speech
 |-----------|--------|---------------------|
 | `openai/*` | `alloy` | `alloy`, `ash`, `ballad`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer`, `verse` |
 | `elevenlabs/*` | `Rachel` | `voice_id` из аккаунта ElevenLabs (например `pNInz6obpgDQGcFmaJgB`) **или** имя пресета (`Rachel`, `Aria`, `Roger`, `Sarah`...). Стандартный OpenAI-голос будет отклонён с ошибкой 400 |
-| `microsoft/mai-voice` | свой дефолт | `voice id` из документации Microsoft. OpenAI-голоса не поддерживаются |
-| `google/gemini*tts` | `Kore` | `Kore`, `Aoede`, `Puck`, `Charon`, `Zephyr`, `Achird`, `Algieba`, `Algenib`, `Fenrir`, `Leda`, `Orus`. OpenAI-голос → fallback на `Kore` |
-| `hexgrad/kokoro` | `af_bella` | `af_bella`, `af_sarah`, `af_nicole`, `af_sky`, `am_adam`, `am_michael`, `bf_emma`, `bf_isabella`, `bm_george`, `bm_lewis`. OpenAI-голос → fallback на `af_bella` |
 
 > В релизе 1.6.7 на каталоге доступны OpenAI и ElevenLabs. Семейства Gemini TTS / Kokoro / MAI Voice поддержаны на уровне разрешения голоса, но включаются отдельно.
 
@@ -177,7 +174,7 @@ curl -X POST "https://polza.ai/api/v1/audio/speech" \
 
 | Параметр | Тип | Обязательный | Описание |
 |----------|-----|--------------|----------|
-| `model` | string | Да | `elevenlabs/sound-effect-v2` |
+| `model` | string | Да | Модель генерации звуков |
 | `input` | string | Да | Описание звука на английском |
 | `duration_seconds` | number | Нет | Длительность (0.5-10 сек) |
 | `loop` | boolean | Нет | Зацикленность |
