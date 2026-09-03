@@ -59,11 +59,10 @@ Hermes Agent — AI-агент с открытым исходным кодом �
         nano ~/.hermes/.env
         ```
 
-        Добавьте строки:
+        Добавьте строку с API-ключом Polza.ai:
 
         ```env
-        OPENAI_API_KEY=<ВАШ_POLZA_API_KEY>
-        OPENAI_BASE_URL=https://polza.ai/api/v1
+        POLZA_API_KEY=pza_ваш_ключ
         ```
 
         Затем откройте конфигурационный файл:
@@ -76,9 +75,10 @@ Hermes Agent — AI-агент с открытым исходным кодом �
 
         ```yaml
         model:
-          default: "deepseek/deepseek-v4-flash"
-          provider: "custom"
-          base_url: "https://polza.ai/api/v1"
+          default: deepseek/deepseek-v4-flash-0731
+          provider: polza
+          base_url: https://polza.ai/api/v1/
+          key_env: POLZA_API_KEY
         ```
       </Tab>
     </Tabs>

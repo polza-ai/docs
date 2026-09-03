@@ -1,0 +1,142 @@
+---
+title: DeepSeek Harness
+description: Подключение DeepSeek Harness к Polza.ai через OpenAI-совместимый API
+icon: terminal
+---
+
+[DeepSeek Harness](https://github.com/deepseek-ai/DeepSeek-Harness) — open-source harness агент от DeepSeek AI с локальным Web UI. Он позволяет работать с AI-агентом через браузер, подключать собственные модели и запускать задачи в рабочей директории.
+
+<Note>
+  DeepSeek Harness находится в стадии developer preview: интерфейс и конфигурация могут меняться между версиями. Перед обновлением Harness проверяйте заметки о релизах.
+</Note>
+
+## Требования
+
+- [Node.js](https://nodejs.org/en/) и `npm`
+- API-ключ Polza.ai — создайте его в [личном кабинете](https://polza.ai/dashboard/api-keys)
+- Современный браузер для работы с Web UI
+
+Проверьте, что Node.js установлен:
+
+```bash
+node --version
+npm --version
+```
+
+## Установка и запуск
+
+```bash
+npx @deepseek-ai/dsh web
+```
+
+
+По умолчанию Harness запускает Web UI на `http://127.0.0.1:3080` и открывает его в браузере. Если браузер на этом компьютере запускать не нужно, передайте флаг `--no-open`:
+
+```bash
+npx @deepseek-ai/dsh web --no-open
+```
+
+Откройте адрес `http://127.0.0.1:3080` в браузере. Если Harness запущен на удалённом сервере, используйте доступный вам способ проброса локального порта.
+
+<Frame>
+  <img src="https://storage.yandexcloud.net/polza-docs/polza-docs/images/2d24d2a2b73081758bc7fb084ba6872b0dee7ec553b8dc82825b0ef5969006cf.png" alt="Запуск DeepSeek Harness командой npx" />
+</Frame>
+
+## Настройка подключения к Polza.ai
+
+Polza.ai подключается как OpenAI-совместимый провайдер через форму **Add a custom provider**.
+
+<Frame>
+  <img src="https://storage.yandexcloud.net/polza-docs/polza-docs/images/663c2b7412b72b263b8c7fd3c47e3181678eb5f9937c05d59bcdfa25b63064b6.png" alt="Раздел Models и кнопка Fetch available models" />
+</Frame>
+
+<Steps>
+  <Step title="Откройте раздел Models">
+    В Web UI перейдите в **Settings → Models** и нажмите **Add a custom provider**.
+  </Step>
+
+  <Step title="Заполните параметры провайдера">
+    Укажите следующие значения:
+
+    | Поле | Значение |
+    |---|---|
+    | Provider ID | `polza` |
+    | Display name | `Polza.ai` |
+    | Base URL | `https://polza.ai/api/v1/` |
+    | API protocol | `openai-completions` |
+    | API key | Ваш API-ключ Polza.ai |
+
+    <Warning>
+      Не публикуйте API-ключ в документации, исходном коде или конфигурационных файлах, доступных другим пользователям. Ключ хранится в `$DSH_HOME/.credentials.yaml`; в настройках сохраняется только ссылка на него.
+    </Warning>
+  </Step>
+
+
+  <Step title="Загрузите список моделей">
+    В разделе **Model catalog** нажмите **Fetch available models**.
+
+    Harness отправит запрос `GET /models` к указанному Base URL с API-ключом в Bearer-заголовке. В ответе должен быть OpenAI-совместимый объект `data` с идентификаторами моделей.
+  </Step>
+
+  <Step title="Выберите модели и создайте провайдера">
+    Отметьте нужные модели в списке, нажмите **Add selected**, затем **Create Provider**.
+
+    После сохранения модели появятся в общем списке выбора. Выберите модель в верхней панели Harness и отправьте первый запрос.
+  </Step>
+</Steps>
+
+<Frame>
+  <img src="https://storage.yandexcloud.net/polza-docs/polza-docs/images/c154156bca8fbb738aff7ef3c232642fb16ff3f04dc1860582491c2d1625b42b.png" alt="Создание провайдера Polza.ai" />
+</Frame>
+
+## Рекомендуемые модели
+
+Для старта подойдут модели Polza.ai, доступные через `GET /models`:
+
+| Задача | Модель | ID |
+|---|---|---|
+| Сложная разработка и рассуждение | DeepSeek V4 Pro | `deepseek/deepseek-v4-pro` |
+| Быстрые повседневные задачи | DeepSeek V4 Flash | `deepseek/deepseek-v4-flash` |
+| Работа с кодом | Kimi K3 | `moonshotai/kimi-k3` |
+| Универсальные агентные задачи | Qwen 3.8 Max | `qwen/qwen3.8-max` |
+
+Полный актуальный каталог и идентификаторы моделей доступны на странице [Polza.ai — модели](https://polza.ai/models).
+
+## Возможности
+
+- **Web UI** — локальный интерфейс для чата и настройки моделей
+- **OpenAI-совместимый провайдер** — подключение Polza.ai через Base URL и API-ключ
+- **Автоматическая загрузка моделей** — получение списка через `GET /models`
+- **Агентные задачи** — выполнение многошаговых инструкций в рабочей директории
+- **Выбор модели** — переключение между моделями через список в интерфейсе
+
+## Решение проблем
+
+<AccordionGroup>
+  <Accordion title="Fetch available models возвращает 401">
+    Проверьте API-ключ в настройках Polza.ai и убедитесь, что в поле **API key** вставлен ключ без кавычек, пробелов и переносов строк. Затем повторите **Fetch available models**.
+  </Accordion>
+
+  <Accordion title="Список моделей пуст">
+    Проверьте адрес **Base URL**: должен быть `https://polza.ai/api/v1/`. Для Polza.ai выберите протокол `openai-completions`. Если endpoint не отдаёт модели через `GET /models`, добавьте ID моделей вручную в каталоге.
+  </Accordion>
+
+  <Accordion title="Кнопка Create provider не нажимается">
+    Заполните все обязательные поля: Provider ID, Display name, Base URL, API protocol, API key и минимум одну модель. Поле **Provider ID** должно начинаться со строчной латинской буквы и содержать только строчные буквы, цифры и дефисы.
+  </Accordion>
+
+  <Accordion title="Harness не запускается или не открывает браузер">
+    Проверьте `node --version` и `npm --version`, затем запустите `npx @deepseek-ai/dsh web --no-open`. Если порт `3080` занят, Harness выведет ошибку запуска — освободите порт или укажите другой порт в настройках запуска Web UI
+  </Accordion>
+
+  <Accordion title="Провайдер работает, но запросы завершаются ошибкой">
+    Убедитесь, что в поле **Model ID** выбран точный ID из `GET /models`, а не отображаемое имя модели. ID передаются в Polza.ai без преобразования.
+  </Accordion>
+</AccordionGroup>
+
+## Следующие шаги
+
+- [DeepSeek Harness — официальная документация](https://deepseek-harness.github.io/deepseek-harness/)
+- [Polza.ai: Hermes Agent](/integracii/hermes-agent)
+- [Polza.ai: Claude Code](/integracii/claude-code)
+- [Polza.ai: Claude Code Desktop](/integracii/claude-desktop)

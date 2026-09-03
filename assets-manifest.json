@@ -82,6 +82,16 @@
       "source_path": "images/polza-ai-proxy.png",
       "uploaded_at": "2026-06-17T16:43:46+00:00"
     },
+    "2d24d2a2b73081758bc7fb084ba6872b0dee7ec553b8dc82825b0ef5969006cf": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/deepseek-harness.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/2d24d2a2b73081758bc7fb084ba6872b0dee7ec553b8dc82825b0ef5969006cf.png",
+      "s3_key": "polza-docs/images/2d24d2a2b73081758bc7fb084ba6872b0dee7ec553b8dc82825b0ef5969006cf.png",
+      "sha256": "2d24d2a2b73081758bc7fb084ba6872b0dee7ec553b8dc82825b0ef5969006cf",
+      "size": 87484,
+      "source_path": "images/deepseek-harness/main.png",
+      "uploaded_at": "2026-09-02T15:45:50+00:00"
+    },
     "38a82c3561d0a49605953804a2d7651420ab5dfe3ebc671b82f81ba2e3f6212b": {
       "content_type": "image/png",
       "first_seen_in": "integracii/claude-desktop.mdx",
@@ -171,6 +181,16 @@
       "size": 120561,
       "source_path": "images/kilo-code/kilocode-connection-settings.png",
       "uploaded_at": "2026-06-17T16:43:43+00:00"
+    },
+    "663c2b7412b72b263b8c7fd3c47e3181678eb5f9937c05d59bcdfa25b63064b6": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/deepseek-harness.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/663c2b7412b72b263b8c7fd3c47e3181678eb5f9937c05d59bcdfa25b63064b6.png",
+      "s3_key": "polza-docs/images/663c2b7412b72b263b8c7fd3c47e3181678eb5f9937c05d59bcdfa25b63064b6.png",
+      "sha256": "663c2b7412b72b263b8c7fd3c47e3181678eb5f9937c05d59bcdfa25b63064b6",
+      "size": 114527,
+      "source_path": "images/deepseek-harness/settings.png",
+      "uploaded_at": "2026-09-02T15:45:51+00:00"
     },
     "74dbec2bcd8c9f74c419a53e4d26b878d34d257ccc7b4cb0ca17c1d6e82bfb22": {
       "content_type": "image/png",
@@ -301,6 +321,16 @@
       "size": 701323,
       "source_path": "images/claude-code/statusline.png",
       "uploaded_at": "2026-06-17T16:43:40+00:00"
+    },
+    "c154156bca8fbb738aff7ef3c232642fb16ff3f04dc1860582491c2d1625b42b": {
+      "content_type": "image/png",
+      "first_seen_in": "integracii/deepseek-harness.mdx",
+      "public_url": "https://storage.yandexcloud.net/polza-docs/polza-docs/images/c154156bca8fbb738aff7ef3c232642fb16ff3f04dc1860582491c2d1625b42b.png",
+      "s3_key": "polza-docs/images/c154156bca8fbb738aff7ef3c232642fb16ff3f04dc1860582491c2d1625b42b.png",
+      "sha256": "c154156bca8fbb738aff7ef3c232642fb16ff3f04dc1860582491c2d1625b42b",
+      "size": 80775,
+      "source_path": "images/deepseek-harness/model_work.png",
+      "uploaded_at": "2026-09-02T15:45:51+00:00"
     },
     "cf4f40fb7de0db0940be22cdaf495982cf649d249e1dfc7e4a1db99d58fd5ce6": {
       "content_type": "image/png",
