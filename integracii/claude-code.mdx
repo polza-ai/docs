@@ -47,6 +47,10 @@ Claude Code использует стандартный Anthropic API. Дост�
     export ANTHROPIC_MODEL="anthropic/claude-sonnet-4.6"  # Модель, на которой пойдёт сессия
     ```
 
+    <Note>
+      `ANTHROPIC_MODEL` — только основная модель сессии. Claude Code — агентная система и **делегирует** часть работы другим моделям (`CLAUDE_CODE_SUBAGENT` и др.), поэтому одной переменной недостаточно — полный список моделей для делегирования настраивается в секции [Настройка моделей](/integracii/claude-code#настройка-моделей).
+    </Note>
+
     Замените `ваш-api-ключ` на ключ из [личного кабинета](https://polza.ai/dashboard/api-keys),
     а `anthropic/claude-sonnet-4.6` — на любую модель из [каталога](https://polza.ai/models).
   </Step>
