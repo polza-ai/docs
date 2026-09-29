@@ -243,7 +243,7 @@ curl -X POST "https://polza.ai/api/v1/responses" \
 }
 ```
 
-При плагине `web` (и у модели без вызова функций) `web_search_call` содержит только `sources` без `query`, а в стриме приходит после сообщения модели.
+Если модель не поддерживает вызов функций, родной `web_search` выполняется как плагин `web`: `web_search_call` содержит в `action.sources` только адреса (`{"type": "url", "url": "..."}`) без `query`, а в стриме приходит после сообщения модели. С `plugins: [{"id": "web"}]` элемента поиска в `output` нет — источники только в `annotations`.
 
 ### Anthropic Messages и Gemini
 

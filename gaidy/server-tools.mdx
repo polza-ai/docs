@@ -144,7 +144,7 @@ console.log(completion.usage?.cost_rub); // итоговая стоимость,
 | `polza:wordstat` | Статистика поисковых запросов Яндекса: частотность фразы, похожие запросы, динамика спроса | 0,50 ₽ |
 | `polza:search_suggestions` | Поисковые подсказки Яндекса или Google и «Вопросы по теме» Google | 0,50 ₽ |
 
-Оплачивается только выполненный вызов: вызов с ошибкой и повтор с теми же аргументами в рамках одного запроса бесплатны.
+Оплачивается только выполненный вызов: вызов с ошибкой и повтор успешного вызова с теми же аргументами в рамках одного запроса бесплатны.
 
 Актуальный список инструментов, их параметры в виде JSON Schema и цены отдаёт `GET /v1/server-tools` (без авторизации):
 
@@ -192,7 +192,7 @@ curl "https://polza.ai/api/v1/server-tools"
     | `max_uses` | integer | 3 | Сколько раз модель может искать за один запрос |
     | `allowed_domains` | string[] (до 50) | — | Оставить только результаты с этих доменов и их поддоменов |
     | `excluded_domains` | string[] (до 50) | — | Убрать результаты с этих доменов и их поддоменов |
-    | `engine` | string | `yandex` | Поисковик: `yandex` или `google` (Google отдаёт не больше 10 результатов). Неизвестное значение — поиск Яндексом |
+    | `engine` | string | `yandex` | Поисковик: `yandex` или `google`. Неизвестное значение — поиск Яндексом |
 
     Фильтры доменов применяются к полученной выдаче, поэтому результатов может прийти меньше, чем `max_results`. Подробнее о поиске — в гайде [Поиск в интернете](/gaidy/web-search).
   </Accordion>
@@ -204,7 +204,7 @@ curl "https://polza.ai/api/v1/server-tools"
 
     Модель получает итоговый URL, HTTP-статус, заголовок, автора и дату публикации (если есть) и основной текст страницы в Markdown — без меню и футеров.
 
-    Ограничения: только публичные адреса `http`/`https`, только текстовые ответы (HTML, plain text, JSON, XML), не больше 3 редиректов, JavaScript на странице не выполняется. PDF, картинки, приватные адреса, URL с логином и паролем и ответы 4xx/5xx возвращают модели ошибку.
+    Ограничения: только публичные адреса `http`/`https`, только текстовые ответы (HTML, plain text, JSON, XML), не больше 3 редиректов, не больше 1 МБ ответа (дальше обрезается), JavaScript на странице не выполняется. PDF, картинки, приватные адреса, URL с логином и паролем и ответы 4xx/5xx возвращают модели ошибку.
   </Accordion>
   <Accordion title="polza:datetime — дата и время" icon="clock">
     | Параметр | Тип | По умолчанию | Описание |
@@ -266,9 +266,10 @@ curl "https://polza.ai/api/v1/server-tools"
 
 - **Каждый шаг — отдельный вызов модели.** На каждом шаге модель заново получает всю историю вместе с результатами инструментов, поэтому `prompt_tokens` в итоговом `usage` — сумма по всем шагам.
 - **Ошибка инструмента не прерывает запрос.** Модель получает текст ошибки (например, «Ошибка инструмента web_fetch: Страница вернула статус 404») и сама решает, что делать дальше. Вызов с ошибкой не оплачивается.
-- **Повтор не выполняется дважды.** Если модель вызывает тот же инструмент с теми же аргументами, результат берётся из первого вызова бесплатно.
+- **Успешный вызов не повторяется.** Если модель снова вызывает тот же инструмент с теми же аргументами, она бесплатно получает результат первого вызова. Вызов, завершившийся ошибкой, при повторе выполняется заново.
+- **Не больше 5 одновременных вызовов на организацию** для всех инструментов, кроме `polza:datetime`. Вызов, который не дождался очереди за 15 секунд, завершается ошибкой для модели.
 - **`tool_choice` действует только на первом шаге**, дальше модель выбирает сама (`auto`).
-- **Модель должна поддерживать вызов функций.** Исключение — `polza:web_search`: с моделью без вызова функций Polza выполнит поиск до обращения к модели, как [плагин `web`](/gaidy/web-search).
+- **Модель должна поддерживать вызов функций.** Исключение — `polza:web_search`: с моделью без вызова функций Polza выполнит поиск до обращения к модели, как [плагин `web`](/gaidy/web-search) с настройками по умолчанию. Параметры инструмента (`max_results`, фильтры доменов, `engine`) при этом не применяются, поиск бесплатный.
 
 ## Лимиты вызовов
 
@@ -278,7 +279,7 @@ curl "https://polza.ai/api/v1/server-tools"
 | `max_uses` | `parameters` инструмента | 3 | Сколько раз можно вызвать конкретный инструмент |
 | `stop_server_tools_when` | тело запроса | — | Условия остановки вместо `max_tool_calls` и потолок расходов |
 
-В лимит засчитывается каждый вызов модели, в том числе завершившийся ошибкой. Когда лимит `max_tool_calls` исчерпан, Polza просит модель ответить без инструментов тем, что уже удалось найти. Когда исчерпан `max_uses`, инструмент пропадает из списка для следующих шагов, а лишние вызовы в том же шаге получают ошибку.
+В `max_tool_calls` засчитывается каждый вызов инструмента, который запросила модель, — в том числе завершившийся ошибкой и повторный. В `max_uses` не засчитываются повторы успешного вызова и вызовы с некорректными аргументами. Когда лимит `max_tool_calls` исчерпан, Polza просит модель ответить без инструментов тем, что уже удалось найти. Когда исчерпан `max_uses`, инструмент пропадает из списка для следующих шагов. Вызовы сверх любого из лимитов в том же шаге получают ошибку.
 
 `stop_server_tools_when` — массив условий:
 
@@ -304,7 +305,7 @@ curl "https://polza.ai/api/v1/server-tools"
 
 При `stream: true` текст модели приходит по мере генерации, как в обычном запросе. Текст промежуточных шагов («Сейчас поищу…») тоже приходит клиенту; между текстами шагов вставляется пустая строка (`\n\n`).
 
-Пока выполняются инструменты, сервер шлёт SSE-комментарии — строки, начинающиеся с `:`. Стандартные SDK их игнорируют:
+Пока выполняются инструменты, сервер шлёт SSE-комментарии — строки, начинающиеся с `:`. Стандартные SDK их игнорируют. С `include_server_tool_events` вместо этих комментариев приходят [события](#события-инструментов); другие комментарии `: polza-progress` (например, пока проверяется ответ модели) приходят в любом случае:
 
 ```
 : polza-progress {"phase":"server_tool","tool":"polza:web_search","step":1}
@@ -312,7 +313,7 @@ curl "https://polza.ai/api/v1/server-tools"
 : polza-progress {"phase":"server_tool","tool":"polza:web_search","step":1,"status":"completed"}
 ```
 
-Последний чанк перед `[DONE]` несёт `finish_reason`, все источники в `delta.annotations`, итоговый `usage` и поле `polza`:
+Последний чанк перед `[DONE]` несёт `finish_reason`, все источники в `delta.annotations` и итоговый `usage` — даже без `stream_options.include_usage`. Если модель вызывала серверные инструменты, в нём же поле `polza` с id запроса:
 
 ```
 data: {"id":"gen_2216206809437982721","object":"chat.completion.chunk","model":"openai/gpt-5.2","choices":[{"index":0,"delta":{"content":null,"annotations":[{"type":"url_citation","url_citation":{"url":"https://example.com/usd-rate","title":"Официальные курсы валют","content":"...","start_index":0,"end_index":0}}]},"finish_reason":"stop"}],"usage":{"prompt_tokens":27,"completion_tokens":91,"total_tokens":118,"server_tool_use":{"web_search_requests":1},"cost_rub":0.51955,"cost":0.51955,"cost_details":{"inference_cost_rub":0.01955,"server_tools_cost_rub":0.5},"server_tool_use_details":{"web_search_requests":1,"tool_calls_requested":1,"tool_calls_executed":1,"steps":2}},"polza":{"event":"final","parent_generation_id":"gen_2216206809869996033"}}
@@ -348,7 +349,7 @@ data: {"id":"gen_2216206809437982721","object":"chat.completion.chunk","choices"
 | `tool_call` | Модель вызвала инструмент | `step`, `generation_id`, `id` вызова, `type`, `arguments` |
 | `tool_result` | Инструмент выполнен | `step`, `id` вызова, `type`, `status` (`completed` или `failed`), `cost_rub`, `summary`, `duration_ms` |
 | `budget_exhausted` | Лимит вызовов исчерпан, модель отвечает без инструментов | `step`, `reason` (`step_count` или `spend_cap`) |
-| `final` | Последний чанк стрима; приходит и без `include_server_tool_events` | `parent_generation_id` |
+| `final` | Последний чанк стрима, если модель вызывала серверные инструменты; приходит и без `include_server_tool_events` | `parent_generation_id` |
 
 Когда лимит вызовов исчерпан, перед последним шагом приходит:
 
@@ -356,12 +357,12 @@ data: {"id":"gen_2216206809437982721","object":"chat.completion.chunk","choices"
 data: {"id":"gen_2216211428817903617","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":null}],"polza":{"event":"budget_exhausted","step":2,"reason":"step_count"}}
 ```
 
-`summary` — краткий итог успешного вызова без полного содержимого (у `status: "failed"` его нет):
+`summary` — краткий итог успешного вызова без полного содержимого. У `status: "failed"` нет ни `summary`, ни текста ошибки — его получает только модель:
 
 | Инструмент | `summary` |
 |------------|-----------|
 | `polza:web_search` | `query`, `sources` (`url`, `title`) |
-| `polza:web_fetch` | `url`, `status`, `title`, `truncated`, `wordCount` |
+| `polza:web_fetch` | `url`, `status`, `title`, `truncated`, `extractor`, `wordCount` |
 | `polza:datetime` | `datetime`, `local`, `timezone`, `weekday` |
 | `polza:image_search` | `query`, `images` |
 | `polza:wordstat` | `phrase`, `mode` и число строк (`top`, `similar`) или точек динамики (`period`, `points`) |
@@ -435,7 +436,7 @@ for await (const chunk of stream) {
 | `server_tool_use` | Выполненные вызовы по инструментам: `web_search_requests`, `web_fetch_requests`, `datetime_requests`, `image_search_requests`, `wordstat_requests`, `search_suggestions_requests`. `null`, если инструменты не выполнялись |
 | `server_tool_use_details` | Те же счётчики плюс `tool_calls_requested` (сколько вызовов запросила модель), `tool_calls_executed` (сколько выполнено, без ошибок и повторов) и `steps` (число шагов модели) |
 
-`prompt_tokens_details` и `completion_tokens_details` относятся к последнему шагу.
+`prompt_tokens_details` и `completion_tokens_details` относятся к последнему шагу. Для итоговой стоимости используйте `cost_rub` и `cost_details`: `usage.plugins`, если он есть, показывает операции только последнего шага.
 
 ## Другие форматы API
 
@@ -511,7 +512,7 @@ for await (const chunk of stream) {
     - В стриме элемент инструмента приходит событием `response.output_item.added` со `status: "in_progress"` и событием `response.output_item.done` с результатом. `include_server_tool_events` не нужен.
     - В стриме `response.id` — id первого шага, id запроса в истории — `polza.parent_generation_id` в `response.completed`.
     - Родной `web_search` (и `web_search_preview`) тоже выполняет `polza:web_search`, но элемент называется `web_search_call`, а `action.type` — `search`.
-    - Работают `max_tool_calls` (до 30), `stop_server_tools_when` и `stream_options.hide_intermediate_text`. Значения `stream_options` должны быть логическими — строка вернёт 400.
+    - Работают `max_tool_calls` (до 30), `stop_server_tools_when` и `stream_options.hide_intermediate_text`. `max_tool_calls` в Responses, как и в OpenAI, ещё и ограничивает число вызовов, которые модель делает за один шаг. Значения `stream_options` должны быть логическими — строка вернёт 400.
   </Tab>
   <Tab title="Anthropic Messages">
     `POST /v1/messages`. Параметры инструмента передаются рядом с `type`, `name` можно не указывать:
@@ -570,6 +571,7 @@ for await (const chunk of stream) {
     ```
 
     - Лимит — 10 вызовов инструментов на запрос; `max_tool_calls` и `stop_server_tools_when` в этом формате не поддерживаются и игнорируются. `max_uses` инструмента работает.
+    - В `usage` нет стоимости, а `server_tool_use` содержит только `web_search_requests`. Стоимость запроса — в [истории](#история-запросов).
     - Родной `web_search_20250305` тоже выполняет `polza:web_search`, его `max_uses`, `allowed_domains` и `blocked_domains` учитываются.
   </Tab>
   <Tab title="Gemini">
@@ -606,6 +608,7 @@ for await (const chunk of stream) {
     ```
 
     - Лимит — 10 вызовов инструментов на запрос.
+    - В `usageMetadata` нет стоимости и счётчиков инструментов. Стоимость запроса — в [истории](#история-запросов).
     - Родной `googleSearch` тоже выполняет `polza:web_search`.
   </Tab>
 </Tabs>
@@ -681,7 +684,7 @@ for await (const chunk of stream) {
 ```
 
 <Warning>
-Серверный инструмент занимает своё имя без префикса (`web_search`, `web_fetch`, `datetime`, `image_search`, `wordstat`, `search_suggestions`): своя функция с таким же именем в том же запросе вернёт 400.
+Серверный инструмент в запросе занимает своё имя без префикса (`web_search`, `web_fetch`, `datetime`, `image_search`, `wordstat`, `search_suggestions`): своя функция с таким же именем рядом с ним вернёт 400.
 </Warning>
 
 ## Инструменты `openrouter:*`
@@ -710,7 +713,7 @@ for await (const chunk of stream) {
 | Инструмента нет в `GET /v1/server-tools` | `Неизвестный серверный инструмент: polza:calculator` |
 | Тип не в формате `polza:имя` (строчные латинские буквы, цифры, `_`) | `Поле tools[0].type имеет неверный формат` |
 | Инструмент указан дважды (в том числе как `polza:*` и `openrouter:*`) | `Серверный инструмент polza:datetime указан дважды` |
-| Параметры не проходят по схеме | `Некорректные parameters у polza:web_search: max_results: ...` |
+| Параметры не проходят по схеме | `Некорректные parameters у polza:web_search: max_results: Too big: expected number to be <=10` (причина после имени параметра — на английском) |
 | Своя функция с именем серверного инструмента | `Имя функции web_search занято серверным инструментом polza:web_search` |
 | `max_tool_calls` больше 30 | `Поле max_tool_calls должно быть не больше 30` |
 | Условие `stop_server_tools_when` без значения | `Поле stop_server_tools_when[0].value_rub обязательно. ...` |
@@ -722,9 +725,9 @@ for await (const chunk of stream) {
 ## Как списываются деньги
 
 - **Шаги модели** оплачиваются по тарифу модели, как обычные запросы. Каждый шаг заново отправляет модели всю историю, поэтому запрос с несколькими шагами дороже одного вызова.
-- **Инструменты** — фиксированная цена за выполненный вызов (см. [таблицу](#доступные-инструменты) или `GET /v1/server-tools`). Вызовы с ошибкой и повторы с теми же аргументами бесплатны.
+- **Инструменты** — фиксированная цена за выполненный вызов (см. [таблицу](#доступные-инструменты) или `GET /v1/server-tools`). Вызовы с ошибкой и повторы успешного вызова с теми же аргументами бесплатны.
 - **Итог** — `usage.cost_rub`, разбивка — `usage.cost_details`. В истории — `cost` записи запроса.
-- Если запрос прервался (отмена клиентом, ошибка провайдера), уже выполненные шаги и инструменты оплачиваются.
+- Если запрос прервался (отмена клиентом, ошибка провайдера), уже выполненные шаги модели оплачиваются.
 
 Ограничить расходы на один запрос можно через [`stop_server_tools_when`](#лимиты-вызовов) — с поправкой на то, что потолок мягкий.
 
