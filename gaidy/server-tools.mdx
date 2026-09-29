@@ -142,6 +142,7 @@ console.log(completion.usage?.cost_rub); // итоговая стоимость,
 | `polza:datetime` | Возвращает текущие дату и время | Бесплатно |
 | `polza:image_search` | Ищет картинки в Google: адрес картинки, заголовок, сайт-источник, размеры | 0,50 ₽ |
 | `polza:wordstat` | Статистика поисковых запросов Яндекса: частотность фразы, похожие запросы, динамика спроса | 0,50 ₽ |
+| `polza:search_suggestions` | Поисковые подсказки Яндекса или Google и «Вопросы по теме» Google | 0,50 ₽ |
 
 Оплачивается только выполненный вызов: вызов с ошибкой и повтор с теми же аргументами в рамках одного запроса бесплатны.
 
@@ -231,6 +232,16 @@ curl "https://polza.ai/api/v1/server-tools"
     - `history` — динамика числа запросов: по месяцам (12 полных месяцев), неделям (12 полных недель) или дням (30 дней по вчерашний).
 
     Дополнительно модель может ограничить статистику регионами Яндекса и типами устройств.
+  </Accordion>
+  <Accordion title="polza:search_suggestions — подсказки и вопросы по теме" icon="list">
+    | Параметр | Тип | По умолчанию | Описание |
+    |----------|-----|--------------|----------|
+    | `max_uses` | integer | 3 | Сколько раз модель может вызвать инструмент за один запрос |
+
+    Модель передаёт одну фразу за вызов и выбирает режим:
+
+    - `suggest` — поисковые подсказки (продолжения фразы из строки поиска) Яндекса или Google;
+    - `questions` — «Вопросы по теме» из выдачи Google, без ответов (до 20, по умолчанию 10).
   </Accordion>
 </AccordionGroup>
 
@@ -354,6 +365,7 @@ data: {"id":"gen_2216211428817903617","object":"chat.completion.chunk","choices"
 | `polza:datetime` | `datetime`, `local`, `timezone`, `weekday` |
 | `polza:image_search` | `query`, `images` |
 | `polza:wordstat` | `phrase`, `mode` и число строк (`top`, `similar`) или точек динамики (`period`, `points`) |
+| `polza:search_suggestions` | `query`, `mode` и `suggestions` (с `engine`) или `questions` |
 
 Стоимость шага в `step_end` уже включает инструменты, результаты которых модель получила на этом шаге.
 
@@ -420,7 +432,7 @@ for await (const chunk of stream) {
 | `cost_rub`, `cost` | Итоговая стоимость запроса: модель на всех шагах и инструменты, ₽ |
 | `cost_details.inference_cost_rub` | Из неё — модель, ₽ |
 | `cost_details.server_tools_cost_rub` | Из неё — инструменты, ₽ |
-| `server_tool_use` | Выполненные вызовы по инструментам: `web_search_requests`, `web_fetch_requests`, `datetime_requests`, `image_search_requests`, `wordstat_requests`. `null`, если инструменты не выполнялись |
+| `server_tool_use` | Выполненные вызовы по инструментам: `web_search_requests`, `web_fetch_requests`, `datetime_requests`, `image_search_requests`, `wordstat_requests`, `search_suggestions_requests`. `null`, если инструменты не выполнялись |
 | `server_tool_use_details` | Те же счётчики плюс `tool_calls_requested` (сколько вызовов запросила модель), `tool_calls_executed` (сколько выполнено, без ошибок и повторов) и `steps` (число шагов модели) |
 
 `prompt_tokens_details` и `completion_tokens_details` относятся к последнему шагу.
@@ -669,7 +681,7 @@ for await (const chunk of stream) {
 ```
 
 <Warning>
-Серверный инструмент занимает своё имя без префикса (`web_search`, `web_fetch`, `datetime`, `image_search`, `wordstat`): своя функция с таким же именем в том же запросе вернёт 400.
+Серверный инструмент занимает своё имя без префикса (`web_search`, `web_fetch`, `datetime`, `image_search`, `wordstat`, `search_suggestions`): своя функция с таким же именем в том же запросе вернёт 400.
 </Warning>
 
 ## Инструменты `openrouter:*`

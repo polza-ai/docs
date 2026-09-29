@@ -9,7 +9,7 @@ rss: true
 
 ## Серверные инструменты (beta)
 
-Инструменты, которые модель вызывает сама, а Polza выполняет внутри одного запроса: `polza:web_search`, `polza:web_fetch`, `polza:datetime`, `polza:image_search`, `polza:wordstat`. Работают в Chat Completions, Responses, Anthropic Messages и Gemini. [Подробнее →](/gaidy/server-tools)
+Инструменты, которые модель вызывает сама, а Polza выполняет внутри одного запроса: `polza:web_search`, `polza:web_fetch`, `polza:datetime`, `polza:image_search`, `polza:wordstat`, `polza:search_suggestions`. Работают в Chat Completions, Responses, Anthropic Messages и Gemini. [Подробнее →](/gaidy/server-tools)
 
 - Лимиты: `max_tool_calls`, `stop_server_tools_when` (`step_count`, `spend_cap`), `max_uses` у каждого инструмента
 - Стриминг: события инструментов по `stream_options.include_server_tool_events`, только финальный ответ по `stream_options.hide_intermediate_text`
