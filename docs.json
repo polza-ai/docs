@@ -51,6 +51,7 @@
               "gaidy/structured-output",
               "gaidy/plugins",
               "gaidy/web-search",
+              "gaidy/server-tools",
               "osobennosti/reasoning-tokens",
               "osobennosti/caching",
               "osobennosti/usage",

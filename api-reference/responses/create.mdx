@@ -57,7 +57,9 @@ openai/gpt-4o@provider=azure&reasoning_effort=high&allow_fallbacks=false
 | `tools` | array | Определения инструментов (см. раздел Tool calling) |
 | `tool_choice` | string / object | `none`, `auto`, `required` или `{"type":"function","name":"..."}` |
 | `parallel_tool_calls` | boolean | Разрешить параллельные вызовы инструментов |
-| `max_tool_calls` | integer | Ограничение на количество вызовов |
+| `max_tool_calls` | integer (1–30) | Ограничение на количество вызовов; с серверными инструментами — сколько их вызовов модель может сделать за запрос (по умолчанию 10) |
+| `stop_server_tools_when` | array | Условия остановки цикла серверных инструментов: `step_count`, `spend_cap` ([подробнее](/gaidy/server-tools#лимиты-вызовов)) |
+| `stream_options` | object | `hide_intermediate_text: true` — в стриме только финальный ответ, без текста промежуточных шагов серверных инструментов |
 | `reasoning` | object | Настройки reasoning: `effort` (`max`/`xhigh`/`high`/`medium`/`low`/`minimal`/`none`), `summary`, `max_tokens`, `type: adaptive` для Claude 4.6+ |
 | `text` | object | Формат вывода: `{"format": {"type": "text" \| "json_object" \| "json_schema", ...}}` |
 | `max_output_tokens` | integer | Максимум выходных токенов |
@@ -187,7 +189,8 @@ console.log(response.output_text);
 |---|---|
 | `function` | Оба формата: плоский Responses (`{"type":"function","name":...}`) и вложенный (`{"type":"function","function":{...}}`) |
 | `custom` | Free-form инструмент. Внутри приводится к функции с единственным строковым полем `input`, в ответе приходит как `function_call` с `arguments = {"input": "..."}` |
-| `web_search`, `web_search_preview` | Включает серверный веб-поиск (эквивалент `plugins: [{"id": "web"}]`) |
+| `polza:web_search`, `polza:web_fetch` и другие `polza:*` | [Серверные инструменты](/gaidy/server-tools): Polza выполняет их сама внутри запроса, вызовы видны элементами `output` |
+| `web_search`, `web_search_preview` | [Веб-поиск](/gaidy/web-search) Polza: выполняется как `polza:web_search`, вызов виден элементом `web_search_call` |
 | Прочие (`code_interpreter`, `file_search`, `local_shell`) | Не поддерживаются — модель их не увидит |
 
 <Warning>

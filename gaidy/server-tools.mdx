@@ -1,0 +1,734 @@
+---
+title: Серверные инструменты
+description: Поиск в интернете, чтение страниц и другие инструменты, которые Polza выполняет сама внутри одного запроса
+icon: screwdriver-wrench
+---
+
+<Note>
+Серверные инструменты работают в режиме **beta**: состав событий стрима и полей `usage` может дополняться. Изменения публикуем в [истории изменений](/changelog).
+</Note>
+
+Серверный инструмент — это инструмент, который модель вызывает сама, а выполняет Polza. Вы добавляете в `tools` строку вроде `{"type": "polza:web_search"}`, модель решает, нужен ли поиск, Polza ищет и возвращает результаты модели — и так, пока модель не будет готова ответить. Вы получаете один готовый ответ.
+
+|  | Ваши функции (`type: "function"`) | Серверные инструменты (`type: "polza:*"`) |
+|--|--|--|
+| Кто выполняет | Ваш код | Polza |
+| Сколько запросов | Запрос → вызов функции → новый запрос с результатом | Один запрос |
+| Что приходит в ответе | `tool_calls`, которые нужно выполнить | Финальный ответ модели, источники и стоимость |
+
+Серверные инструменты работают со всеми моделями, которые поддерживают вызов функций, и во всех форматах API: Chat Completions, Responses, Anthropic Messages и Gemini.
+
+## Быстрый старт
+
+<CodeGroup>
+```bash cURL
+curl -X POST "https://polza.ai/api/v1/chat/completions" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-5.2",
+    "messages": [
+      {"role": "user", "content": "Какой курс доллара ЦБ на сегодня?"}
+    ],
+    "tools": [
+      {"type": "polza:web_search", "parameters": {"max_results": 3}}
+    ]
+  }'
+```
+
+```python Python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://polza.ai/api/v1",
+    api_key="<POLZA_AI_API_KEY>"
+)
+
+completion = client.chat.completions.create(
+    model="openai/gpt-5.2",
+    messages=[{"role": "user", "content": "Какой курс доллара ЦБ на сегодня?"}],
+    tools=[{"type": "polza:web_search", "parameters": {"max_results": 3}}],
+)
+
+message = completion.choices[0].message
+print(message.content)
+for annotation in message.annotations or []:
+    print(annotation.url_citation.url)  # источники
+print(completion.usage.cost_rub)  # итоговая стоимость, ₽
+```
+
+```typescript TypeScript
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+  baseURL: 'https://polza.ai/api/v1',
+  apiKey: '<POLZA_AI_API_KEY>'
+});
+
+const completion = await client.chat.completions.create({
+  model: 'openai/gpt-5.2',
+  messages: [{ role: 'user', content: 'Какой курс доллара ЦБ на сегодня?' }],
+  // @ts-ignore — типы OpenAI SDK не знают серверных инструментов
+  tools: [{ type: 'polza:web_search', parameters: { max_results: 3 } }],
+});
+
+const message = completion.choices[0].message;
+console.log(message.content);
+console.log(message.annotations?.map((a) => a.url_citation.url)); // источники
+// @ts-ignore — cost_rub добавляет Polza
+console.log(completion.usage?.cost_rub); // итоговая стоимость, ₽
+```
+</CodeGroup>
+
+Ответ — обычный `chat.completion`: текст модели, источники в `annotations` и итоговые цифры по всем шагам в `usage`.
+
+```json
+{
+  "id": "gen_2216206771127209985",
+  "object": "chat.completion",
+  "model": "openai/gpt-5.2",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "По данным ЦБ, официальный курс доллара на сегодня — ...",
+        "annotations": [
+          {
+            "type": "url_citation",
+            "url_citation": {
+              "url": "https://example.com/usd-rate",
+              "title": "Официальные курсы валют",
+              "content": "Выдержка из страницы...",
+              "start_index": 0,
+              "end_index": 0
+            }
+          }
+        ]
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 27,
+    "completion_tokens": 91,
+    "total_tokens": 118,
+    "server_tool_use": { "web_search_requests": 1 },
+    "cost_rub": 0.51955,
+    "cost": 0.51955,
+    "cost_details": {
+      "inference_cost_rub": 0.01955,
+      "server_tools_cost_rub": 0.5
+    },
+    "server_tool_use_details": {
+      "web_search_requests": 1,
+      "tool_calls_requested": 1,
+      "tool_calls_executed": 1,
+      "steps": 2
+    }
+  },
+  "polza": {
+    "parent_generation_id": "gen_2216206771127209985"
+  }
+}
+```
+
+## Доступные инструменты
+
+| Инструмент | Что делает | Цена за вызов |
+|------------|------------|---------------|
+| `polza:web_search` | Ищет в интернете и возвращает модели заголовок, URL и выдержку по каждому результату | 0,50 ₽ |
+| `polza:web_fetch` | Загружает страницу по URL и возвращает модели основной текст в Markdown | Бесплатно |
+| `polza:datetime` | Возвращает текущие дату и время | Бесплатно |
+| `polza:image_search` | Ищет картинки в Google: адрес картинки, заголовок, сайт-источник, размеры | 0,50 ₽ |
+| `polza:wordstat` | Статистика поисковых запросов Яндекса: частотность фразы, похожие запросы, динамика спроса | 0,50 ₽ |
+
+Оплачивается только выполненный вызов: вызов с ошибкой и повтор с теми же аргументами в рамках одного запроса бесплатны.
+
+Актуальный список инструментов, их параметры в виде JSON Schema и цены отдаёт `GET /v1/server-tools` (без авторизации):
+
+```bash
+curl "https://polza.ai/api/v1/server-tools"
+```
+
+```json
+{
+  "data": [
+    {
+      "type": "polza:web_search",
+      "description": "Поиск в интернете: заголовок, URL и выдержка по каждому результату",
+      "parameters_schema": {
+        "type": "object",
+        "properties": {
+          "max_results": { "default": 5, "type": "integer", "minimum": 1, "maximum": 10 },
+          "max_uses": { "default": 3, "type": "integer", "minimum": 1 },
+          "allowed_domains": { "maxItems": 50, "type": "array", "items": { "type": "string" } },
+          "excluded_domains": { "maxItems": 50, "type": "array", "items": { "type": "string" } },
+          "engine": { "type": "string" }
+        }
+      },
+      "default_max_uses": 3,
+      "pricing": { "cost_rub": 0.5, "unit": "call" },
+      "engines": [
+        { "engine": "yandex", "pricing": { "cost_rub": 0.5, "unit": "call" } },
+        { "engine": "google", "pricing": { "cost_rub": 0.5, "unit": "call" } }
+      ]
+    },
+    ...
+  ]
+}
+```
+
+### Параметры инструментов
+
+Параметры задаёте вы в `parameters` — они ограничивают инструмент. Аргументы вызова (что искать, какую страницу открыть) выбирает модель.
+
+<AccordionGroup>
+  <Accordion title="polza:web_search — поиск в интернете" icon="magnifying-glass">
+    | Параметр | Тип | По умолчанию | Описание |
+    |----------|-----|--------------|----------|
+    | `max_results` | integer (1–10) | 5 | Сколько результатов вернуть модели |
+    | `max_uses` | integer | 3 | Сколько раз модель может искать за один запрос |
+    | `allowed_domains` | string[] (до 50) | — | Оставить только результаты с этих доменов и их поддоменов |
+    | `excluded_domains` | string[] (до 50) | — | Убрать результаты с этих доменов и их поддоменов |
+    | `engine` | string | `yandex` | Поисковик: `yandex` или `google` (Google отдаёт не больше 10 результатов). Неизвестное значение — поиск Яндексом |
+
+    Фильтры доменов применяются к полученной выдаче, поэтому результатов может прийти меньше, чем `max_results`. Подробнее о поиске — в гайде [Поиск в интернете](/gaidy/web-search).
+  </Accordion>
+  <Accordion title="polza:web_fetch — чтение страницы" icon="file-lines">
+    | Параметр | Тип | По умолчанию | Описание |
+    |----------|-----|--------------|----------|
+    | `max_uses` | integer | 3 | Сколько страниц модель может открыть за один запрос |
+    | `max_characters` | integer (100–100 000) | 20 000 | Сколько символов текста страницы получит модель; длиннее — обрезается с пометкой «[текст обрезан]» |
+
+    Модель получает итоговый URL, HTTP-статус, заголовок, автора и дату публикации (если есть) и основной текст страницы в Markdown — без меню и футеров.
+
+    Ограничения: только публичные адреса `http`/`https`, только текстовые ответы (HTML, plain text, JSON, XML), не больше 3 редиректов, JavaScript на странице не выполняется. PDF, картинки, приватные адреса, URL с логином и паролем и ответы 4xx/5xx возвращают модели ошибку.
+  </Accordion>
+  <Accordion title="polza:datetime — дата и время" icon="clock">
+    | Параметр | Тип | По умолчанию | Описание |
+    |----------|-----|--------------|----------|
+    | `timezone` | string | `UTC` | Часовой пояс IANA, например `Europe/Moscow` |
+    | `max_uses` | integer | 3 | Сколько раз модель может вызвать инструмент за один запрос |
+
+    Модель получает время в UTC (`datetime`), местное время (`local`), часовой пояс и день недели.
+  </Accordion>
+  <Accordion title="polza:image_search — поиск картинок" icon="image">
+    | Параметр | Тип | По умолчанию | Описание |
+    |----------|-----|--------------|----------|
+    | `max_uses` | integer | 3 | Сколько раз модель может искать за один запрос |
+
+    Модель сама задаёт запрос и число картинок (до 50, по умолчанию 10). По каждой картинке она получает `image_url`, `title`, `source` (название сайта), `width` и `height`, если они известны. Адреса страницы-источника и превью нет; сами изображения не загружаются.
+  </Accordion>
+  <Accordion title="polza:wordstat — статистика запросов Яндекса" icon="chart-line">
+    | Параметр | Тип | По умолчанию | Описание |
+    |----------|-----|--------------|----------|
+    | `max_uses` | integer | 3 | Сколько раз модель может вызвать инструмент за один запрос |
+
+    Модель выбирает фразу и режим:
+
+    - `top` — сколько раз искали фразу, топ запросов с ней и похожие запросы (до 50 строк каждого списка);
+    - `history` — динамика числа запросов: по месяцам (12 полных месяцев), неделям (12 полных недель) или дням (30 дней по вчерашний).
+
+    Дополнительно модель может ограничить статистику регионами Яндекса и типами устройств.
+  </Accordion>
+</AccordionGroup>
+
+## Как работает запрос
+
+<Steps>
+  <Step title="Модель получает описания инструментов">
+    Вместе с вашими сообщениями модель видит инструменты из `tools` — как обычные функции `web_search`, `web_fetch` и т.д.
+  </Step>
+  <Step title="Модель вызывает инструмент">
+    Если для ответа нужны данные, модель вызывает один или несколько инструментов. Если не нужны — сразу отвечает, и запрос обрабатывается как обычный.
+  </Step>
+  <Step title="Polza выполняет вызовы">
+    Вызовы одного шага выполняются параллельно, каждый — не дольше 30 секунд. Результаты добавляются в историю диалога.
+  </Step>
+  <Step title="Модель продолжает">
+    Модель получает результаты и либо вызывает инструменты снова, либо отвечает. Цикл идёт, пока модель не ответит или не закончится лимит вызовов.
+  </Step>
+</Steps>
+
+Что важно знать:
+
+- **Каждый шаг — отдельный вызов модели.** На каждом шаге модель заново получает всю историю вместе с результатами инструментов, поэтому `prompt_tokens` в итоговом `usage` — сумма по всем шагам.
+- **Ошибка инструмента не прерывает запрос.** Модель получает текст ошибки (например, «Ошибка инструмента web_fetch: Страница вернула статус 404») и сама решает, что делать дальше. Вызов с ошибкой не оплачивается.
+- **Повтор не выполняется дважды.** Если модель вызывает тот же инструмент с теми же аргументами, результат берётся из первого вызова бесплатно.
+- **`tool_choice` действует только на первом шаге**, дальше модель выбирает сама (`auto`).
+- **Модель должна поддерживать вызов функций.** Исключение — `polza:web_search`: с моделью без вызова функций Polza выполнит поиск до обращения к модели, как [плагин `web`](/gaidy/web-search).
+
+## Лимиты вызовов
+
+| Параметр | Где | По умолчанию | Описание |
+|----------|-----|--------------|----------|
+| `max_tool_calls` | тело запроса | 10 (максимум 30) | Сколько всего вызовов серверных инструментов модель может сделать за запрос |
+| `max_uses` | `parameters` инструмента | 3 | Сколько раз можно вызвать конкретный инструмент |
+| `stop_server_tools_when` | тело запроса | — | Условия остановки вместо `max_tool_calls` и потолок расходов |
+
+В лимит засчитывается каждый вызов модели, в том числе завершившийся ошибкой. Когда лимит `max_tool_calls` исчерпан, Polza просит модель ответить без инструментов тем, что уже удалось найти. Когда исчерпан `max_uses`, инструмент пропадает из списка для следующих шагов, а лишние вызовы в том же шаге получают ошибку.
+
+`stop_server_tools_when` — массив условий:
+
+```json
+{
+  "stop_server_tools_when": [
+    { "type": "step_count", "value": 5 },
+    { "type": "spend_cap", "value_rub": 20 }
+  ]
+}
+```
+
+| Условие | Поле | Описание |
+|---------|------|----------|
+| `step_count` | `value` | Сколько всего вызовов инструментов разрешено. Заменяет `max_tool_calls`; больше 30 — считается как 30 |
+| `spend_cap` | `value_rub` | Потолок расходов на запрос в рублях: модель на всех шагах плюс инструменты |
+
+<Warning>
+`spend_cap` — мягкий потолок. Расходы проверяются перед каждым шагом модели, поэтому итоговая стоимость может превысить его: шаг, на котором потолок пройден, и его инструменты уже выполнены, а после них модель ещё раз вызывается, чтобы дать ответ.
+</Warning>
+
+## Стриминг
+
+При `stream: true` текст модели приходит по мере генерации, как в обычном запросе. Текст промежуточных шагов («Сейчас поищу…») тоже приходит клиенту; между текстами шагов вставляется пустая строка (`\n\n`).
+
+Пока выполняются инструменты, сервер шлёт SSE-комментарии — строки, начинающиеся с `:`. Стандартные SDK их игнорируют:
+
+```
+: polza-progress {"phase":"server_tool","tool":"polza:web_search","step":1}
+
+: polza-progress {"phase":"server_tool","tool":"polza:web_search","step":1,"status":"completed"}
+```
+
+Последний чанк перед `[DONE]` несёт `finish_reason`, все источники в `delta.annotations`, итоговый `usage` и поле `polza`:
+
+```
+data: {"id":"gen_2216206809437982721","object":"chat.completion.chunk","model":"openai/gpt-5.2","choices":[{"index":0,"delta":{"content":null,"annotations":[{"type":"url_citation","url_citation":{"url":"https://example.com/usd-rate","title":"Официальные курсы валют","content":"...","start_index":0,"end_index":0}}]},"finish_reason":"stop"}],"usage":{"prompt_tokens":27,"completion_tokens":91,"total_tokens":118,"server_tool_use":{"web_search_requests":1},"cost_rub":0.51955,"cost":0.51955,"cost_details":{"inference_cost_rub":0.01955,"server_tools_cost_rub":0.5},"server_tool_use_details":{"web_search_requests":1,"tool_calls_requested":1,"tool_calls_executed":1,"steps":2}},"polza":{"event":"final","parent_generation_id":"gen_2216206809869996033"}}
+
+data: [DONE]
+```
+
+<Note>
+Все чанки стрима идут с одним `id` — это id первого шага. Id запроса в [истории](#история-запросов) — `polza.parent_generation_id` из последнего чанка.
+</Note>
+
+### События инструментов
+
+Чтобы видеть в стриме, что делает модель (например, показывать «Ищу: курс доллара ЦБ»), передайте `stream_options.include_server_tool_events: true`. Тогда в стриме появятся чанки с пустым `delta` и полем `polza`:
+
+```
+data: {"id":"gen_2216206809437982721","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":null}],"polza":{"event":"step_end","step":1,"generation_id":"gen_2216206809437982721","cost_rub":0.0022,"usage":{"prompt_tokens":12,"completion_tokens":8,"total_tokens":20,"cost_rub":0.0022,"cost":0.0022}}}
+
+data: {"id":"gen_2216206809437982721","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":null}],"polza":{"event":"tool_call","step":1,"generation_id":"gen_2216206809437982721","id":"call_1790688879555","type":"polza:web_search","arguments":{"query":"курс доллара ЦБ сегодня"}}}
+
+data: {"id":"gen_2216206809437982721","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":null}],"polza":{"event":"tool_result","step":1,"id":"call_1790688879555","type":"polza:web_search","status":"completed","cost_rub":0.5,"summary":{"query":"курс доллара ЦБ сегодня","sources":[{"url":"https://example.com/usd-rate","title":"Официальные курсы валют"}]},"duration_ms":8}}
+
+data: {"id":"gen_2216206809437982721","object":"chat.completion.chunk","choices":[{"index":0,"delta":{"role":"assistant","content":"По данным ЦБ, "},"finish_reason":null}]}
+
+...
+
+data: {"id":"gen_2216206809437982721","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":null}],"polza":{"event":"step_end","step":2,"generation_id":"gen_2216206809983242241","cost_rub":0.51735,"usage":{"prompt_tokens":15,"completion_tokens":83,"total_tokens":98,"cost_rub":0.51735,"cost":0.51735}}}
+```
+
+| Событие (`polza.event`) | Когда | Поля |
+|-------------------------|-------|------|
+| `step_end` | Шаг модели завершён | `step`, `generation_id` шага, `cost_rub` шага, `usage` шага |
+| `tool_call` | Модель вызвала инструмент | `step`, `generation_id`, `id` вызова, `type`, `arguments` |
+| `tool_result` | Инструмент выполнен | `step`, `id` вызова, `type`, `status` (`completed` или `failed`), `cost_rub`, `summary`, `duration_ms` |
+| `budget_exhausted` | Лимит вызовов исчерпан, модель отвечает без инструментов | `step`, `reason` (`step_count` или `spend_cap`) |
+| `final` | Последний чанк стрима; приходит и без `include_server_tool_events` | `parent_generation_id` |
+
+Когда лимит вызовов исчерпан, перед последним шагом приходит:
+
+```
+data: {"id":"gen_2216211428817903617","object":"chat.completion.chunk","choices":[{"index":0,"delta":{},"finish_reason":null}],"polza":{"event":"budget_exhausted","step":2,"reason":"step_count"}}
+```
+
+`summary` — краткий итог успешного вызова без полного содержимого (у `status: "failed"` его нет):
+
+| Инструмент | `summary` |
+|------------|-----------|
+| `polza:web_search` | `query`, `sources` (`url`, `title`) |
+| `polza:web_fetch` | `url`, `status`, `title`, `truncated`, `wordCount` |
+| `polza:datetime` | `datetime`, `local`, `timezone`, `weekday` |
+| `polza:image_search` | `query`, `images` |
+| `polza:wordstat` | `phrase`, `mode` и число строк (`top`, `similar`) или точек динамики (`period`, `points`) |
+
+Стоимость шага в `step_end` уже включает инструменты, результаты которых модель получила на этом шаге.
+
+<CodeGroup>
+```python Python
+stream = client.chat.completions.create(
+    model="openai/gpt-5.2",
+    messages=[{"role": "user", "content": "Какой курс доллара ЦБ на сегодня?"}],
+    tools=[{"type": "polza:web_search"}],
+    stream=True,
+    stream_options={"include_usage": True, "include_server_tool_events": True},
+)
+
+for chunk in stream:
+    event = getattr(chunk, "polza", None)  # поле Polza, в SDK — dict
+    if event and event["event"] == "tool_call":
+        print(f"\n[{event['type']}] {event['arguments']}")
+    if chunk.choices and chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="")
+    if chunk.usage:
+        print(f"\nИтого: {chunk.usage.cost_rub} ₽")
+```
+
+```typescript TypeScript
+const stream = await client.chat.completions.create({
+  model: 'openai/gpt-5.2',
+  messages: [{ role: 'user', content: 'Какой курс доллара ЦБ на сегодня?' }],
+  // @ts-ignore — типы OpenAI SDK не знают серверных инструментов
+  tools: [{ type: 'polza:web_search' }],
+  stream: true,
+  // @ts-ignore — include_server_tool_events добавляет Polza
+  stream_options: { include_usage: true, include_server_tool_events: true },
+});
+
+for await (const chunk of stream) {
+  const event = (chunk as any).polza;
+  if (event?.event === 'tool_call') console.log(`\n[${event.type}]`, event.arguments);
+  process.stdout.write(chunk.choices[0]?.delta?.content ?? '');
+  if (chunk.usage) console.log(`\nИтого: ${(chunk.usage as any).cost_rub} ₽`);
+}
+```
+</CodeGroup>
+
+### Только финальный ответ
+
+`stream_options.hide_intermediate_text: true` убирает из стрима текст промежуточных шагов — клиент получит только финальный ответ. Цена за это — плавность: финальный ответ приходит сразу целиком, когда модель закончила шаг, а не по мере генерации. Опция работает только при `stream: true`.
+
+Без стрима `message.content` содержит текст всех шагов, разделённый пустой строкой.
+
+## Ответ
+
+| Поле | Описание |
+|------|----------|
+| `id` | Id запроса в истории. В стриме — id первого шага, id запроса — в `polza.parent_generation_id` |
+| `choices[0].message.content` | Ответ модели (без стрима — вместе с текстом промежуточных шагов) |
+| `choices[0].message.annotations` | Источники из `polza:web_search` и `polza:web_fetch` в формате `url_citation`. `start_index` и `end_index` всегда `0` — привязки к месту в тексте нет |
+| `choices[0].message.tool_calls` | Только если модель вызвала вашу функцию — см. [ниже](#свои-функции-вместе-с-серверными) |
+| `usage` | Итог по всем шагам — см. таблицу |
+| `polza.parent_generation_id` | Id запроса в истории. Есть, если модель вызывала серверные инструменты; если модель ответила сразу, поля нет, а запрос — обычная генерация |
+
+| Поле `usage` | Описание |
+|--------------|----------|
+| `prompt_tokens`, `completion_tokens`, `total_tokens` | Сумма по всем шагам модели |
+| `cost_rub`, `cost` | Итоговая стоимость запроса: модель на всех шагах и инструменты, ₽ |
+| `cost_details.inference_cost_rub` | Из неё — модель, ₽ |
+| `cost_details.server_tools_cost_rub` | Из неё — инструменты, ₽ |
+| `server_tool_use` | Выполненные вызовы по инструментам: `web_search_requests`, `web_fetch_requests`, `datetime_requests`, `image_search_requests`, `wordstat_requests`. `null`, если инструменты не выполнялись |
+| `server_tool_use_details` | Те же счётчики плюс `tool_calls_requested` (сколько вызовов запросила модель), `tool_calls_executed` (сколько выполнено, без ошибок и повторов) и `steps` (число шагов модели) |
+
+`prompt_tokens_details` и `completion_tokens_details` относятся к последнему шагу.
+
+## Другие форматы API
+
+Серверные инструменты подключаются в любом формате. Цикл тот же, отличается только то, как инструменты передаются и как видны в ответе.
+
+<Tabs>
+  <Tab title="Responses API">
+    Параметры инструмента передаются рядом с `type` (вложенный `parameters`, как в Chat Completions, тоже принимается):
+
+    ```json
+    {
+      "model": "openai/gpt-5.2",
+      "input": "Какой курс доллара ЦБ на сегодня?",
+      "tools": [{ "type": "polza:web_search", "max_results": 2 }]
+    }
+    ```
+
+    Каждый вызов — отдельный элемент `output` с типом инструмента и итогом в `action`, после них — сообщение модели:
+
+    ```json
+    {
+      "id": "gen_2216206967680684033",
+      "object": "response",
+      "status": "completed",
+      "output": [
+        {
+          "type": "polza:web_search",
+          "id": "call_1790688917193",
+          "status": "completed",
+          "action": {
+            "query": "курс доллара ЦБ сегодня",
+            "sources": [
+              { "url": "https://example.com/usd-rate", "title": "Официальные курсы валют" }
+            ]
+          }
+        },
+        {
+          "type": "message",
+          "role": "assistant",
+          "status": "completed",
+          "content": [
+            {
+              "type": "output_text",
+              "text": "По данным ЦБ, ...",
+              "annotations": [
+                {
+                  "type": "url_citation",
+                  "url": "https://example.com/usd-rate",
+                  "title": "Официальные курсы валют",
+                  "start_index": 0,
+                  "end_index": 0,
+                  "url_citation": { "url": "https://example.com/usd-rate", "title": "Официальные курсы валют", "content": "...", "start_index": 0, "end_index": 0 }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "usage": {
+        "input_tokens": 27,
+        "output_tokens": 91,
+        "total_tokens": 118,
+        "server_tool_use": { "web_search_requests": 1 },
+        "cost_rub": 0.51955,
+        "cost": 0.51955,
+        "cost_details": { "inference_cost_rub": 0.01955, "server_tools_cost_rub": 0.5 },
+        "server_tool_use_details": { "web_search_requests": 1, "tool_calls_requested": 1, "tool_calls_executed": 1, "steps": 2 }
+      },
+      "polza": { "parent_generation_id": "gen_2216206967680684033" }
+    }
+    ```
+
+    - В стриме элемент инструмента приходит событием `response.output_item.added` со `status: "in_progress"` и событием `response.output_item.done` с результатом. `include_server_tool_events` не нужен.
+    - В стриме `response.id` — id первого шага, id запроса в истории — `polza.parent_generation_id` в `response.completed`.
+    - Родной `web_search` (и `web_search_preview`) тоже выполняет `polza:web_search`, но элемент называется `web_search_call`, а `action.type` — `search`.
+    - Работают `max_tool_calls` (до 30), `stop_server_tools_when` и `stream_options.hide_intermediate_text`. Значения `stream_options` должны быть логическими — строка вернёт 400.
+  </Tab>
+  <Tab title="Anthropic Messages">
+    `POST /v1/messages`. Параметры инструмента передаются рядом с `type`, `name` можно не указывать:
+
+    ```json
+    {
+      "model": "anthropic/claude-sonnet-4.5",
+      "max_tokens": 1024,
+      "messages": [{ "role": "user", "content": "Какой курс доллара ЦБ на сегодня?" }],
+      "tools": [{ "type": "polza:web_search", "max_results": 2 }]
+    }
+    ```
+
+    Вызов — блок `server_tool_use`. Для `polza:web_search` за ним идёт блок `web_search_tool_result` с найденными страницами, источники — в `citations` текстового блока:
+
+    ```json
+    {
+      "id": "msg_gen_2216207099201474561",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "server_tool_use",
+          "id": "call_1790688948547",
+          "name": "web_search",
+          "input": { "query": "курс доллара ЦБ сегодня" }
+        },
+        {
+          "type": "web_search_tool_result",
+          "tool_use_id": "call_1790688948547",
+          "content": [
+            { "type": "web_search_result", "url": "https://example.com/usd-rate", "title": "Официальные курсы валют" }
+          ]
+        },
+        {
+          "type": "text",
+          "text": "По данным ЦБ, ...",
+          "citations": [
+            {
+              "type": "web_search_result_location",
+              "url": "https://example.com/usd-rate",
+              "title": "Официальные курсы валют",
+              "cited_text": "...",
+              "encrypted_index": ""
+            }
+          ]
+        }
+      ],
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 27,
+        "output_tokens": 91,
+        "server_tool_use": { "web_search_requests": 1 }
+      }
+    }
+    ```
+
+    - Лимит — 10 вызовов инструментов на запрос; `max_tool_calls` и `stop_server_tools_when` в этом формате не поддерживаются и игнорируются. `max_uses` инструмента работает.
+    - Родной `web_search_20250305` тоже выполняет `polza:web_search`, его `max_uses`, `allowed_domains` и `blocked_domains` учитываются.
+  </Tab>
+  <Tab title="Gemini">
+    `POST /v1beta/models/{model}:generateContent` (и `:streamGenerateContent`). Инструмент передаётся полем `polzaServerTool`, параметры — рядом с `type`:
+
+    ```bash
+    curl -X POST "https://polza.ai/api/v1beta/models/google/gemini-2.5-flash:generateContent" \
+      -H "x-goog-api-key: <POLZA_AI_API_KEY>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "contents": [{"role": "user", "parts": [{"text": "Какой курс доллара ЦБ на сегодня?"}]}],
+        "tools": [{"polzaServerTool": {"type": "polza:web_search", "max_results": 2}}]
+      }'
+    ```
+
+    Вызовы инструментов в ответе не показываются — в формате Gemini для них нет места. Источники приходят в `groundingMetadata`:
+
+    ```json
+    {
+      "candidates": [
+        {
+          "content": { "role": "model", "parts": [{ "text": "По данным ЦБ, ..." }] },
+          "finishReason": "STOP",
+          "index": 0,
+          "groundingMetadata": {
+            "groundingChunks": [
+              { "web": { "uri": "https://example.com/usd-rate", "title": "Официальные курсы валют" } }
+            ]
+          }
+        }
+      ],
+      "usageMetadata": { "promptTokenCount": 27, "candidatesTokenCount": 91, "totalTokenCount": 118 }
+    }
+    ```
+
+    - Лимит — 10 вызовов инструментов на запрос.
+    - Родной `googleSearch` тоже выполняет `polza:web_search`.
+  </Tab>
+</Tabs>
+
+## Свои функции вместе с серверными
+
+В одном `tools` можно смешивать свои функции и серверные инструменты. Серверные Polza выполняет сама; как только модель вызывает вашу функцию, цикл останавливается и управление возвращается вам — как в обычном [Tool Calling](/gaidy/tool-calling).
+
+```json
+{
+  "model": "openai/gpt-5.2",
+  "messages": [{ "role": "user", "content": "Сколько стоит заказ 42 в долларах?" }],
+  "tools": [
+    { "type": "polza:web_search" },
+    {
+      "type": "function",
+      "function": {
+        "name": "get_order",
+        "description": "Заказ по номеру",
+        "parameters": {
+          "type": "object",
+          "properties": { "order_id": { "type": "integer" } },
+          "required": ["order_id"]
+        }
+      }
+    }
+  ]
+}
+```
+
+Ответ — `finish_reason: "tool_calls"` и вызовы шага в `tool_calls`:
+
+```json
+{
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": null,
+        "tool_calls": [
+          {
+            "id": "call_1790688903808",
+            "type": "function",
+            "function": { "name": "get_order", "arguments": "{\"order_id\":42}" }
+          }
+        ]
+      },
+      "finish_reason": "tool_calls"
+    }
+  ]
+}
+```
+
+Выполните свою функцию и отправьте следующий запрос как обычно: историю с сообщением ассистента и `tool`-сообщением с результатом, с тем же `tools`.
+
+Если в том же шаге модель вызвала и серверный инструмент, его вызов тоже будет в `tool_calls`, но выполнен он не был. Выполнять его не нужно: верните сообщение ассистента как есть, а `tool`-сообщения добавьте только для своих функций. Polza выполнит оставшиеся серверные вызовы в начале следующего запроса:
+
+```json
+{
+  "messages": [
+    { "role": "user", "content": "Сколько стоит заказ 42 в долларах?" },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        { "id": "call_srv_1", "type": "function", "function": { "name": "web_search", "arguments": "{\"query\":\"курс доллара ЦБ сегодня\"}" } },
+        { "id": "call_cli_1", "type": "function", "function": { "name": "get_order", "arguments": "{\"order_id\":42}" } }
+      ]
+    },
+    { "role": "tool", "tool_call_id": "call_cli_1", "content": "{\"total_rub\": 9150}" }
+  ]
+}
+```
+
+<Warning>
+Серверный инструмент занимает своё имя без префикса (`web_search`, `web_fetch`, `datetime`, `image_search`, `wordstat`): своя функция с таким же именем в том же запросе вернёт 400.
+</Warning>
+
+## Инструменты `openrouter:*`
+
+Если вы переходите с OpenRouter, типы `openrouter:*` можно не менять: `openrouter:web_search`, `openrouter:web_fetch` и `openrouter:datetime` выполняют инструменты Polza `polza:web_search`, `polza:web_fetch` и `polza:datetime`. В ответе и событиях тип всегда `polza:*`. Типы, которых нет в `GET /v1/server-tools`, возвращают 400.
+
+## История запросов
+
+Запрос с серверными инструментами — одна запись в [истории генераций](/api-reference/history/generations), шаги модели — вложенные записи.
+
+| Запрос | Что вернёт |
+|--------|------------|
+| `GET /v1/history/generations` | Одна строка на запрос: `cost` — итог, `stepsCount` — число шагов, `webSearch` — число поисков и их стоимость |
+| `GET /v1/history/generations/{id}` | Запрос целиком: `stepsCount` и `serverTools` — итоги цикла (шаги, токены, стоимость, счётчики вызовов) |
+| `GET /v1/history/generations/{id}/children` | Шаги по порядку: `stepIndex`, модель, токены, стоимость и `serverTools` — инструменты, результаты которых получил шаг |
+| `GET /v1/history/generations/{id}/log` | Лог последнего шага; логи остальных шагов — по их id из `/children` |
+
+Для шага `GET /v1/history/generations/{id}` возвращает `parentGenerationId` — id запроса — и `stepIndex`.
+
+## Ошибки
+
+Запрос проверяется до первого вызова модели. Ошибка возвращается статусом 400 — в том числе при `stream: true`, до начала стрима.
+
+| Причина | Сообщение |
+|---------|-----------|
+| Инструмента нет в `GET /v1/server-tools` | `Неизвестный серверный инструмент: polza:calculator` |
+| Тип не в формате `polza:имя` (строчные латинские буквы, цифры, `_`) | `Поле tools[0].type имеет неверный формат` |
+| Инструмент указан дважды (в том числе как `polza:*` и `openrouter:*`) | `Серверный инструмент polza:datetime указан дважды` |
+| Параметры не проходят по схеме | `Некорректные parameters у polza:web_search: max_results: ...` |
+| Своя функция с именем серверного инструмента | `Имя функции web_search занято серверным инструментом polza:web_search` |
+| `max_tool_calls` больше 30 | `Поле max_tool_calls должно быть не больше 30` |
+| Условие `stop_server_tools_when` без значения | `Поле stop_server_tools_when[0].value_rub обязательно. ...` |
+| Значение `stream_options` не логическое | `Поле stream_options.include_server_tool_events должно быть логическим значением` |
+| Инструмент временно отключён | `Инструмент polza:wordstat не настроен на этом сервере` |
+
+Ошибки внутри цикла — сайт недоступен, поисковик не ответил — не возвращаются клиенту: модель получает текст ошибки и продолжает. Если не ответила сама модель, запрос завершается обычной ошибкой провайдера.
+
+## Как списываются деньги
+
+- **Шаги модели** оплачиваются по тарифу модели, как обычные запросы. Каждый шаг заново отправляет модели всю историю, поэтому запрос с несколькими шагами дороже одного вызова.
+- **Инструменты** — фиксированная цена за выполненный вызов (см. [таблицу](#доступные-инструменты) или `GET /v1/server-tools`). Вызовы с ошибкой и повторы с теми же аргументами бесплатны.
+- **Итог** — `usage.cost_rub`, разбивка — `usage.cost_details`. В истории — `cost` записи запроса.
+- Если запрос прервался (отмена клиентом, ошибка провайдера), уже выполненные шаги и инструменты оплачиваются.
+
+Ограничить расходы на один запрос можно через [`stop_server_tools_when`](#лимиты-вызовов) — с поправкой на то, что потолок мягкий.
+
+## Следующие шаги
+
+<CardGroup cols={2}>
+  <Card title="Поиск в интернете" icon="globe" href="/gaidy/web-search">
+    Как Polza ищет в интернете и чем инструмент отличается от плагина `web`
+  </Card>
+  <Card title="Tool Calling" icon="wrench" href="/gaidy/tool-calling">
+    Свои функции: вызов и возврат результата
+  </Card>
+  <Card title="Учёт средств" icon="chart-pie" href="/osobennosti/usage">
+    Поля `usage` и стоимость запроса
+  </Card>
+  <Card title="История генераций" icon="clock-rotate-left" href="/api-reference/history/generations">
+    Записи запросов и шагов
+  </Card>
+</CardGroup>
