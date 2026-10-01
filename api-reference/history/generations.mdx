@@ -123,6 +123,10 @@ for item in data['items']:
 | `createdAt` | string | Дата создания |
 | `apiKeyName` | string | Имя API ключа (при JWT авторизации) |
 | `apiKeyShort` | string | Последние 6 символов ключа |
+| `stepsCount` | number | Число шагов модели — только у запросов с [серверными инструментами](/gaidy/server-tools) |
+| `webSearch` | object | Веб-поиск запроса (все шаги): `requests` — число выполненных поисков, `costRub` — их стоимость, ₽. Есть, если поиск выполнялся |
+
+Запрос с серверными инструментами — одна запись: `cost` и `usage` — итог по всем шагам. Шаги — через [`/children`](#get-шаги-запроса).
 
 ---
 
@@ -194,3 +198,71 @@ curl "https://polza.ai/api/v1/history/generations/gen_581761234567890123" \
 | `createdAt` | string | Дата создания |
 | `completedAt` | string\|null | Дата завершения |
 | `attemptsCount` | number | Количество попыток |
+| `parentGenerationId` | string\|null | Для шага запроса с серверными инструментами — id запроса |
+| `stepIndex` | number\|null | Для шага — его номер, с 1 |
+| `stepsCount` | number | Для запроса с серверными инструментами — число шагов |
+| `serverTools` | object\|null | Для запроса с серверными инструментами — итоги: `steps`, `promptTokens`, `completionTokens`, `clientCostRub`, `serverToolsCostRub`, `serverToolUse`, `toolCallsRequested`, `toolCallsExecuted` |
+
+---
+
+## GET Шаги запроса
+
+```
+GET /v1/history/generations/{id}/children
+```
+
+Шаги запроса с [серверными инструментами](/gaidy/server-tools) по порядку. `{id}` — id запроса (`polza.parent_generation_id` из ответа API).
+
+### Пример
+
+```bash
+curl "https://polza.ai/api/v1/history/generations/gen_2216206771127209985/children" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Ответ (200)
+
+```json
+[
+  {
+    "id": "gen_2216206770787471361",
+    "model": "openai/gpt-5.2",
+    "requestType": "chat",
+    "status": "completed",
+    "cost": "0.0022",
+    "usage": { "prompt_tokens": 12, "completion_tokens": 8, "total_tokens": 20 },
+    "parentGenerationId": "gen_2216206771127209985",
+    "stepIndex": 1,
+    "serverTools": []
+  },
+  {
+    "id": "gen_2216206771244650497",
+    "model": "openai/gpt-5.2",
+    "requestType": "chat",
+    "status": "completed",
+    "cost": "0.51735",
+    "usage": { "prompt_tokens": 15, "completion_tokens": 83, "total_tokens": 98 },
+    "parentGenerationId": "gen_2216206771127209985",
+    "stepIndex": 2,
+    "serverTools": [
+      {
+        "type": "polza:web_search",
+        "status": "completed",
+        "costRub": "0.5",
+        "latencyMs": 10,
+        "metadata": { "callId": "call_1790688870318", "engine": "yandex", "resultsCount": 2, "status": "completed" }
+      }
+    ]
+  }
+]
+```
+
+Элементы — в формате списка генераций, плюс поля шага:
+
+| Поле | Тип | Описание |
+|------|-----|----------|
+| `parentGenerationId` | string | Id запроса |
+| `stepIndex` | number | Номер шага, с 1 |
+| `serverTools` | array | Инструменты, результаты которых получил шаг: `type`, `status` (`completed`, `failed`), `costRub`, `latencyMs`, `metadata`. Их стоимость входит в `cost` шага |
+
+Лог запроса (`GET /v1/history/generations/{id}/log`) по id запроса отдаёт лог последнего шага; логи остальных шагов — по их id.

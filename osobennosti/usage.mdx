@@ -48,6 +48,7 @@ Usage Accounting — встроенная функция для отслежив
 | `total_tokens` | Сумма всех токенов |
 | `cost_rub` | Стоимость в рублях |
 | `cost` | Стоимость в рублях (алиас `cost_rub`) |
+| `server_tool_use` | Число выполненных поисков и вызовов серверных инструментов, например `{"web_search_requests": 1}`. `null`, если их не было |
 
 ### Детализация входных токенов (prompt_tokens_details)
 
@@ -64,6 +65,46 @@ Usage Accounting — встроенная функция для отслежив
 | `reasoning_tokens` | Токены рассуждений (для o1, R1 и др.) |
 | `audio_tokens` | Токены аудио в ответе |
 | `image_tokens` | Токены изображений в ответе |
+
+## Запросы с серверными инструментами
+
+Если в запросе есть [серверные инструменты](/gaidy/server-tools), модель может вызываться несколько раз. `usage` показывает итог по всем шагам и добавляет разбивку:
+
+```json
+{
+  "usage": {
+    "prompt_tokens": 27,
+    "completion_tokens": 91,
+    "total_tokens": 118,
+    "server_tool_use": {
+      "web_search_requests": 1
+    },
+    "cost_rub": 0.51955,
+    "cost": 0.51955,
+    "cost_details": {
+      "inference_cost_rub": 0.01955,
+      "server_tools_cost_rub": 0.5
+    },
+    "server_tool_use_details": {
+      "web_search_requests": 1,
+      "tool_calls_requested": 1,
+      "tool_calls_executed": 1,
+      "steps": 2
+    }
+  }
+}
+```
+
+| Поле | Описание |
+|------|----------|
+| `prompt_tokens`, `completion_tokens`, `total_tokens` | Сумма по всем шагам модели |
+| `cost_rub`, `cost` | Итоговая стоимость: модель на всех шагах и инструменты |
+| `cost_details.inference_cost_rub` | Из неё — модель, ₽ |
+| `cost_details.server_tools_cost_rub` | Из неё — инструменты, ₽ |
+| `server_tool_use` | Выполненные вызовы по инструментам: `web_search_requests`, `web_fetch_requests`, `datetime_requests`, … |
+| `server_tool_use_details` | Те же счётчики, а также `tool_calls_requested` (сколько вызовов запросила модель), `tool_calls_executed` (сколько выполнено) и `steps` (число шагов модели) |
+
+Те же поля отдаёт Responses API.
 
 ## Типы токенов и стоимость
 

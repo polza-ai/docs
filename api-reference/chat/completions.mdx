@@ -50,11 +50,14 @@ icon: message
 | Параметр | Тип | Описание |
 |----------|-----|----------|
 | `stream` | boolean | Включить streaming (SSE) |
+| `stream_options` | object | Опции стрима: `include_usage`, `include_server_tool_events` (события серверных инструментов), `hide_intermediate_text` (только финальный ответ) |
 | `reasoning` | object | Настройки reasoning tokens |
-| `tools` | array | Доступные функции для вызова |
+| `tools` | array | Инструменты: ваши функции (`type: "function"`) и [серверные инструменты](/gaidy/server-tools) Polza (`type: "polza:web_search"` и др.) |
 | `tool_choice` | string/object | Выбор инструмента: "none", "auto", "required" |
+| `max_tool_calls` | integer (1–30) | Сколько вызовов серверных инструментов модель может сделать за запрос, по умолчанию 10 |
+| `stop_server_tools_when` | array | Условия остановки цикла серверных инструментов: `step_count`, `spend_cap` ([подробнее](/gaidy/server-tools#лимиты-вызовов)) |
 | `response_format` | object | Формат ответа: text, json_object, json_schema, grammar |
-| `web_search_options` | object | Встроенный веб-поиск |
+| `web_search_options` | object | Веб-поиск Polza для любой модели ([подробнее](/gaidy/web-search)) |
 | `provider` | object | Конфигурация роутинга по провайдерам |
 | `plugins` | array | Подключение плагинов |
 | `modalities` | array | Выходные модальности: "text", "image", "audio" |
@@ -236,6 +239,22 @@ data: [DONE]
   "tool_choice": "auto"
 }
 ```
+
+### Серверные инструменты
+
+Инструменты, которые выполняет Polza внутри одного запроса, — поиск, чтение страниц, дата и время. Модель вызывает их сама, вы получаете готовый ответ:
+
+```json
+{
+  "tools": [
+    {"type": "polza:web_search", "parameters": {"max_results": 3}},
+    {"type": "polza:datetime", "parameters": {"timezone": "Europe/Moscow"}}
+  ],
+  "max_tool_calls": 5
+}
+```
+
+Список инструментов, ответ и стриминг — в гайде [Серверные инструменты](/gaidy/server-tools).
 
 ### Ответ модели с вызовом функции
 
