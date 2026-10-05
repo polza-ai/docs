@@ -4,13 +4,13 @@ description: Как добавить веб-поиск к любой AI моде
 icon: globe
 ---
 
-Polza.AI поддерживает веб-поиск для любой модели — от GPT-5 до Claude и Gemini. Модель получает актуальные данные из интернета и включает ссылки на источники в ответ.
+Polza.AI добавляет веб-поиск к любой модели — от GPT-5 до Claude и Gemini. Модель получает актуальные данные из интернета, а вы — ответ со ссылками на источники.
 
 ## Быстрый старт
 
 ### Chat Completions API
 
-Добавьте плагин `web` в запрос:
+Подключите плагин `web` — Polza найдёт информацию по вашему сообщению и передаст результаты модели вместе с запросом:
 
 <CodeGroup>
 ```typescript TypeScript
@@ -72,7 +72,7 @@ curl -X POST "https://polza.ai/api/v1/chat/completions" \
 
 ### Responses API
 
-Используйте `tools` с типом `web_search_preview`:
+Используйте `tools` с типом `web_search_preview` (или `web_search`). В `output` придут элемент поиска `web_search_call` и элемент `message` с ответом:
 
 <CodeGroup>
 ```typescript TypeScript
@@ -90,8 +90,9 @@ const response = await fetch('https://polza.ai/api/v1/responses', {
 });
 
 const data = await response.json();
-console.log(data.output[0].content[0].text);
-console.log(data.output[0].content[0].annotations); // ссылки на источники
+const message = data.output.find((item) => item.type === 'message');
+console.log(message.content[0].text);
+console.log(message.content[0].annotations); // ссылки на источники
 ```
 
 ```python Python
@@ -108,8 +109,9 @@ response = requests.post(
 )
 
 data = response.json()
-print(data['output'][0]['content'][0]['text'])
-print(data['output'][0]['content'][0]['annotations'])  # ссылки на источники
+message = next(item for item in data['output'] if item['type'] == 'message')
+print(message['content'][0]['text'])
+print(message['content'][0]['annotations'])  # ссылки на источники
 ```
 
 ```bash cURL
@@ -124,83 +126,49 @@ curl -X POST "https://polza.ai/api/v1/responses" \
 ```
 </CodeGroup>
 
-## Способы активации
+## Как работает поиск
 
-| Способ | API | Совместимость | Описание |
-|--------|-----|---------------|----------|
-| `plugins: [{id: "web"}]` | Chat Completions | Все модели | Рекомендуемый. Явное подключение плагина |
-| `tools: [{type: "web_search_preview"}]` | Responses API | Все модели | OpenAI-совместимый формат |
-| `web_search_options` | Chat Completions | Ограниченный | Нативный параметр OpenAI |
+Поиск всегда выполняет Polza — поисковиком Яндекса (по умолчанию) или Google. Провайдеру модели поиск не передаётся, поэтому он одинаково работает с любой моделью, в том числе без поддержки вызова функций, и в любом формате API.
 
-<Warning>
-`web_search_options` — нативный параметр OpenAI, поддерживается ограниченным числом моделей. Для остальных моделей параметр будет проигнорирован. Используйте `plugins: [{id: "web"}]` для максимальной совместимости.
-</Warning>
+Polza ищет один раз до вызова модели — по тексту вашего последнего сообщения или по `search_prompt` — и добавляет найденные результаты в запрос. Результаты увеличивают `prompt_tokens`: модель читает их как часть запроса.
 
-## Как работает
+## Как включить
 
-1. **Запрос с плагином `web`** — вы отправляете запрос с включённым веб-поиском
-2. **Определение типа модели** — система проверяет, поддерживает ли модель нативный поиск
-3. **Выполнение поиска**:
-   - Для моделей с нативным поиском (OpenAI, Anthropic, xAI, Perplexity — 38 моделей) — активируется встроенный web search провайдера
-   - Для остальных моделей (Gemini, DeepSeek и др.) — поиск выполняется через Exa и результаты добавляются в контекст модели
-4. **Ответ с цитатами** — модель формирует ответ на основе найденных данных. Ссылки на источники возвращаются в `annotations` для обоих типов поиска
+| Способ | API |
+|--------|-----|
+| `plugins: [{"id": "web"}]` | Chat Completions, Responses |
+| `web_search_options: {}` | Chat Completions |
+| `tools: [{"type": "web_search"}]` (и `web_search_preview`, `web_search_preview_2025_03_11`) | Responses |
+| `tools: [{"type": "web_search_20250305", "name": "web_search"}]` (и `web_search_20260209`) | Anthropic Messages |
+| `tools: [{"googleSearch": {}}]` | Gemini |
+
+Все способы работают одинаково — как плагин `web`. Выбрать поисковик, число результатов и поисковый запрос можно только в [настройках плагина](#настройки-плагина-web). Параметры родных форматов (`search_context_size`, `user_location`, `filters`, `max_uses`, `allowed_domains`, `blocked_domains`) принимаются для совместимости, но на поиск не влияют.
 
 ## Формат ответа
 
 ### Chat Completions API
 
-Результаты поиска возвращаются в поле `annotations`:
+Источники возвращаются в поле `annotations`:
 
 ```json
 {
   "choices": [{
     "message": {
       "role": "assistant",
-      "content": "Квантовый компьютер IBM достиг рекордных показателей...",
+      "content": "По данным ЦБ, официальный курс доллара на сегодня — ...",
       "annotations": [
         {
           "type": "url_citation",
           "url_citation": {
-            "url": "https://example.com/quantum",
-            "title": "IBM Quantum Breakthrough",
+            "url": "https://example.com/usd-rate",
+            "title": "Официальные курсы валют",
+            "content": "Выдержка из страницы...",
             "start_index": 0,
-            "end_index": 55
+            "end_index": 0
           }
         }
       ]
     }
-  }]
-}
-```
-
-### Responses API
-
-```json
-{
-  "id": "resp_abc123",
-  "object": "response",
-  "status": "completed",
-  "output_text": "Квантовый компьютер IBM достиг рекордных показателей...",
-  "output": [{
-    "type": "message",
-    "id": "msg_abc123",
-    "status": "completed",
-    "role": "assistant",
-    "content": [{
-      "type": "output_text",
-      "text": "Квантовый компьютер IBM достиг рекордных показателей...",
-      "annotations": [
-        {
-          "type": "url_citation",
-          "url_citation": {
-            "url": "https://example.com/quantum",
-            "title": "IBM Quantum Breakthrough",
-            "start_index": 0,
-            "end_index": 55
-          }
-        }
-      ]
-    }]
   }]
 }
 ```
@@ -212,28 +180,68 @@ curl -X POST "https://polza.ai/api/v1/responses" \
 | `type` | string | Всегда `"url_citation"` |
 | `url_citation.url` | string | URL источника |
 | `url_citation.title` | string | Заголовок страницы |
-| `url_citation.content` | string | Фрагмент текста (не всегда присутствует) |
-| `url_citation.start_index` | number | Начало цитаты в тексте ответа |
-| `url_citation.end_index` | number | Конец цитаты в тексте ответа |
+| `url_citation.content` | string | Выдержка из страницы, которую получила модель |
+| `url_citation.start_index` | number | Всегда `0`: привязки источника к месту в тексте ответа нет |
+| `url_citation.end_index` | number | Всегда `0` |
 
-## Настройки плагина
+`annotations` содержат все найденные источники, а не только те, на которые модель сослалась в тексте.
 
-### Параметры
+### Responses API
+
+Источники — в `annotations` сообщения. С родным `web_search` в `output` есть и элемент `web_search_call` с адресами источников — перед сообщением, а в стриме после него:
+
+```json
+{
+  "output": [
+    {
+      "type": "web_search_call",
+      "id": "ws_...",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "sources": [
+          { "type": "url", "url": "https://example.com/usd-rate" }
+        ]
+      }
+    },
+    {
+      "type": "message",
+      "role": "assistant",
+      "status": "completed",
+      "content": [{
+        "type": "output_text",
+        "text": "По данным ЦБ, ...",
+        "annotations": [
+          {
+            "type": "url_citation",
+            "url": "https://example.com/usd-rate",
+            "title": "Официальные курсы валют",
+            "start_index": 0,
+            "end_index": 0,
+            "url_citation": { "url": "https://example.com/usd-rate", "title": "Официальные курсы валют", "content": "...", "start_index": 0, "end_index": 0 }
+          }
+        ]
+      }]
+    }
+  ]
+}
+```
+
+С `plugins: [{"id": "web"}]` элемента `web_search_call` нет — источники только в `annotations`.
+
+### Anthropic Messages и Gemini
+
+- **Anthropic Messages** — источники в `citations` текстового блока.
+- **Gemini** — источники в `groundingMetadata.groundingChunks`.
+
+## Настройки плагина `web`
 
 | Параметр | Тип | По умолчанию | Описание |
 |----------|-----|--------------|----------|
-| `max_results` | number | 5 | Максимальное количество результатов поиска |
-| `search_prompt` | string | — | Собственный промпт для поиска (иначе модель формирует сама) |
-| `engine` | string | auto | Поисковый движок: `native`, `exa` или auto |
+| `max_results` | number | 5 | Сколько результатов добавить в запрос: от 1 до 20 (для Google — до 10) |
+| `search_prompt` | string | — | Поисковый запрос. Если не задан, ищется текст вашего последнего сообщения |
+| `engine` | string | `yandex` | Поисковик: `yandex` или `google`. Другие значения (в том числе `native` и `exa`) — поиск Яндексом |
 | `enabled` | boolean | true | Включить/выключить плагин |
-
-### Поисковые движки
-
-| Движок | Описание | Когда используется |
-|--------|----------|-------------------|
-| `native` | Встроенный поиск провайдера (OpenAI, Anthropic, xAI, Perplexity) | Когда модель поддерживает нативный поиск |
-| `exa` | Поиск через [Exa](https://exa.ai/) — ключевые слова + эмбеддинги | Универсальный, работает с любой моделью |
-| auto (по умолчанию) | `native` если доступен, иначе `exa` | Рекомендуется |
 
 ### Пример с настройками
 
@@ -245,63 +253,35 @@ curl -X POST "https://polza.ai/api/v1/responses" \
   ],
   "plugins": [{
     "id": "web",
-    "engine": "exa",
+    "engine": "google",
     "max_results": 3,
-    "search_prompt": "Новости NVIDIA AMD GPU 2025-2026"
+    "search_prompt": "Новости NVIDIA AMD GPU"
   }]
 }
 ```
 
 ## Usage и стоимость
 
-Веб-поиск увеличивает количество `prompt_tokens`, так как контекст поиска добавляется в промпт модели. Для моделей с нативным поиском в `usage` также доступно поле `server_tool_use`:
+Поиск стоит **0,50 ₽** за выполненный поиск — и Яндексом, и Google. Стоимость входит в `cost_rub` запроса, число поисков — в `usage.server_tool_use.web_search_requests`:
 
 ```json
 {
   "usage": {
-    "prompt_tokens": 8465,
-    "completion_tokens": 342,
-    "total_tokens": 8807,
+    "prompt_tokens": 1240,
+    "completion_tokens": 91,
+    "total_tokens": 1331,
     "server_tool_use": {
       "web_search_requests": 1
     },
-    "cost_rub": 1.07,
-    "cost": 1.07
+    "cost_rub": 0.53,
+    "cost": 0.53
   }
 }
 ```
 
-Поля `cost_rub` и `cost` содержат стоимость запроса в рублях, списанную с баланса.
+Число поисков и их стоимость видны и в [истории генераций](/api-reference/history/generations) — в поле `webSearch`.
 
-<Note>
-`server_tool_use` присутствует только при нативном поиске провайдера. `annotations` возвращаются в обоих случаях, но формат отличается — см. таблицу ниже.
-</Note>
-
-### Различия аннотаций: нативный поиск vs Exa
-
-| Поле | Нативный поиск | Exa поиск |
-|------|---------------|-----------|
-| `start_index` / `end_index` | Позиция цитаты в тексте ответа | `0` (позиция не указывается) |
-| `content` | Отсутствует | Текст страницы-источника |
-| `title` | Заголовок страницы | Заголовок страницы |
-| `url` | URL источника | URL источника |
-
-## Совместимость
-
-Нативный веб-поиск поддерживается **38 моделями** от 4 провайдеров. Для остальных моделей используется поиск через Exa.
-
-| Провайдер | Нативный поиск | Моделей | Примеры |
-|-----------|---------------|---------|---------|
-| OpenAI | ✅ | 15 | gpt-5.2-pro, o3, o4-mini, gpt-4o-search-preview |
-| Anthropic | ✅ | 8 | claude-opus-4.6, claude-sonnet-4.5, claude-haiku-4.5 |
-| xAI | ✅ | 8 | grok-4, grok-3, grok-3-mini |
-| Perplexity | ✅ | 5 | sonar, sonar-pro, sonar-deep-research |
-| Google | через Exa | — | gemini-2.5-pro, gemini-2.5-flash |
-| DeepSeek | через Exa | — | deepseek-r1, deepseek-chat |
-
-<Tip>
-Используйте `plugins: [{id: "web"}]` для максимальной совместимости — он работает с **любой** моделью.
-</Tip>
+Если поисковик не ответил, запрос не падает: модель отвечает без результатов поиска. Такой поиск не оплачивается и не попадает в счётчик.
 
 ## Советы
 
@@ -310,13 +290,13 @@ curl -X POST "https://polza.ai/api/v1/responses" \
     Формат ответа `json_object` или `json_schema` может мешать модели включать цитаты и ссылки на источники. Если вам нужен структурированный вывод с веб-поиском, обрабатывайте текстовый ответ с аннотациями отдельно.
   </Accordion>
   <Accordion title="Используйте search_prompt для точности" icon="magnifying-glass">
-    Параметр `search_prompt` позволяет задать конкретный поисковый запрос вместо того, чтобы модель формировала его сама. Это полезно при сложных или многосоставных вопросах, когда автоматический поиск может быть неточным.
+    Плагин `web` ищет текст вашего последнего сообщения. Если сообщение длинное или вопрос многосоставный, задайте точный поисковый запрос в `search_prompt`.
   </Accordion>
   <Accordion title="Проверяйте annotations" icon="link">
-    Наличие `url_citation` в `annotations` подтверждает, что веб-поиск был выполнен и модель использовала найденные данные. Если `annotations` пуст — модель ответила из собственных знаний.
+    Наличие `url_citation` в `annotations` подтверждает, что поиск был выполнен и его результаты попали к модели. Если `annotations` пуст — поиск ничего не нашёл или поисковик не ответил.
   </Accordion>
   <Accordion title="Комбинация с изображениями" icon="image">
-    Веб-поиск можно комбинировать с отправкой изображений. Например, отправьте фото продукта и попросите найти актуальные цены — модель выполнит поиск с учётом визуального контекста.
+    Веб-поиск можно комбинировать с отправкой изображений. Например, отправьте фото продукта и попросите найти актуальные цены — задайте название товара в `search_prompt`.
   </Accordion>
 </AccordionGroup>
 
