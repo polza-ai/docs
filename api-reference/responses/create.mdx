@@ -187,7 +187,7 @@ console.log(response.output_text);
 |---|---|
 | `function` | Оба формата: плоский Responses (`{"type":"function","name":...}`) и вложенный (`{"type":"function","function":{...}}`) |
 | `custom` | Free-form инструмент. Внутри приводится к функции с единственным строковым полем `input`, в ответе приходит как `function_call` с `arguments = {"input": "..."}` |
-| `web_search`, `web_search_preview` | Включает серверный веб-поиск (эквивалент `plugins: [{"id": "web"}]`) |
+| `web_search`, `web_search_preview` | [Веб-поиск](/gaidy/web-search) Polza (как `plugins: [{"id": "web"}]`), вызов виден элементом `web_search_call` |
 | Прочие (`code_interpreter`, `file_search`, `local_shell`) | Не поддерживаются — модель их не увидит |
 
 <Warning>

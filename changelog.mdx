@@ -5,6 +5,20 @@ icon: clock-rotate-left
 rss: true
 ---
 
+<Update label="Веб-поиск через Polza" description="Октябрь 2026" tags={["Новое", "Улучшения"]}>
+
+## Веб-поиск через Polza
+
+Веб-поиск в любом формате — плагин `web`, `web_search_options`, `web_search` в Responses, `web_search_20250305` в Anthropic, `googleSearch` в Gemini — теперь выполняет Polza поисковиком Яндекса или Google, для любой модели. Провайдеру модели поиск не передаётся.
+
+- Поисковик выбирается параметром `engine` плагина `web`: `yandex` (по умолчанию) или `google`
+- 0,50 ₽ за выполненный поиск; поиск с ошибкой не оплачивается
+- Число поисков — в `usage.server_tool_use.web_search_requests`, стоимость — в истории генераций
+
+[Подробнее →](/gaidy/web-search)
+
+</Update>
+
 <Update label="v1.5.3" description="25 апреля 2026" tags={["Новое", "Исправления"]}>
 
 ## Провайдер Sber
