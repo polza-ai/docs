@@ -28,6 +28,7 @@ GET https://polza.ai/api/v1/models
 |----------|-----|--------------|----------|
 | `type` | string | Нет | Фильтр по типу модели |
 | `include_providers` | boolean | Нет | Включить детальную информацию о провайдерах |
+| `include_capabilities` | boolean | Нет | Добавить объект `capabilities` к `top_provider` и провайдерам; действует вместе с `include_providers=true` |
 
 ### Значения параметра type
 
@@ -194,11 +195,18 @@ curl "https://polza.ai/api/v1/models?type=chat&include_providers=true" \
 | `capabilities` | Возможности провайдера со статусом проверки (см. ниже) |
 | `default_parameters` | Значения параметров по умолчанию |
 
-Те же поля, включая `capabilities`, есть у каждого элемента `providers[]` (запрос с `include_providers=true`).
+Те же поля есть у каждого элемента `providers[]` (запрос с `include_providers=true`).
 
 ### Возможности провайдера (capabilities)
 
 `supported_parameters` отвечает на вопрос «принимает ли провайдер параметр», но не отличает «точно не умеет» от «ещё не проверяли». Объект `capabilities` даёт статус по каждой возможности: Polza проверяет провайдеров тестовыми запросами, берёт данные провайдера и правит их вручную.
+
+В списке моделей объект добавляется по запросу — параметром `include_capabilities=true` вместе с `include_providers=true`: без него ответ прежний. В ответе одной модели (`GET /v1/models/{id}`) `capabilities` есть всегда — у `top_provider` и у каждого элемента `providers[]`.
+
+```bash
+curl "https://polza.ai/api/v1/models?type=chat&include_providers=true&include_capabilities=true" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>"
+```
 
 Ключ — возможность, значение — объект:
 
