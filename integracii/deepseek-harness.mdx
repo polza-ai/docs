@@ -110,6 +110,32 @@ Polza.ai подключается как OpenAI-совместимый пров�
 - **Агентные задачи** — выполнение многошаговых инструкций в рабочей директории
 - **Выбор модели** — переключение между моделями через список в интерфейсе
 
+## Плагин Polza.ai для DeepSeek Harness
+
+Вместо ручного добавления OpenAI-совместимого провайдера можно установить [плагин Polza.ai](https://github.com/polza-ai/dsh-plugin-polza). Он добавляет вход через аккаунт Polza.ai, баланс и расход в интерфейсе, каталог моделей с ценами в рублях, выбор моделей в пикере и генерацию изображений и видео. Плагин рассчитан на DeepSeek Harness 0.2.x.
+
+1. В DeepSeek Harness откройте **Плагины → Добавить плагин** и введите `@polza-ai/dsh-plugin-polza`. Альтернатива — команда в терминале:
+
+   ```bash
+   dsh plugin --profile desktop add @polza-ai/dsh-plugin-polza
+   ```
+
+2. Перезапустите Harness. Откройте **Настройки → Польза** и нажмите **Войти через Пользу**.
+
+   <Frame>
+     <img src="/images/deepseek-harness/settings-account.jpg" alt="Раздел Польза в настройках Harness: аккаунт, баланс и модели в пикере" />
+   </Frame>
+
+3. Выберите модели в каталоге или воспользуйтесь пресетами **Популярные**, **Для кода**, **Дёшево**. Сохраните список — выбранные модели появятся в пикере чата.
+
+   <Frame>
+     <img src="/images/deepseek-harness/settings-models.jpg" alt="Каталог моделей Polza.ai: пресеты, поиск и фильтр по вендору" />
+   </Frame>
+
+   <Frame>
+     <img src="/images/deepseek-harness/picker.jpg" alt="Модели Polza.ai в пикере DeepSeek Harness" />
+   </Frame>
+
 ## Решение проблем
 
 <AccordionGroup>
@@ -136,7 +162,11 @@ Polza.ai подключается как OpenAI-совместимый пров�
 
 ## Следующие шаги
 
-- [DeepSeek Harness — официальная документация](https://deepseek-harness.github.io/deepseek-harness/)
-- [Polza.ai: Hermes Agent](/integracii/hermes-agent)
-- [Polza.ai: Claude Code](/integracii/claude-code)
-- [Polza.ai: Claude Code Desktop](/integracii/claude-desktop)
+<CardGroup cols={2}>
+  <Card title="Алиасы параметров" icon="microchip" href="/osobennosti/aliases">
+    Как передавать настройки провайдера и рассуждений в строке `model`
+  </Card>
+  <Card title="Выбор провайдера" icon="server" href="/gaidy/provider-selection">
+    Как выбирать и переключаться между провайдерами моделей
+  </Card>
+</CardGroup>

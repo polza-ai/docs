@@ -135,6 +135,7 @@
           {
             "group": "Интеграции",
             "pages": [
+              "integracii/bb",
               "integracii/claude-code",
               "integracii/claude-desktop",
               "integracii/cline",
