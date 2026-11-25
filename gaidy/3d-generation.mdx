@@ -1,0 +1,155 @@
+---
+title: Генерация 3D-моделей
+description: Генерация 3D-моделей по тексту, изображению и нескольким ракурсам через Media API
+icon: cube
+---
+
+Модели Meshy, Tripo и Hunyuan3D создают 3D-объекты по текстовому описанию, одному изображению или нескольким ракурсам объекта. Запустите генерацию через `POST /api/v1/media`, затем сохраните `id` из ответа и проверьте статус. [Генерация медиа](/api-reference/media/create).
+
+## Модели и параметры
+
+Укажите ID модели в `model`. В `input` передайте поля выбранного режима. Используйте доступные по HTTPS изображения и замените адреса в примерах своими.
+
+| Модель | ID модели | По тексту | По одному изображению | Несколько ракурсов |
+| --- | --- | --- | --- | --- |
+| Meshy 6 | `fal-ai/meshy/v6` | `prompt` до 600 символов | `image_url` | — |
+| Meshy 7 | `fal-ai/meshy/v7` | `prompt` до 600 символов | `image_url` | `image_urls`, 2–4 изображения |
+| Meshy 7.1 | `fal-ai/meshy/v7.1` | `prompt` до 600 символов | `image_url` | `image_urls`, 2–4 изображения |
+| Tripo H3.1 | `tripo3d/h3.1` | `prompt` до 1024 символов | `image_url` | `image_urls`, 2–4 изображения |
+| Tripo 2.5 | `tripo3d/tripo/v2.5` | — | `image_url` | `front_image_url` обязателен. `back_image_url`, `left_image_url` и `right_image_url` необязательны. |
+| Tripo P1 | `tripo3d/p1` | — | `image_url` | — |
+| Hunyuan3D V3 | `fal-ai/hunyuan3d-v3` | `prompt` до 1024 символов | `input_image_url` | К `input_image_url` можно добавить `back_image_url`, `left_image_url` и `right_image_url`. |
+| Hunyuan3D V2 Multi-View | `fal-ai/hunyuan3d/v2/multi-view` | — | — | `front_image_url`, `back_image_url` и `left_image_url` обязательны. |
+| Hunyuan 3D Pro | `fal-ai/hunyuan-3d/v3.1/pro` | `prompt` до 1024 символов | `input_image_url` | К `input_image_url` можно добавить до семи ракурсов. |
+| Hunyuan 3D Rapid | `fal-ai/hunyuan-3d/v3.1/rapid` | `prompt` до 200 символов | `input_image_url` | — |
+
+Для Tripo H3.1 передавайте ракурсы в `image_urls` в таком порядке — спереди, слева, сзади и справа. При двух изображениях передайте первые два ракурса.
+
+
+<Note>
+У Meshy 7.1 значение `geometry_resolution: "4k"` доступно при генерации по тексту и одному изображению. Для нескольких ракурсов доступны `standard` и `2k`.
+</Note>
+
+## Примеры запросов (cURL)
+
+Подставьте свой API-ключ Polza.AI вместо `<POLZA_AI_API_KEY>`. Параметр `async: true` позволяет получить ID задачи сразу и опрашивать её статус отдельным запросом. [Аутентификация](/api-reference/introduction).
+
+<Tabs>
+
+<Tab title="По тексту">
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "fal-ai/meshy/v7.1",
+    "input": {
+      "prompt": "Керамическая кружка с круглой ручкой и синей глазурью"
+    },
+    "async": true
+  }'
+```
+
+</Tab>
+
+<Tab title="По изображению">
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "tripo3d/p1",
+    "input": {
+      "image_url": "https://example.com/mug-front.png"
+    },
+    "async": true
+  }'
+```
+
+</Tab>
+
+<Tab title="Несколько изображений">
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "tripo3d/h3.1",
+    "input": {
+      "image_urls": [
+        "https://example.com/mug-front.png",
+        "https://example.com/mug-left.png",
+        "https://example.com/mug-back.png"
+      ]
+    },
+    "async": true
+  }'
+```
+
+</Tab>
+
+<Tab title="Именованные ракурсы">
+
+```bash
+curl -X POST "https://polza.ai/api/v1/media" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "fal-ai/hunyuan3d/v2/multi-view",
+    "input": {
+      "front_image_url": "https://example.com/mug-front.png",
+      "back_image_url": "https://example.com/mug-back.png",
+      "left_image_url": "https://example.com/mug-left.png"
+    },
+    "async": true
+  }'
+```
+
+</Tab>
+
+</Tabs>
+
+## Получение результата
+
+Подставьте `id` из ответа на создание вместо `<GENERATION_ID>` и проверьте статус.
+
+```bash
+curl -X GET "https://polza.ai/api/v1/media/<GENERATION_ID>" \
+  -H "Authorization: Bearer <POLZA_AI_API_KEY>"
+```
+
+Повторяйте запрос с паузой в несколько секунд, пока статус `pending` или `processing`. При `completed` скачайте модель по `data.url`. При `failed` или `cancelled` завершите опрос. Подробности ошибки могут быть в `error`. [Статусы генерации](/api-reference/media/status).
+
+### Пример ответа
+
+```json
+{
+  "id": "aig_abc123",
+  "object": "media.generation",
+  "status": "completed",
+  "created": 1795564800,
+  "model": "fal-ai/meshy/v7.1",
+  "data": {
+    "type": "3d",
+    "url": "https://example.com/result/model.glb",
+    "format": "glb",
+    "content_type": "model/gltf-binary",
+    "file_name": "model.glb",
+    "thumbnail_url": "https://example.com/result/preview.png",
+    "model_urls": {
+      "obj": "https://example.com/result/model.obj"
+    }
+  }
+}
+```
+
+В 3D-ответе `data.type` равен `3d`. Дополнительные файлы доступны в `data.model_urls`, текстуры — в `data.texture_urls`, а изображение для предпросмотра — в `data.thumbnail_url`, если их вернула модель. Для Meshy в `data.model_urls` также могут быть файлы рига и анимаций. Проверяйте `data.format` или имя файла перед импортом.
+
+## Стоимость
+
+Цена зависит от модели, режима и выбранных параметров. Для каждого режима в каталоге указаны свои `pricing.tiers` с ценой в рублях. Сумма списания доступна в `usage.cost_rub`, если API вернул данные о расходах. [Параметры и цены 3D-моделей](https://polza.ai/api/v1/models?type=3d&include_providers=true).
+
+У Tripo H3.1 за HD-текстуры (`texture_quality: "detailed"`), детальную геометрию (`geometry_quality: "detailed"`) и четырёхугольную сетку (`quad: true`) начисляются отдельные доплаты. Чтобы получить модель без текстур, укажите `texture: false` и `pbr: false`. [Tripo H3.1](https://polza.ai/models/tripo3d/h3.1).

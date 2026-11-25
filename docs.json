@@ -129,6 +129,13 @@
                   "gaidy/suno-mashup",
                   "gaidy/google-lyria-3"
                 ]
+              },
+              {
+                "group": "3D",
+                "icon": "cube",
+                "pages": [
+                  "gaidy/3d-generation"
+                ]
               }
             ]
           },
